@@ -34,6 +34,7 @@ const stops = post.stops ?? [];
 const hero = post.mainImage
   ? urlFor(post.mainImage).width(1600).height(900).fit("crop").auto("format").url()
   : null;
+
 ---
 
 <BaseLayout title={`${post.title} — A Day In`} description={post.excerpt}>
@@ -89,25 +90,28 @@ const hero = post.mainImage
       <!-- The itinerary, stop by stop -->
       {
         stops.length > 0 && (
-          <section class="mb-12">
+          <section class="mb-16">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
-            <ol class="relative border-l-2 border-sea-100 pl-6">
-              {stops.map((stop: any, i: number) => (
-                <li class="relative pb-9 last:pb-0">
-                  <span class="absolute -left-[31px] flex h-5 w-5 items-center justify-center rounded-full bg-sea-500 text-[10px] font-bold text-white ring-4 ring-foam">
+            <ol class="relative border-l-2 border-sea-200 pl-8">
+              {stops.map((stop, i) => (
+                <li class="scroll-reveal relative pb-10 last:pb-0">
+                  <span class="absolute -left-[39px] flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-sand-300 to-sea-500 text-[10px] font-bold text-white ring-4 ring-foam">
                     {i + 1}
                   </span>
                   {stop.time && (
                     <p class="font-display text-xs font-semibold uppercase tracking-widest text-sand-500">{stop.time}</p>
                   )}
-                  <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800">{stop.title}</h3>
+                  <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800 underline decoration-sea-300 decoration-wavy decoration-2 underline-offset-[0.35em]">{stop.title}</h3>
                   {stop.description && <p class="mt-1.5 leading-relaxed text-deep/80">{stop.description}</p>}
-                  {stop.tip && (
-                    <p class="mt-3 flex gap-2 rounded-lg bg-sand-100 px-3 py-2 text-sm text-sea-800">
-                      <span class="font-display font-semibold text-sand-500">Tip</span>
-                      <span>{stop.tip}</span>
+                  {stop.callouts?.length > 0 && stop.callouts.map((c: any) => (
+                    <p class={`mt-3 flex gap-2 rounded-lg bg-sand-100 px-3 py-2 text-sm text-sea-800 border-l-[3px] ${c.kind?.accent ?? 'border-sand-300'}`}>
+                      <span class={`font-display font-semibold shrink-0 flex items-center gap-1 ${c.kind?.labelColor ?? 'text-sand-500'}`}>
+                        {c.kind?.icon?.svg && <span class="inline-block w-4 h-4 [&>svg]:w-full [&>svg]:h-full" set:html={c.kind.icon.svg} />}
+                        {c.kind?.label ?? c.kind?.name}
+                      </span>
+                      <span>{c.body}</span>
                     </p>
-                  )}
+                  ))}
                 </li>
               ))}
             </ol>
@@ -118,7 +122,7 @@ const hero = post.mainImage
       {
         post.body && (
           <div class="prose-sea border-t border-sea-100 pt-8">
-            <h2 class="font-display text-2xl font-semibold text-sea-800">Good to know</h2>
+            <h2 class="font-display text-2xl font-semibold text-sea-800">Closing Notes</h2>
             <PortableText value={post.body} />
           </div>
         )

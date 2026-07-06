@@ -1,4 +1,5 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
+import {CalloutPreview} from '../components/CalloutPreview'
 
 export const post = defineType({
   name: 'post',
@@ -87,10 +88,40 @@ export const post = defineType({
               rows: 3,
             }),
             defineField({
-              name: 'tip',
-              title: 'Insider tip',
-              type: 'string',
-              description: 'The thing only locals (or we) know.',
+              name: 'callouts',
+              title: 'Callouts',
+              type: 'array',
+              description: 'Extra bite-sized notes — tips, what to order, things to watch for.',
+              of: [
+                defineArrayMember({
+                  name: 'callout',
+                  title: 'Callout',
+                  type: 'object',
+                  fields: [
+                    defineField({
+                      name: 'kind',
+                      title: 'Kind',
+                      type: 'reference',
+                      to: [{type: 'calloutKind'}],
+                      validation: (rule) => rule.required(),
+                    }),
+                    defineField({
+                      name: 'body',
+                      title: 'Body',
+                      type: 'text',
+                      rows: 2,
+                      validation: (rule) => rule.required(),
+                    }),
+                  ],
+                  preview: {
+                    select: {kind: 'kind', body: 'body'},
+                    prepare: (selected: Record<string, unknown>) => selected,
+                  },
+                  components: {
+                    preview: CalloutPreview,
+                  },
+                }),
+              ],
             }),
           ],
           preview: {

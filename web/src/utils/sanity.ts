@@ -21,7 +21,7 @@ const POST_QUERY = defineQuery(
   `*[_type == "post" && slug.current == $slug][0]{
     _id, title, publishedAt, excerpt, mainImage, body,
     duration, testedOn, testedBy,
-    stops[]{ time, title, description, tip },
+    stops[]{ time, title, description, callouts[]{ kind->{ "name": name.current, label, accent, labelColor, icon { provider, name, svg } }, body } },
     "destination": destination->{ _id, city, country, countryShort, slug }
   }`,
 );

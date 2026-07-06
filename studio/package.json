@@ -19,6 +19,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sanity": "^6.3.0",
+    "sanity-plugin-icon-picker": "^4.0.0",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
