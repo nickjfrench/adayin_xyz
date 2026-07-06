@@ -1,0 +1,125 @@
+---
+import { urlFor } from "../utils/sanity";
+
+interface Props {
+  destinations: any[];
+}
+const { destinations } = Astro.props;
+
+// Ocean gradient fallbacks used when a destination has no hero image yet.
+const gradients = [
+  "linear-gradient(135deg, #84c0bb 0%, #2f6d6a 100%)",
+  "linear-gradient(135deg, #b3d9d5 0%, #3d8884 100%)",
+  "linear-gradient(135deg, #cda66a 0%, #2f6d6a 100%)",
+  "linear-gradient(135deg, #57a39e 0%, #234746 100%)",
+];
+
+const layers = destinations.map((d, i) => ({
+  slug: d.slug?.current,
+  image: d.heroImage
+    ? urlFor(d.heroImage).width(2000).height(1100).fit("crop").auto("format").url()
+    : null,
+  gradient: gradients[i % gradients.length],
+}));
+---
+
+<section class="relative isolate flex min-h-[88vh] flex-col justify-center overflow-hidden">
+  <!-- Background layers (one per destination), crossfaded by JS -->
+  <div class="absolute inset-0 -z-10">
+    {
+      layers.map((l, i) => (
+        <div
+          class="hero-bg absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000 ease-out"
+          data-index={i}
+          style={`background-image: ${l.image ? `url('${l.image}')` : l.gradient};`}
+        />
+      ))
+    }
+    {
+      layers.length === 0 && (
+        <div class="absolute inset-0" style={`background-image: ${gradients[0]};`} />
+      )
+    }
+    <!-- Scrim for text legibility -->
+    <div class="absolute inset-0 bg-gradient-to-b from-sea-900/35 via-sea-900/15 to-sea-900/55"></div>
+  </div>
+
+  <div class="mx-auto w-full max-w-6xl px-5 pt-24 sm:px-8">
+    <p class="mb-2 font-display text-sm font-medium uppercase tracking-[0.3em] text-white/80 drop-shadow">
+      Tested itineraries · off the beaten track
+    </p>
+
+    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-5">
+      <h1 class="font-display text-4xl font-semibold text-white drop-shadow-md sm:text-6xl">
+        A day in…
+      </h1>
+
+      <!-- The highlighted destination word IS the filter dropdown -->
+      <div class="relative">
+        <button
+          id="dest-trigger"
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          class="group inline-flex items-center gap-2 rounded-xl bg-sea-500/95 px-4 py-2 font-display text-3xl font-bold uppercase tracking-wide text-white shadow-lg shadow-sea-900/20 ring-1 ring-white/20 backdrop-blur-sm transition-all hover:bg-sea-500 sm:text-5xl"
+        >
+          <span id="dest-label">{destinations[0]?.city ?? "Somewhere"}</span>
+          <svg class="h-6 w-6 transition-transform group-aria-expanded:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        <ul
+          id="dest-menu"
+          role="listbox"
+          hidden
+          class="absolute left-0 top-full z-20 mt-2 max-h-72 w-64 overflow-auto rounded-xl border border-sea-100 bg-foam/95 p-2 shadow-xl shadow-sea-900/25 backdrop-blur-md"
+        >
+          <li>
+            <button
+              type="button"
+              role="option"
+              data-dest="all"
+              class="dest-option flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-display text-sm font-semibold text-sea-700 hover:bg-sea-50"
+            >
+              All destinations
+            </button>
+          </li>
+          {
+            destinations.map((d, i) => (
+              <li>
+                <button
+                  type="button"
+                  role="option"
+                  data-dest={d.slug?.current}
+                  data-city={d.city}
+                  data-index={i}
+                  class="dest-option flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-display text-sm font-medium text-sea-800 hover:bg-sea-50"
+                >
+                  <span>
+                    {d.city}
+                    {d.countryShort && <span class="text-sea-400">, {d.countryShort}</span>}
+                  </span>
+                  <span class="text-xs text-sand-500">{d.postCount ?? 0}</span>
+                </button>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <p class="mt-5 max-w-md text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">
+      Hand-tested day plans for places worth the detour. Pick a spot above to
+      filter — or let it wander.
+    </p>
+
+    <a
+      href="#stories"
+      class="mt-8 inline-flex items-center gap-2 rounded-full bg-foam/90 px-5 py-2.5 font-display text-sm font-semibold text-sea-700 shadow-md transition hover:bg-white"
+    >
+      See the itineraries
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+    </a>
+  </div>
+</section>

@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Ocean palette ─────────────────────────
+   Teal "sea" for brand + UI, warm "sand" for accents, soft "foam"
+   backgrounds and a deep sea-green for text. Tuned to feel calm,
+   coastal and modern. */
+@theme {
+  --color-sea-50: #f1f8f7;
+  --color-sea-100: #d9ecea;
+  --color-sea-200: #b3d9d5;
+  --color-sea-300: #84c0bb;
+  --color-sea-400: #57a39e;
+  --color-sea-500: #3d8884;
+  --color-sea-600: #2f6d6a;
+  --color-sea-700: #285855;
+  --color-sea-800: #234746;
+  --color-sea-900: #1f3b3a;
+
+  --color-sand-50: #faf6ee;
+  --color-sand-100: #f3ebda;
+  --color-sand-200: #e8d8b8;
+  --color-sand-300: #dcc294;
+  --color-sand-400: #cda66a;
+  --color-sand-500: #bf914c;
+
+  --color-foam: #fbf9f4;
+  --color-deep: #19302f;
+
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-foam);
+  color: var(--color-deep);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Portable Text article styling (post detail body) */
+.prose-sea :where(p) {
+  margin-block: 1.1em;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--color-deep) 88%, transparent);
+}
+.prose-sea :where(h2) {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.6rem;
+  margin-top: 1.8em;
+  margin-bottom: 0.4em;
+}
+.prose-sea :where(h3) {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-top: 1.4em;
+  margin-bottom: 0.3em;
+}
+.prose-sea :where(a) {
+  color: var(--color-sea-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-sea :where(ul) {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin-block: 1.1em;
+}
+.prose-sea :where(blockquote) {
+  border-left: 3px solid var(--color-sand-300);
+  padding-left: 1.2em;
+  font-style: italic;
+  color: var(--color-sea-700);
+  margin-block: 1.4em;
+}
