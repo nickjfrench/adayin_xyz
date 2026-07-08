@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PostCard from "../../components/PostCard.astro";
-import { getPosts } from "../../utils/sanity";
+import ItineraryCard from "../../components/ItineraryCard.astro";
+import { getItineraries } from "../../utils/sanity";
 
-const posts = await getPosts();
+const posts = await getItineraries();
 ---
 
 <BaseLayout title="The Journal — A Day In">
@@ -23,15 +23,12 @@ const posts = await getPosts();
     {
       posts.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
-          <p class="font-display text-lg font-semibold text-sea-700">No stories yet</p>
-          <p class="mt-2 text-sm text-deep/60">
-            Add one in the Studio (<code class="rounded bg-sea-100 px-1.5 py-0.5">cd studio && bun run dev</code>).
-          </p>
+          <p class="font-display text-lg font-semibold text-sea-700">No itineraries yet</p>
         </div>
       ) : (
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <PostCard post={post} />
+            <ItineraryCard post={post} />
           ))}
         </div>
       )

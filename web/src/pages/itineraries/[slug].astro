@@ -1,19 +1,19 @@
 ---
 import { PortableText } from "astro-portabletext";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getPost, getPostSlugs, urlFor } from "../../utils/sanity";
+import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
 
 export async function getStaticPaths() {
   // Queries used inside getStaticPaths must live here — module-scope consts
   // are not visible in this hoisted context.
-  return await getPostSlugs();
+  return await getItinerarySlugs();
 }
 
 const { slug } = Astro.params;
-const post = await getPost(slug as string);
+const post = await getItinerary(slug as string);
 
 if (!post) {
-  return Astro.redirect("/posts");
+  return Astro.redirect("/itineraries");
 }
 
 const dest = post.destination;
@@ -37,10 +37,10 @@ const hero = post.mainImage
 
 ---
 
-<BaseLayout title={`${post.title} — A Day In`} description={post.excerpt}>
+<BaseLayout title={`${post.title} — A Day In`} description={post.excerpt} headerVariant="overlay">
   <article>
     <!-- Hero -->
-    <header class="relative isolate flex min-h-[50vh] items-end overflow-hidden">
+    <header id="hero-section" class="relative isolate flex min-h-[50vh] items-end overflow-hidden">
       <div class="absolute inset-0 -z-10">
         {
           hero ? (
@@ -129,7 +129,7 @@ const hero = post.mainImage
       }
 
       <div class="mt-12 flex items-center justify-between border-t border-sea-100 pt-6">
-        <a href="/posts" class="font-display text-sm font-medium text-sea-600 hover:text-sea-500">← All stories</a>
+        <a href="/itineraries" class="font-display text-sm font-medium text-sea-600 hover:text-sea-500">← All itineraries</a>
         {
           dest && (
             <a

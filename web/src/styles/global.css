@@ -5,26 +5,28 @@
    backgrounds and a deep sea-green for text. Tuned to feel calm,
    coastal and modern. */
 @theme {
-  --color-sea-50: #f1f8f7;
-  --color-sea-100: #d9ecea;
-  --color-sea-200: #b3d9d5;
-  --color-sea-300: #84c0bb;
-  --color-sea-400: #57a39e;
-  --color-sea-500: #3d8884;
-  --color-sea-600: #2f6d6a;
-  --color-sea-700: #285855;
-  --color-sea-800: #234746;
-  --color-sea-900: #1f3b3a;
+  /* Sea — teal for brand + UI. OKLCH hue 185°, stepped by perceived lightness. */
+  --color-sea-50:  oklch(0.97 0.012 185);
+  --color-sea-100: oklch(0.92 0.025 185);
+  --color-sea-200: oklch(0.84 0.045 185);
+  --color-sea-300: oklch(0.74 0.065 185);
+  --color-sea-400: oklch(0.63 0.08  185);
+  --color-sea-500: oklch(0.53 0.085 185);
+  --color-sea-600: oklch(0.44 0.07  185);
+  --color-sea-700: oklch(0.38 0.055 185);
+  --color-sea-800: oklch(0.30 0.04  185);
+  --color-sea-900: oklch(0.24 0.03  185);
 
-  --color-sand-50: #faf6ee;
-  --color-sand-100: #f3ebda;
-  --color-sand-200: #e8d8b8;
-  --color-sand-300: #dcc294;
-  --color-sand-400: #cda66a;
-  --color-sand-500: #bf914c;
+  /* Sand — warm golden accents. OKLCH hue 80°, lighter ramp for beachy feel. */
+  --color-sand-50:  oklch(0.97 0.015 80);
+  --color-sand-100: oklch(0.94 0.035 80);
+  --color-sand-200: oklch(0.89 0.07  80);
+  --color-sand-300: oklch(0.82 0.11  80);
+  --color-sand-400: oklch(0.73 0.16  80);
+  --color-sand-500: oklch(0.63 0.18  80);
 
-  --color-foam: #fbf9f4;
-  --color-deep: #19302f;
+  --color-foam: oklch(0.985 0.005 80);
+  --color-deep: oklch(0.20 0.03  185);
 
   --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -100,4 +102,10 @@ body {
       translate: 0 0;
     }
   }
+}
+
+/* ── Feathered mask for overlay header ── */
+.mask-feather-b {
+  mask-image: linear-gradient(to bottom, black 65%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent);
 }

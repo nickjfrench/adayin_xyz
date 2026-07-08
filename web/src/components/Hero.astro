@@ -23,13 +23,13 @@ const layers = destinations.map((d, i) => ({
 }));
 ---
 
-<section class="relative isolate flex min-h-[88vh] flex-col justify-center overflow-hidden">
+<section id="hero-section" class="relative isolate flex min-h-[88vh] flex-col justify-center overflow-hidden">
   <!-- Background layers (one per destination), crossfaded by JS -->
   <div class="absolute inset-0 -z-10">
     {
       layers.map((l, i) => (
         <div
-          class="hero-bg absolute inset-0 bg-cover bg-center opacity-0 transition-opacity duration-1000 ease-out"
+          class="hero-bg absolute inset-0 bg-cover bg-center blur-[2px] opacity-0 transition-opacity duration-1000 ease-out"
           data-index={i}
           style={`background-image: ${l.image ? `url('${l.image}')` : l.gradient};`}
         />
@@ -40,6 +40,8 @@ const layers = destinations.map((d, i) => ({
         <div class="absolute inset-0" style={`background-image: ${gradients[0]};`} />
       )
     }
+    <!-- Wash: lightens images for softer contrast -->
+    <div class="absolute inset-0 bg-slate-800/25"></div>
     <!-- Scrim for text legibility -->
     <div class="absolute inset-0 bg-gradient-to-b from-sea-900/35 via-sea-900/15 to-sea-900/55"></div>
   </div>

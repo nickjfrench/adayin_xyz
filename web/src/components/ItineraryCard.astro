@@ -1,0 +1,65 @@
+---
+import { urlFor } from "../utils/sanity";
+
+interface Props {
+  post: any;
+}
+const { post } = Astro.props;
+const dest = post.destination;
+const destSlug = dest?.slug?.current ?? "unknown";
+
+const img = post.mainImage
+  ? urlFor(post.mainImage).width(800).height(560).fit("crop").auto("format").url()
+  : null;
+
+---
+<article
+  class="post-card group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-sm shadow-sea-900/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-sea-900/10"
+  data-destination={destSlug}
+>
+  <a href={`/itineraries/${post.slug?.current}`} class="block h-full">
+    {
+      img ? (
+        <img
+          src={img}
+          alt={post.title ?? ""}
+          loading="lazy"
+          class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sea-200 to-sea-400">
+          <span class="font-display text-2xl font-semibold text-white/80">
+            {dest?.city ?? "A Day In"}
+          </span>
+        </div>
+      )
+    }
+    {
+      dest && (
+        <span class="absolute left-3 top-3 rounded-full bg-foam/90 px-3 py-1 font-display text-xs font-semibold text-sea-700 backdrop-blur-sm">
+          {dest.city}
+          {dest.countryShort && <span class="text-sea-400">, {dest.countryShort}</span>}
+        </span>
+      )
+    }
+    <!-- Dark underlay — guarantees contrast on bright images -->
+    <div class="absolute w-full bottom-0 h-1/2 rounded-xl bg-gradient-to-t from-sea-900/55 to-transparent pointer-events-none"></div>
+    <!-- Bordered glass panel for text — same aesthetic as the header pill -->
+    <div class="absolute inset-x-3 bottom-3 rounded-xl border border-white/25 bg-foam/60 backdrop-blur-md p-4">
+      <h3 class="font-display text-lg font-semibold leading-snug text-sea-800 group-hover:underline">
+        {post.title}
+      </h3>
+      {post.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{post.excerpt}</p>}
+      {
+        (post.duration || post.stopCount > 0) && (
+          <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
+            <svg class="h-3.5 w-3.5 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <span class="text-sea-600">Tested</span>
+            {post.duration && <span>· {post.duration}</span>}
+            {post.stopCount > 0 && <span>· {post.stopCount} stops</span>}
+          </p>
+        )
+      }
+    </div>
+  </a>
+</article>

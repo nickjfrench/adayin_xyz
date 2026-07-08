@@ -30,20 +30,52 @@ const SLUGS_QUERY = defineQuery(
   `*[_type == "post" && defined(slug.current)]{ "params": { "slug": slug.current } }`,
 );
 
+const ARTICLE_SLUGS_QUERY = defineQuery(
+  `*[_type == "article" && defined(slug.current)]{ "params": { "slug": slug.current } }`,
+);
+
+const ARTICLES_QUERY = defineQuery(
+  `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){
+    _id, title, slug, publishedAt, excerpt, mainImage,
+    "destination": destination->{ _id, city, countryShort, slug },
+    "post": post->{ _id, title, slug }
+  }`,
+);
+
+const ARTICLE_QUERY = defineQuery(
+  `*[_type == "article" && slug.current == $slug][0]{
+    _id, title, publishedAt, excerpt, mainImage, body,
+    "destination": destination->{ _id, city, country, countryShort, slug },
+    "post": post->{ _id, title, slug }
+  }`,
+);
+
 export function getDestinations() {
   return sanityClient.fetch(DESTINATIONS_QUERY);
 }
 
-export function getPosts() {
+export function getItineraries() {
   return sanityClient.fetch(POSTS_QUERY);
 }
 
-export function getPost(slug: string) {
+export function getItinerary(slug: string) {
   return sanityClient.fetch(POST_QUERY, { slug });
 }
 
-export function getPostSlugs() {
+export function getItinerarySlugs() {
   return sanityClient.fetch(SLUGS_QUERY);
+}
+
+export function getArticleSlugs() {
+  return sanityClient.fetch(ARTICLE_SLUGS_QUERY);
+}
+
+export function getArticles() {
+  return sanityClient.fetch(ARTICLES_QUERY);
+}
+
+export function getArticle(slug: string) {
+  return sanityClient.fetch(ARTICLE_QUERY, { slug });
 }
 
 const builder = createImageUrlBuilder(sanityClient);

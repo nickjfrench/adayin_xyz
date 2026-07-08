@@ -1,0 +1,43 @@
+---
+/** Text-formatting component for glass sections — etched text-shadow + colour
+ *  that adapts to the background. Layout (padding, rounding, font-size,
+ *  display) belongs to the caller. Responds to Header's `.past-hero` class
+ *  via Tailwind group variants so overlay → solid transitions are automatic. */
+interface Props {
+  href: string;
+  label: string;
+  active?: boolean;
+  /** "overlay" for text over transparent glass (hero), "solid" for opaque panels. */
+  variant?: "overlay" | "solid";
+  /** Caller-provided layout classes (padding, rounding, font-size, display). */
+  class?: string;
+}
+
+const { href, label, active = false, variant = "solid", class: callerClass } = Astro.props;
+---
+
+<a
+  href={href}
+  aria-current={active ? "page" : undefined}
+  class:list={[
+    "font-display font-medium transition-colors",
+    /* Etched text-shadow shared by both variants. */
+    "[text-shadow:0_-1px_0_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.2)]",
+    variant === "overlay" && [
+      /* White over transparent glass (hero). */
+      active ? "text-white" : "text-white/75 hover:text-white",
+      /* When the header gets .past-hero (JS-toggled), switch to sea tones + lighter shadow. */
+      "group-[&.past-hero]:text-sea-800/80 group-[&.past-hero]:hover:text-sea-500",
+      "group-[&.past-hero]:[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
+      active && "group-[&.past-hero]:text-sea-600",
+    ],
+    variant === "solid" && [
+      /* Sea tones for opaque panels. */
+      active ? "text-sea-600" : "text-sea-800/80 hover:text-sea-500",
+      "[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
+    ],
+    callerClass,
+  ]}
+>
+  {label}
+</a>

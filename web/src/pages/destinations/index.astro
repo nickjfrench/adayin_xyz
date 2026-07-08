@@ -28,7 +28,6 @@ const gradients = [
       destinations.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
           <p class="font-display text-lg font-semibold text-sea-700">No destinations yet</p>
-          <p class="mt-2 text-sm text-deep/60">Add one in the Studio to see it here.</p>
         </div>
       ) : (
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,6 +49,8 @@ const gradients = [
                 ) : (
                   <div class={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]}`} />
                 )}
+                <!-- Blur band: softens the bottom of the image for text legibility -->
+                <div class="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-[4px]" style="-webkit-mask-image:linear-gradient(to top,black 35%,transparent 70%);mask-image:linear-gradient(to top,black 35%,transparent 70%)"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-sea-900/80 via-transparent to-transparent" />
                 <div class="absolute inset-x-0 bottom-0 p-5">
                   <h2 class="font-display text-2xl font-bold uppercase tracking-wide text-white drop-shadow">
