@@ -27,7 +27,7 @@ const isActive = (href: string) =>
 >
   <nav
     id="site-nav"
-    class="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/25 bg-foam/25 px-5 py-4 shadow-lg backdrop-blur-md transition-all duration-300 group-data-[variant=dark]:shadow-sea-900/10 sm:px-7"
+    class="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/25 bg-sea-100/25 px-5 py-4 shadow-lg backdrop-blur-md transition-all duration-300 group-data-[variant=dark]:shadow-sea-900/10 sm:px-7"
   >
     <Logo class="header-logo" variant={variant} />
 
@@ -47,7 +47,7 @@ const isActive = (href: string) =>
     </ul>
 
     <!-- Mobile menu toggle -->
-    <details class="relative md:hidden">
+    <details id="mobile-menu" class="flex items-center md:hidden">
       <summary
         class="flex cursor-pointer list-none items-center rounded-lg p-2 transition-colors group-data-[variant=light]:text-white/90 group-data-[variant=light]:hover:bg-white/10 group-data-[variant=dark]:text-sea-700 group-data-[variant=dark]:hover:bg-sea-50"
       >
@@ -64,26 +64,38 @@ const isActive = (href: string) =>
           <line x1="4" y1="17" x2="20" y2="17" />
         </svg>
       </summary>
-      <ul
-        class="absolute right-0 mt-2 w-44 rounded-xl border border-sea-100 bg-foam p-2 shadow-lg shadow-sea-900/10"
-      >
-        {links.map((link) => (
-          <li>
-            <GlassLink
-              href={link.href}
-              label={link.label}
-              active={isActive(link.href)}
-              variant="dark"
-              class:list={[
-                "block rounded-lg px-3 py-2 text-sm",
-                isActive(link.href) ? "bg-sea-50" : "hover:bg-sea-50",
-              ]}
-            />
-          </li>
-        ))}
-      </ul>
     </details>
   </nav>
+
+  <!-- Dropdown is a sibling of the nav (not a child) so its own
+       backdrop-filter isn't trapped inside the nav's stacking context. -->
+  <div id="mobile-menu-panel" class="md:hidden" data-open="false">
+    <ul
+      class:list={[
+        "absolute right-4 top-full mt-2 w-44 rounded-xl p-2 shadow-lg backdrop-blur-md sm:right-6",
+        variant === "light"
+          ? "border border-white/20 bg-sea-100/30 shadow-sea-900/20"
+          : "border border-white/10 bg-sea-100/20 shadow-sea-900/30",
+      ]}
+    >
+      {links.map((link) => (
+        <li>
+          <GlassLink
+            href={link.href}
+            label={link.label}
+            active={isActive(link.href)}
+            variant={variant}
+            class:list={[
+              "block rounded-lg px-3 py-2",
+              variant === "light"
+                ? (isActive(link.href) ? "bg-white/15" : "hover:bg-white/10")
+                : (isActive(link.href) ? "bg-sea-50" : "hover:bg-sea-50"),
+            ]}
+          />
+        </li>
+      ))}
+    </ul>
+  </div>
 </header>
 
 <!--
@@ -170,4 +182,24 @@ const isActive = (href: string) =>
   window.addEventListener("scroll", update, { passive: true });
   window.addEventListener("astro:page-load", update);
   update();
+
+  // ── Mobile dropdown ──
+  // The toggle (#mobile-menu) is a <details> in the nav; the panel
+  // (#mobile-menu-panel) is a sibling <div> outside the nav's backdrop-filter
+  // stacking context so its own blur works. Mirror open state and hide the
+  // panel via [hidden] when closed.
+  const mobileMenu = document.getElementById("mobile-menu");
+  const mobilePanel = document.getElementById("mobile-menu-panel");
+  if (mobileMenu && mobilePanel) {
+    const syncPanel = () => {
+      mobilePanel.hidden = !mobileMenu.open;
+      mobilePanel.dataset.open = String(mobileMenu.open);
+    };
+    mobileMenu.addEventListener("toggle", syncPanel);
+    syncPanel();
+    document.addEventListener("astro:page-load", () => {
+      mobileMenu.open = false;
+      syncPanel();
+    });
+  }
 </script>

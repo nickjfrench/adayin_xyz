@@ -1,30 +1,25 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
 ---
 
 <BaseLayout title="About — A Day In">
-  <section class="mx-auto max-w-3xl px-5 pt-24 pb-20 sm:px-8">
-    <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">About us</p>
-    <h1 class="mt-2 font-display text-4xl font-semibold text-sea-800">One tested day, off the map.</h1>
-    <div class="prose-sea mt-6">
+  <PageHeader
+    label="About us"
+    title="The best adventure isn't found where everyone else is."
+    description="A dream for more adventure in a world of checklist-based tourism."
+  />
+  
+  <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+    <div class="prose-sea">
       <p>
-        <strong>A Day In</strong> is built on a simple idea: the best places usually aren't the ones
-        topping every list. They're a few hours further on, a little harder to reach — and far more
-        worth it. So we go, we spend a single day, and we map exactly how we'd do it again.
+        <strong>A Day In</strong> is built on a simple idea: the best story doesn't come from an "I've been there" brag, it comes from sharing a journey to somewhere people have never heard of and the unexpected things that came between. The places off the beaten track, the ones a little difficult to get to, and the memories that make us want to go back after.
       </p>
       <p>
-        Every itinerary here is hand-tested: a real route, in real order, with the timings, the
-        detours, and the insider tips that only come from actually being there. No affiliate-stuffed
-        listicles, no “50 things you must do.” Just a day you could follow tomorrow.
-      </p>
-      <h2>The ocean thread</h2>
-      <p>
-        Most of the places we love end up near water — so we lean into it. Teal, sand, and salt air
-        run through everything we make, on the page and off it.
+        Throughout our travels, we discovered that the trips we look most fondly at, are the ones where we picked a direction and winged the rest. The journey's where we underestimated how long it would take to walk there or what was inbetween. These are the days we always remember, more than the days where we tried to cram the "top 20 must see things" into one day.
       </p>
       <p>
-        This site is a work in progress (and a bit of a playground), powered by
-        <a href="https://www.sanity.io">Sanity</a> and <a href="https://astro.build">Astro</a>.
+        A Day In hopes to bridge the gap between those "top 10 must see" lists with hand crafted day itineraries. Aiming to get you out of your comfort zone and get you exploring on your own, while still feeling like it's something you can do.
       </p>
     </div>
   </section>
