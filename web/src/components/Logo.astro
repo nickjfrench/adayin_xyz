@@ -2,12 +2,13 @@
 import logoSvg from "../assets/logo.svg?raw"
 interface Props {
   class?: string;
+  variant?: "light" | "dark";
 }
-const { class: className = "" } = Astro.props;
+const { class: className = "", variant = "dark" } = Astro.props;
 ---
 <a href="/" class={`group inline-flex items-center gap-3 ${className}`} aria-label="A Day In — home">
   <span class="h-10 w-10 shrink-0 [&>svg]:h-full [&>svg]:w-full transition-transform duration-500 group-hover:rotate-12" set:html={logoSvg} />
-  <span class="font-display text-xl font-semibold tracking-tight text-sea-700">
+  <span class:list={["font-display text-xl font-semibold tracking-tight transition-colors duration-300", variant === "light" ? "text-white group-data-[variant=dark]:text-sea-700" : "text-sea-700"]}>
     A DAY IN <span class="text-sand-300">.xyz</span>
   </span>
 </a>

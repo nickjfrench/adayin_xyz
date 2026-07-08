@@ -1,19 +1,19 @@
 ---
 /** Text-formatting component for glass sections — etched text-shadow + colour
  *  that adapts to the background. Layout (padding, rounding, font-size,
- *  display) belongs to the caller. Responds to Header's `.past-hero` class
- *  via Tailwind group variants so overlay → solid transitions are automatic. */
+ *  display) belongs to the caller. Responds to Header's data-variant attribute
+ *  via Tailwind group-data variants so light → dark transitions are automatic. */
 interface Props {
   href: string;
   label: string;
   active?: boolean;
-  /** "overlay" for text over transparent glass (hero), "solid" for opaque panels. */
-  variant?: "overlay" | "solid";
+  /** "light" for text over glass on dark hero backgrounds, "dark" for dark text on light pages. */
+  variant?: "light" | "dark";
   /** Caller-provided layout classes (padding, rounding, font-size, display). */
   class?: string;
 }
 
-const { href, label, active = false, variant = "solid", class: callerClass } = Astro.props;
+const { href, label, active = false, variant = "dark", class: callerClass } = Astro.props;
 ---
 
 <a
@@ -21,20 +21,19 @@ const { href, label, active = false, variant = "solid", class: callerClass } = A
   aria-current={active ? "page" : undefined}
   class:list={[
     "font-display font-medium transition-colors",
-    /* Etched text-shadow shared by both variants. */
-    "[text-shadow:0_-1px_0_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.2)]",
-    variant === "overlay" && [
-      /* White over transparent glass (hero). */
+    /* Text-shadow adapts per variant. */
+    variant === "light" ? "[text-shadow:0_-1px_0_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.2)]" : "[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
+    variant === "light" && [
+      /* White over glass on dark hero. */
       active ? "text-white" : "text-white/75 hover:text-white",
-      /* When the header gets .past-hero (JS-toggled), switch to sea tones + lighter shadow. */
-      "group-[&.past-hero]:text-sea-800/80 group-[&.past-hero]:hover:text-sea-500",
-      "group-[&.past-hero]:[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
-      active && "group-[&.past-hero]:text-sea-600",
+      /* When header flips to dark (JS-toggled data-variant), switch to sea tones. */
+      "group-data-[variant=dark]:text-sea-800/80 group-data-[variant=dark]:hover:text-sea-500",
+      "group-data-[variant=dark]:[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
+      active && "group-data-[variant=dark]:text-sea-600",
     ],
-    variant === "solid" && [
-      /* Sea tones for opaque panels. */
+    variant === "dark" && [
+      /* Sea tones for glass nav on light pages. */
       active ? "text-sea-600" : "text-sea-800/80 hover:text-sea-500",
-      "[text-shadow:0_1px_0_rgba(255,255,255,0.6)]",
     ],
     callerClass,
   ]}

@@ -6,13 +6,13 @@ import Footer from "../components/Footer.astro";
 interface Props {
   title?: string;
   description?: string;
-  // overlay = transparent header over a hero; solid = standard inner page
-  headerVariant?: "overlay" | "solid";
+  // light = glass nav with white text over dark hero; dark = glass nav with dark text
+  headerVariant?: "light" | "dark";
 }
 const {
   title = "A Day In — tested itineraries, off the beaten track",
   description = "Hand-tested day-itineraries for off-the-beaten-track places worth the detour.",
-  headerVariant = "solid",
+  headerVariant = "dark",
 } = Astro.props;
 ---
 
@@ -34,7 +34,7 @@ const {
   </head>
   <body class="flex min-h-screen flex-col">
     <Header variant={headerVariant} />
-    <main class:list={["flex-1", headerVariant === "solid" && "pt-[5.5rem]"]}>
+    <main class="flex-1">
       <slot />
     </main>
     <Footer />

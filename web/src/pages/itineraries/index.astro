@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHeader from "../../components/PageHeader.astro";
 import ItineraryCard from "../../components/ItineraryCard.astro";
 import { getItineraries } from "../../utils/sanity";
 
@@ -7,17 +8,11 @@ const posts = await getItineraries();
 ---
 
 <BaseLayout title="The Journal — A Day In">
-  <header class="border-b border-sea-100 bg-sea-50/60">
-    <div class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
-      <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
-        The itineraries
-      </p>
-      <h1 class="mt-2 font-display text-4xl font-semibold text-sea-800">Every tested day, one place at a time</h1>
-      <p class="mt-3 max-w-xl text-deep/70">
-        Browse all of our “A day in…” itineraries — each one walked and timed by us. Want just one place? <a href="/destinations" class="text-sea-600 underline underline-offset-2">Pick a destination →</a>
-      </p>
-    </div>
-  </header>
+  <PageHeader
+    label="The itineraries"
+    title="Every tested day, one place at a time"
+    description="Browse all of our \"A day in…\" itineraries — each one walked and timed by us."
+  />
 
   <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
     {
