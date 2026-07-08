@@ -123,9 +123,112 @@ export const post = defineType({
                 }),
               ],
             }),
+            defineField({
+              name: 'cost',
+              title: 'Cost',
+              type: 'number',
+              description: 'Estimated cost for this stop in local currency (e.g. 15 = $15).',
+            }),
+            defineField({
+              name: 'address',
+              title: 'Address',
+              type: 'string',
+              description: 'Full address — renders as a Google Maps link.',
+            }),
           ],
           preview: {
             select: {title: 'title', subtitle: 'time'},
+          },
+        }),
+        defineArrayMember({
+          name: 'startLocation',
+          title: 'Start location',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'title',
+              title: 'What / where',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'address',
+              title: 'Address',
+              type: 'string',
+              description: 'Full address — renders as a Google Maps link.',
+            }),
+          ],
+          preview: {
+            select: {title: 'title'},
+            prepare: ({title}) => ({title, subtitle: 'Start'}),
+          },
+        }),
+        defineArrayMember({
+          name: 'endLocation',
+          title: 'End location',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'title',
+              title: 'What / where',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'address',
+              title: 'Address',
+              type: 'string',
+              description: 'Full address — renders as a Google Maps link.',
+            }),
+          ],
+          preview: {
+            select: {title: 'title'},
+            prepare: ({title}) => ({title, subtitle: 'End'}),
+          },
+        }),
+        defineArrayMember({
+          name: 'travel',
+          title: 'Travel',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'travelType',
+              title: 'Travel type',
+              type: 'reference',
+              to: [{type: 'travelType'}],
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'title',
+              title: 'What / where',
+              type: 'string',
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'duration',
+              title: 'Duration',
+              type: 'string',
+              description: 'e.g. "12 min", "~1 hour"',
+            }),
+            defineField({
+              name: 'description',
+              title: 'Description',
+              type: 'text',
+              rows: 2,
+            }),
+            defineField({
+              name: 'address',
+              title: 'Address',
+              type: 'string',
+              description: 'Full address — renders as a Google Maps link.',
+            }),
+          ],
+          preview: {
+            select: {title: 'title', duration: 'duration'},
+            prepare: ({title, duration}) => ({
+              title: title ?? 'Travel',
+              subtitle: duration ?? undefined,
+            }),
           },
         }),
       ],

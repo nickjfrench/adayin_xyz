@@ -1,5 +1,6 @@
 ---
 import { urlFor } from "../utils/sanity";
+import { costIndicator } from "../utils/cost";
 
 interface Props {
   post: any;
@@ -51,12 +52,13 @@ const img = post.mainImage
       </h3>
       {post.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{post.excerpt}</p>}
       {
-        (post.duration || post.stopCount > 0) && (
+        (post.duration || post.stopCount > 0 || (post.totalCost != null && post.totalCost > 0)) && (
           <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
             <svg class="h-3.5 w-3.5 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             <span class="text-sea-600">Tested</span>
             {post.duration && <span>· {post.duration}</span>}
             {post.stopCount > 0 && <span>· {post.stopCount} stops</span>}
+            {post.totalCost != null && post.totalCost > 0 && <span>· {costIndicator(post.totalCost)}</span>}
           </p>
         )
       }

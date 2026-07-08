@@ -2,6 +2,8 @@
 import { PortableText } from "astro-portabletext";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
+import { costIndicator } from "../../utils/cost";
+import StopCard from "../../components/StopCard.astro";
 
 export async function getStaticPaths() {
   // Queries used inside getStaticPaths must live here — module-scope consts
@@ -81,6 +83,7 @@ const hero = post.mainImage
         </span>
         {post.duration && <span>· {post.duration}</span>}
         {stops.length > 0 && <span>· {stops.length} stops</span>}
+        {post.totalCost != null && post.totalCost > 0 && <span>· {costIndicator(post.totalCost)}</span>}
         {testedOn && <span>· {testedOn}</span>}
         {post.testedBy && <span class="text-sea-500">· by {post.testedBy}</span>}
       </div>
@@ -94,25 +97,7 @@ const hero = post.mainImage
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
             <ol class="relative border-l-2 border-sea-200 pl-8">
               {stops.map((stop, i) => (
-                <li class="scroll-reveal relative pb-10 last:pb-0">
-                  <span class="absolute -left-[39px] flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-sand-300 to-sea-500 text-[10px] font-bold text-white ring-4 ring-foam">
-                    {i + 1}
-                  </span>
-                  {stop.time && (
-                    <p class="font-display text-xs font-semibold uppercase tracking-widest text-sand-500">{stop.time}</p>
-                  )}
-                  <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800 underline decoration-sea-300 decoration-wavy decoration-2 underline-offset-[0.35em]">{stop.title}</h3>
-                  {stop.description && <p class="mt-1.5 leading-relaxed text-deep/80">{stop.description}</p>}
-                  {stop.callouts?.length > 0 && stop.callouts.map((c: any) => (
-                    <p class={`mt-3 flex gap-2 rounded-lg bg-sand-100 px-3 py-2 text-sm text-sea-800 border-l-[3px] ${c.kind?.accent ?? 'border-sand-300'}`}>
-                      <span class={`font-display font-semibold shrink-0 flex items-center gap-1 ${c.kind?.labelColor ?? 'text-sand-500'}`}>
-                        {c.kind?.icon?.svg && <span class="inline-block w-4 h-4 [&>svg]:w-full [&>svg]:h-full" set:html={c.kind.icon.svg} />}
-                        {c.kind?.label ?? c.kind?.name}
-                      </span>
-                      <span>{c.body}</span>
-                    </p>
-                  ))}
-                </li>
+                <StopCard stop={stop} index={i} />
               ))}
             </ol>
           </section>
