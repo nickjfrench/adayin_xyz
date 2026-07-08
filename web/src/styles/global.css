@@ -6,16 +6,16 @@
    coastal and modern. */
 @theme {
   /* Sea — teal for brand + UI. OKLCH hue 185°, stepped by perceived lightness. */
-  --color-sea-50:  oklch(0.97 0.012 185);
-  --color-sea-100: oklch(0.92 0.025 185);
-  --color-sea-200: oklch(0.84 0.045 185);
+  --color-sea-50:  oklch(0.97 0.015 185);
+  --color-sea-100: oklch(0.92 0.030 185);
+  --color-sea-200: oklch(0.84 0.050 185);
   --color-sea-300: oklch(0.74 0.065 185);
-  --color-sea-400: oklch(0.63 0.08  185);
+  --color-sea-400: oklch(0.63 0.080 185);
   --color-sea-500: oklch(0.53 0.085 185);
-  --color-sea-600: oklch(0.44 0.07  185);
-  --color-sea-700: oklch(0.38 0.055 185);
-  --color-sea-800: oklch(0.30 0.04  185);
-  --color-sea-900: oklch(0.24 0.03  185);
+  --color-sea-600: oklch(0.44 0.080 185);
+  --color-sea-700: oklch(0.35 0.065 185);
+  --color-sea-800: oklch(0.28 0.053 185);
+  --color-sea-900: oklch(0.22 0.042 185);
 
   /* Sand — warm golden accents. OKLCH hue 80°, lighter ramp for beachy feel. */
   --color-sand-50:  oklch(0.97 0.015 80);
