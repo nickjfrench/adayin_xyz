@@ -1,4 +1,7 @@
 ---
+import MapLink from "./MapLink.astro";
+import CostPill from "./CostPill.astro";
+
 interface Props {
   stop: {
     _type: string;
@@ -29,145 +32,165 @@ interface Props {
 
 const { stop, index } = Astro.props;
 
-const STYLES: Record<string, { dot: string; opacity: string }> = {
-  stop: {
-    dot: "bg-gradient-to-br from-sand-300 to-sea-500",
-    opacity: "",
-  },
-  startLocation: {
-    dot: "bg-gradient-to-br from-green-300 to-green-500",
-    opacity: "",
-  },
-  endLocation: {
-    dot: "bg-gradient-to-br from-sand-400 to-sand-500",
-    opacity: "",
-  },
-  travel: {
-    dot: "bg-sea-100",
-    opacity: "opacity-60",
-  },
+const isTravel = stop._type === "travel";
+const isStart = stop._type === "startLocation";
+const isEnd = stop._type === "endLocation";
+
+const CONFIG: Record<string, { accent: string; dot: string; label: string; dim: boolean }> = {
+  stop:          { accent: "border-sea-400",   dot: "bg-sea-500",   label: "",      dim: false },
+  startLocation: { accent: "border-green-400", dot: "bg-green-500", label: "Start", dim: false },
+  endLocation:   { accent: "border-sand-400",  dot: "bg-sand-500",  label: "End",   dim: false },
+  travel:        { accent: "",                  dot: "bg-sea-300",   label: "",      dim: true  },
 };
 
-const style = STYLES[stop._type] ?? STYLES.stop;
+const config = CONFIG[stop._type] ?? CONFIG.stop;
+
+const dotLabel = isStart ? "S" : isEnd ? "E" : null;
 
 const mapsLink = stop.address
   ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.address)}`
   : null;
 ---
 
-<li class={`relative pb-10 last:pb-0 ${style.opacity}`}>
-  <!-- Timeline dot -->
-  <span
-    class={`absolute -left-[39px] flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ring-4 ring-foam ${style.dot}`}
-  >
-    {stop._type === "startLocation" ? "S" : stop._type === "endLocation" ? "E" : stop._type === "travel" ? "→" : index + 1}
-  </span>
-
-  {stop._type === "stop" && (
-    <>
-      {stop.time && (
-        <p class="font-display text-xs font-semibold uppercase tracking-widest text-sand-500">
-          {stop.time}
-        </p>
+<li class:list={["relative pb-8 last:pb-0", config.dim && "opacity-60"]} data-travel={isTravel || undefined}>
+  {/* Continuous rail line — styled via <style> below */}
+  {/* Dot — centered on the rail line */}
+  <div class="absolute left-[10px] top-2 z-10 -translate-x-1/2">
+    <span
+      class:list={[
+        "flex h-5 w-5 items-center justify-center rounded-full text-white",
+        config.dot,
+        dotLabel ? "text-[10px] font-bold" : "ring-[3px] ring-white",
+      ]}
+    >
+      {dotLabel ? (
+        dotLabel
+      ) : isTravel && stop.travelType?.icon?.svg ? (
+        <span class="travel-icon inline-block h-3 w-3" set:html={stop.travelType.icon.svg} />
+      ) : isTravel ? (
+        <span class="text-[10px] font-bold">→</span>
+      ) : (
+        /* Map pin icon for stops */
+        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
       )}
-      <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800 underline decoration-sea-300 decoration-wavy decoration-2 underline-offset-[0.35em]">
-        {stop.title}
-      </h3>
-      {stop.cost != null && stop.cost > 0 && (
-        <span class="mt-2 inline-block rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-semibold text-sand-600">
-          ${stop.cost}
+    </span>
+  </div>
+
+  {/* ── Content column ── */}
+  <div class="min-w-0 flex-1 pl-8">
+    {isTravel ? (
+      /* ── Travel connector: lightweight inline row ── */
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5">
+        <span class="text-xs font-medium text-sea-500">
+          {stop.travelType?.label ?? "Travel"}
+          {stop.duration && <span class="text-sea-300"> · {stop.duration}</span>}
         </span>
-      )}
-      {stop.callouts?.length > 0 && (
-        <div class="mt-2 flex flex-col gap-1.5">
-          {stop.callouts.map((c) => (
-            <p
-              class={`flex items-start gap-2 rounded-md border-l-[3px] bg-sand-50 px-3 py-2 text-sm text-sea-800 ${c.kind?.accent ?? "border-sand-300"}`}
-            >
-              <span class={`flex shrink-0 items-center gap-1 font-display text-xs font-semibold ${c.kind?.labelColor ?? "text-sand-500"}`}>
-                {c.kind?.icon?.svg && (
-                  <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full" set:html={c.kind.icon.svg} />
-                )}
-                {c.kind?.label ?? c.kind?.name}
-              </span>
-              <span>{c.body}</span>
-            </p>
-          ))}
-        </div>
-      )}
-      {stop.description && (
-        <p class="mt-2 leading-relaxed text-deep/80">{stop.description}</p>
-      )}
-      {mapsLink && (
-        <a
-          href={mapsLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-2 inline-flex items-center gap-1 text-xs text-sea-500 hover:text-sea-400 transition-colors"
-        >
-          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-          {stop.address}
-        </a>
-      )}
-    </>
-  )}
-
-  {(stop._type === "startLocation" || stop._type === "endLocation") && (
-    <>
-      <p class="font-display text-xs font-semibold uppercase tracking-widest text-sand-500">
-        {stop._type === "startLocation" ? "Start" : "End"}
-      </p>
-      <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800">
-        {stop.title}
-      </h3>
-      {mapsLink && (
-        <a
-          href={mapsLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-1 inline-flex items-center gap-1 text-xs text-sea-500 hover:text-sea-400 transition-colors"
-        >
-          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-          {stop.address}
-        </a>
-      )}
-    </>
-  )}
-
-  {stop._type === "travel" && (
-    <>
-      <p class="flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-widest text-sea-400">
-        {stop.travelType?.icon?.svg && (
-          <span
-            class="inline-block w-3.5 h-3.5 [&>svg]:w-full [&>svg]:h-full"
-            set:html={stop.travelType.icon.svg}
-          />
+        {stop.title && (
+          <>
+            <span class="text-sea-300">·</span>
+            <span class="text-xs text-sea-600">{stop.title}</span>
+          </>
         )}
-        {stop.travelType?.label ?? "Travel"}
-        {stop.duration && <span class="text-sea-300">· {stop.duration}</span>}
-      </p>
-      <h3 class="mt-0.5 font-display text-base font-medium text-sea-600">
-        {stop.title}
-      </h3>
-      {stop.description && (
-        <p class="mt-1 text-sm leading-relaxed text-sea-500">{stop.description}</p>
-      )}
-      {stop.cost != null && stop.cost > 0 && (
-        <span class="mt-2 inline-block rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-medium text-sand-600">
-          ${stop.cost}
-        </span>
-      )}
-      {mapsLink && (
-        <a
-          href={mapsLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-1 inline-flex items-center gap-1 text-xs text-sea-400 hover:text-sea-300 transition-colors"
-        >
-          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-          {stop.address}
-        </a>
-      )}
-    </>
-  )}
+        {stop.cost != null && stop.cost > 0 && (
+          <>
+            <span class="text-sea-300">·</span>
+            <CostPill cost={stop.cost} />
+          </>
+        )}
+        {mapsLink && (
+          <>
+            <span class="text-sea-300">·</span>
+            <MapLink address={stop.address!} class="text-sea-400 hover:text-sea-600" />
+          </>
+        )}
+      </div>
+    ) : (
+      /* ── Stop / Location: white card with accent stripe ── */
+      <div class:list={[
+        "rounded-lg bg-white shadow-sm",
+        "border-l-[3px]",
+        config.accent,
+      ]}>
+        <div class="px-4 py-3">
+          {/* Sub-label */}
+          {(stop.time || isStart || isEnd) && (
+            <p class:list={[
+              "font-display text-xs font-semibold uppercase tracking-widest",
+              isStart ? "text-green-600" : isEnd ? "text-sand-500" : "text-sand-500",
+            ]}>
+              {isStart ? "Start" : isEnd ? "End" : stop.time}
+            </p>
+          )}
+
+          {/* Title + Cost inline */}
+          <div class="mt-0.5 flex flex-wrap items-center gap-2">
+            <h3 class="font-display text-lg font-semibold leading-snug text-sea-800">
+              {stop.title}
+            </h3>
+            {stop.cost != null && stop.cost > 0 && (
+              <CostPill cost={stop.cost} />
+            )}
+          </div>
+
+          {/* Callouts */}
+          {stop.callouts && stop.callouts.length > 0 && (
+            <div class="mt-2.5 flex flex-col gap-1.5">
+              {stop.callouts.map((callout) => (
+                <p class="flex items-start gap-2 text-sm text-sea-700">
+                  {callout.kind?.icon?.svg ? (
+                    <span
+                      class:list={["inline-block h-3.5 w-3.5 shrink-0 mt-0.5 [&>svg]:h-full [&>svg]:w-full", callout.kind?.labelColor ?? "text-sand-500"]}
+                      set:html={callout.kind.icon.svg}
+                    />
+                  ) : (
+                    <span class:list={["mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", callout.kind?.labelColor ?? "bg-sand-400"]} />
+                  )}
+                  <span>{callout.body}</span>
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* Description */}
+          {stop.description && (
+            <p class="mt-2.5 text-sm leading-relaxed text-deep/60">
+              {stop.description}
+            </p>
+          )}
+
+          {/* Address */}
+          {mapsLink && (
+            <div class="mt-2.5">
+              <MapLink address={stop.address!} class="text-sea-400 hover:text-sea-600" />
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
 </li>
+
+<style>
+  /* Continuous timeline rail — runs dot-to-dot, hidden after last item */
+  li::before {
+    content: '';
+    position: absolute;
+    left: 9px;        /* 10px dot center minus 1px (half of 2px line) */
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 2px solid var(--color-sea-200, #bfe0e6);
+    z-index: 0;
+  }
+  li:last-child::before {
+    display: none;
+  }
+  li[data-travel]::before {
+    border-left-style: dashed;
+  }
+  /* Font Awesome SVGs injected via set:html need global targeting */
+  :global(.travel-icon svg) {
+    height: 0.75rem !important;
+    width: 0.75rem !important;
+  }
+</style>

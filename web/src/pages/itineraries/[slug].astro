@@ -112,7 +112,7 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
         stops.length > 0 && (
           <section class="border-t border-sea-100 pt-8 mb-16">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
-            <ol class="relative border-l-2 border-sea-200 pl-8">
+            <ol class="flex flex-col">
               {stops.map((stop, i) => (
                 <StopCard stop={stop} index={i} />
               ))}
