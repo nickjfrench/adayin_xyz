@@ -4,6 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
 import { costIndicator } from "../../utils/cost";
 import StopCard from "../../components/StopCard.astro";
+import ExtendDayModal from "../../components/ExtendDayModal.svelte";
 
 export async function getStaticPaths() {
   // Queries used inside getStaticPaths must live here — module-scope consts
@@ -37,6 +38,17 @@ const hero = post.mainImage
   ? urlFor(post.mainImage).width(1600).height(900).fit("crop").auto("format").url()
   : null;
 
+const extendSlides = (post.extendDay ?? []).map((item) => ({
+  id: item._key ?? item.title,
+  title: item.title ?? '',
+  description: item.shortDesc ?? '',
+  link: item.link ?? '',
+  imageUrl: item.image
+    ? urlFor(item.image).width(1200).height(675).fit('crop').auto('format').url()
+    : undefined,
+}));
+
+
 ---
 
 <BaseLayout title={`${post.title} — A Day In`} description={post.excerpt} headerVariant="light">
@@ -54,7 +66,7 @@ const hero = post.mainImage
         <div class="absolute inset-0 bg-gradient-to-t from-sea-900/80 via-sea-900/30 to-sea-900/10"></div>
       </div>
 
-      <div class="mx-auto w-full max-w-3xl px-5 pb-12 pt-32 sm:px-8">
+      <div class="mx-auto w-full max-w-4xl px-5 pb-16 pt-32 sm:px-8">
         {
           dest && (
             <a
@@ -73,27 +85,28 @@ const hero = post.mainImage
       </div>
     </header>
 
-    <!-- Body -->
-    <div class="mx-auto max-w-2xl px-5 py-12 sm:px-8">
-      <!-- Tested-by-us meta strip -->
-      <div class="mb-8 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl bg-sea-50 px-5 py-4 text-sm text-sea-700">
-        <span class="inline-flex items-center gap-1.5 font-display font-semibold text-sea-600">
-          <svg class="h-4 w-4 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-          Tested by us
-        </span>
-        {post.duration && <span>· {post.duration}</span>}
-        {stops.length > 0 && <span>· {stops.length} stops</span>}
-        {post.totalCost != null && post.totalCost > 0 && <span>· {costIndicator(post.totalCost)}</span>}
-        {testedOn && <span>· {testedOn}</span>}
-        {post.testedBy && <span class="text-sea-500">· by {post.testedBy}</span>}
-      </div>
+    <!-- Metadata overlay bar -->
+    <div class="relative z-10 mx-auto -mt-8 flex w-full max-w-4xl flex-wrap items-center gap-x-5 gap-y-2 rounded-xl bg-white/90 px-5 py-3 text-sm text-sea-700 shadow-lg shadow-sea-900/10 backdrop-blur-sm sm:px-6">
+      <span class="inline-flex items-center gap-1.5 font-display font-semibold text-sea-600">
+        <svg class="h-4 w-4 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+        Tested by us
+      </span>
+      {post.duration && <span>· {post.duration}</span>}
+      {stops.length > 0 && <span>· {stops.length} stops</span>}
+      {post.totalCost != null && post.totalCost > 0 && <span>· {costIndicator(post.totalCost)}</span>}
+      {testedOn && <span>· {testedOn}</span>}
+      {post.testedBy && <span class="text-sea-500">· by {post.testedBy}</span>}
+    </div>
 
-      {post.excerpt && <p class="mb-10 border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>}
+    <!-- Body -->
+    <div class="mx-auto max-w-4xl px-5 pt-8 sm:px-8">
+
+      {post.excerpt && <p class="mb-16 border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>}
 
       <!-- The itinerary, stop by stop -->
       {
         stops.length > 0 && (
-          <section class="mb-16">
+          <section class="border-t border-sea-100 pt-8 mb-16">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
             <ol class="relative border-l-2 border-sea-200 pl-8">
               {stops.map((stop, i) => (
@@ -106,14 +119,54 @@ const hero = post.mainImage
 
       {
         post.body && (
-          <div class="prose-sea border-t border-sea-100 pt-8">
+          <div class="prose-sea mt-16 border-t border-sea-100 pt-8">
             <h2 class="font-display text-2xl font-semibold text-sea-800">Closing Notes</h2>
             <PortableText value={post.body} />
           </div>
         )
       }
 
-      <div class="mt-12 flex items-center justify-between border-t border-sea-100 pt-6">
+      {
+        post.extendDay && post.extendDay.length > 0 && (
+          <section class="mt-16 border-t border-sea-100 pt-8">
+            <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
+              Extend your day
+            </h2>
+            <p class="mb-6">
+              Want more? We have hand selected a few additional things for this itinerary if you wish to add to your day or switch things up.
+            </p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {post.extendDay.map((item, i) => (
+                <button
+                  data-extend-index={i}
+                  class="group relative aspect-[16/10] cursor-pointer overflow-hidden rounded-xl shadow-sm shadow-sea-900/5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:shadow-sea-900/10"
+                >
+                  {item.image ? (
+                    <img
+                      src={urlFor(item.image).width(600).height(375).fit("crop").auto("format").url()}
+                      alt={item.title ?? ""}
+                      loading="lazy"
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div class="absolute inset-0 bg-gradient-to-br from-sea-100 to-sea-200" />
+                  )}
+                  <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-sea-900/50 to-transparent p-3 pt-8">
+                    <h3 class="font-display text-sm font-semibold leading-snug text-white drop-shadow-sm group-hover:underline">
+                      {item.title}
+                    </h3>
+                    {item.shortDesc && (
+                      <p class="mt-0.5 line-clamp-1 text-xs text-white/80">{item.shortDesc}</p>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <div class="mt-16 flex items-center justify-between border-t border-sea-100 pt-8">
         <a href="/itineraries" class="font-display text-sm font-medium text-sea-600 hover:text-sea-500">← All itineraries</a>
         {
           dest && (
@@ -127,5 +180,10 @@ const hero = post.mainImage
         }
       </div>
     </div>
+
+    {extendSlides.length > 0 && (
+      <ExtendDayModal client:load slides={extendSlides} />
+    )}
   </article>
+
 </BaseLayout>

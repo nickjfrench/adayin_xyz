@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "7.0.2",
+    "@astrojs/svelte": "^9.0.1",
     "@sanity/astro": "^3.4.1",
     "@sanity/image-url": "^2.1.1",
     "@tailwindcss/vite": "^4.2.1",
@@ -21,6 +22,7 @@
     "astro-portabletext": "^0.13.0",
     "canvas-confetti": "^1.9.4",
     "groq": "^6.0.0",
+    "svelte": "^5.56.4",
     "tailwindcss": "^4.2.1",
     "vite": "^7.3.2"
   },

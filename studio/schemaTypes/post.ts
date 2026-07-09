@@ -241,6 +241,46 @@ export const post = defineType({
       of: [{type: 'block'}],
     }),
     defineField({
+      name: 'extendDay',
+      title: 'Extend your day in',
+      type: 'array',
+      description: 'Optional extra links for the reader to see more.',
+      of: [defineArrayMember({
+        name: 'extendItem',
+        title: 'Link',
+        type: 'object',
+        fields: [
+          defineField({
+            name: 'title',
+            title: 'Title',
+            type: 'string',
+            validation: (rule) => rule.required(),
+          }),
+          defineField({
+            name: 'link',
+            title: 'Link',
+            type: 'url',
+            validation: (rule) => rule.required(),
+          }),
+          defineField({
+            name: 'image',
+            title: 'Image',
+            type: 'image',
+            options: {hotspot: true},
+          }),
+          defineField({
+            name: 'shortDesc',
+            title: 'Short description',
+            type: 'text',
+            rows: 2,
+          }),
+        ],
+        preview: {
+          select: {title: 'title', subtitle: 'shortDesc'},
+        },
+      })],
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Published at',
       type: 'datetime',
