@@ -17,3 +17,16 @@ export function costIndicator(total: number): string {
   }
   return '$$$$';
 }
+
+export function costRange(total: number): string {
+  let prev = 0;
+  for (const tier of COST_TIERS) {
+    if (total <= tier.max) {
+      if (tier.max === 0) return 'Free';
+      if (tier.max === Infinity) return `$${prev}+`;
+      return `$${prev} – $${tier.max}`;
+    }
+    prev = tier.max;
+  }
+  return `$${prev}+`;
+}

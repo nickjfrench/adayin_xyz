@@ -222,6 +222,12 @@ export const post = defineType({
               type: 'string',
               description: 'Full address — renders as a Google Maps link.',
             }),
+            defineField({
+              name: 'cost',
+              title: 'Cost',
+              type: 'number',
+              description: 'Estimated cost for this leg in local currency (e.g. 15 = $15).',
+            }),
           ],
           preview: {
             select: {title: 'title', duration: 'duration'},

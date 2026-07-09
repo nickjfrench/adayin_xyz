@@ -73,32 +73,30 @@ const mapsLink = stop.address
       <h3 class="mt-0.5 font-display text-lg font-semibold text-sea-800 underline decoration-sea-300 decoration-wavy decoration-2 underline-offset-[0.35em]">
         {stop.title}
       </h3>
-      {stop.description && (
-        <p class="mt-1.5 leading-relaxed text-deep/80">{stop.description}</p>
-      )}
-      {stop.callouts?.length > 0 &&
-        stop.callouts.map((c) => (
-          <p
-            class={`mt-3 flex gap-2 rounded-lg bg-sand-100 px-3 py-2 text-sm text-sea-800 border-l-[3px] ${c.kind?.accent ?? "border-sand-300"}`}
-          >
-            <span
-              class={`font-display font-semibold shrink-0 flex items-center gap-1 ${c.kind?.labelColor ?? "text-sand-500"}`}
-            >
-              {c.kind?.icon?.svg && (
-                <span
-                  class="inline-block w-4 h-4 [&>svg]:w-full [&>svg]:h-full"
-                  set:html={c.kind.icon.svg}
-                />
-              )}
-              {c.kind?.label ?? c.kind?.name}
-            </span>
-            <span>{c.body}</span>
-          </p>
-        ))}
       {stop.cost != null && stop.cost > 0 && (
-        <span class="mt-2 inline-block rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-medium text-sand-600">
+        <span class="mt-2 inline-block rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-semibold text-sand-600">
           ${stop.cost}
         </span>
+      )}
+      {stop.callouts?.length > 0 && (
+        <div class="mt-2 flex flex-col gap-1.5">
+          {stop.callouts.map((c) => (
+            <p
+              class={`flex items-start gap-2 rounded-md border-l-[3px] bg-sand-50 px-3 py-2 text-sm text-sea-800 ${c.kind?.accent ?? "border-sand-300"}`}
+            >
+              <span class={`flex shrink-0 items-center gap-1 font-display text-xs font-semibold ${c.kind?.labelColor ?? "text-sand-500"}`}>
+                {c.kind?.icon?.svg && (
+                  <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full" set:html={c.kind.icon.svg} />
+                )}
+                {c.kind?.label ?? c.kind?.name}
+              </span>
+              <span>{c.body}</span>
+            </p>
+          ))}
+        </div>
+      )}
+      {stop.description && (
+        <p class="mt-2 leading-relaxed text-deep/80">{stop.description}</p>
       )}
       {mapsLink && (
         <a
@@ -153,6 +151,11 @@ const mapsLink = stop.address
       </h3>
       {stop.description && (
         <p class="mt-1 text-sm leading-relaxed text-sea-500">{stop.description}</p>
+      )}
+      {stop.cost != null && stop.cost > 0 && (
+        <span class="mt-2 inline-block rounded-full bg-sand-100 px-2.5 py-0.5 text-xs font-medium text-sand-600">
+          ${stop.cost}
+        </span>
       )}
       {mapsLink && (
         <a

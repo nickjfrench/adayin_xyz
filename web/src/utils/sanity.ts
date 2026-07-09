@@ -13,7 +13,7 @@ const POSTS_QUERY = defineQuery(
   `*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
     _id, title, slug, publishedAt, excerpt, mainImage, duration,
     "stopCount": count(stops),
-    "totalCost": math::sum(stops[_type == "stop" && defined(cost)].cost),
+    "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, countryShort, slug }
   }`,
 );
@@ -29,7 +29,7 @@ const POST_QUERY = defineQuery(
       travelType->{ label, "name": name.current, icon { provider, name, svg } },
       duration
     },
-    "totalCost": math::sum(stops[_type == "stop" && defined(cost)].cost),
+    "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, country, countryShort, slug },
     extendDay[]{ title, link, shortDesc, image }
   }`,

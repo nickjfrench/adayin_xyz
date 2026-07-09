@@ -62,17 +62,19 @@
 
     <!-- Navigation -->
     {#if items.length > 1}
-      <div class="mt-4 flex items-center justify-between">
-        {#if currentIndex > 0}
-          <button onclick={prev} class="rounded-lg bg-sea-100 px-3 py-1.5 text-sm font-medium text-sea-700 hover:bg-sea-200 cursor-pointer">
+      <div class="mt-4 grid grid-cols-3 items-center">
+        <div>
+          <button
+            onclick={prev}
+            disabled={currentIndex === 0}
+            class="rounded-lg bg-sea-100 px-3 py-1.5 text-sm font-medium text-sea-700 hover:bg-sea-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-sea-100"
+          >
             ← Prev
           </button>
-        {:else}
-          <div></div>
-        {/if}
+        </div>
 
-        {#if items.length <= 7}
-          <div class="flex gap-1.5">
+        <div class="flex justify-center gap-1.5">
+          {#if items.length <= 7}
             {#each items as _, i}
               <button
                 onclick={() => currentIndex = i}
@@ -80,18 +82,20 @@
                 aria-label="Go to slide {i + 1}"
               ></button>
             {/each}
-          </div>
-        {:else}
-          <span class="text-sm text-sea-500">{currentIndex + 1} of {items.length}</span>
-        {/if}
+          {:else}
+            <span class="text-sm text-sea-500">{currentIndex + 1} of {items.length}</span>
+          {/if}
+        </div>
 
-        {#if currentIndex < items.length - 1}
-          <button onclick={next} class="rounded-lg bg-sea-100 px-3 py-1.5 text-sm font-medium text-sea-700 hover:bg-sea-200 cursor-pointer">
+        <div class="flex justify-end">
+          <button
+            onclick={next}
+            disabled={currentIndex === items.length - 1}
+            class="rounded-lg bg-sea-100 px-3 py-1.5 text-sm font-medium text-sea-700 hover:bg-sea-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-sea-100"
+          >
             Next →
           </button>
-        {:else}
-          <div></div>
-        {/if}
+        </div>
       </div>
     {/if}
   </div>
