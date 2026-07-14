@@ -1,0 +1,35 @@
+---
+interface Props {
+  destinations: any[];
+  class?: string;
+}
+
+const { destinations, class: wrapperClass } = Astro.props;
+---
+
+{
+  destinations.length > 0 && (
+    <section class:list={["mx-auto max-w-6xl px-5 sm:px-8", wrapperClass]}>
+      <div class="flex flex-wrap gap-3 rounded-2xl border border-sea-100 bg-white/90 p-4 shadow-lg shadow-sea-900/5 backdrop-blur">
+        <button
+          type="button"
+          data-dest="all"
+          class="dest-jump rounded-full bg-sea-500 px-4 py-2 font-display text-sm font-semibold text-white transition hover:bg-sea-600"
+        >
+          All
+        </button>
+        {destinations.map((d) => (
+          <button
+            type="button"
+            data-dest={d.slug?.current}
+            data-city={d.city}
+            class="dest-jump rounded-full border border-sea-100 px-4 py-2 font-display text-sm font-medium text-sea-700 transition hover:border-sea-300 hover:bg-sea-50"
+          >
+            {d.city}
+            <span class="ml-1 text-xs text-sand-500">{d.postCount ?? 0}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}

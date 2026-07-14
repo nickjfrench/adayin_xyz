@@ -71,7 +71,7 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
         {
           dest && (
             <a
-              href={`/?dest=${dest.slug?.current}`}
+              href={`/itineraries?dest=${dest.slug?.current}`}
               class="inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-3 py-1 font-display text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/20 transition hover:bg-sea-500"
             >
               A day in {dest.city}
@@ -91,7 +91,7 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
     </header>
 
     <!-- Metadata overlay bar -->
-    <div class="relative z-10 mx-auto -mt-8 flex w-full max-w-4xl flex-wrap items-center gap-y-2 rounded-xl bg-white/90 px-6 py-3 text-sm text-sea-700 shadow-lg shadow-sea-900/10 backdrop-blur-sm">
+    <div class="relative z-10 mx-auto -mt-8 flex w-full max-w-4xl flex-wrap items-center gap-y-2 rounded-xl bg-white/90 px-5 py-3 text-sm text-sea-700 shadow-lg shadow-sea-900/10 backdrop-blur-sm sm:px-8">
       <span class="inline-flex flex-2 items-center justify-center gap-1.5 whitespace-nowrap text-sea-600">
         <svg class="h-4 w-4 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
         <span class="font-display font-semibold">Tested by us</span>
@@ -103,14 +103,14 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
     </div>
 
     <!-- Body -->
-    <div class="mx-auto max-w-4xl px-5 pt-8 sm:px-8">
+    <div class="mx-auto max-w-4xl flex flex-col gap-10 px-5 pt-8 pb-16 sm:px-8">
 
-      {post.excerpt && <p class="mb-16 border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>}
+      {post.excerpt && <p class="border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>}
 
       <!-- The itinerary, stop by stop -->
       {
         stops.length > 0 && (
-          <section class="border-t border-sea-100 pt-8 mb-16">
+          <section class="border-t border-sea-100 pt-8">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
             <ol class="flex flex-col">
               {stops.map((stop, i) => (
@@ -122,17 +122,19 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
       }
 
       {
-        post.body && (
-          <div class="prose-sea mt-16 border-t border-sea-100 pt-8">
-            <h2 class="font-display text-2xl font-semibold text-sea-800">Closing Notes</h2>
-            <PortableText value={post.body} />
+        post.closing && (
+          <div class="border-t border-sea-100 pt-8">
+            <h2 class="font-display text-2xl font-semibold text-sea-800">Closing notes</h2>
+            <div class="prose-sea">
+              <PortableText value={post.closing} />
+            </div>
           </div>
         )
       }
 
       {
         post.extendDay && post.extendDay.length > 0 && (
-          <section class="mt-16 border-t border-sea-100 pt-8">
+          <section class="border-t border-sea-100 pt-8">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
               Extend your day
             </h2>
@@ -170,12 +172,12 @@ const extendSlides = (post.extendDay ?? []).map((item) => ({
         )
       }
 
-      <div class="mt-16 flex items-center justify-between border-t border-sea-100 pt-8">
+      <div class="flex items-center justify-between border-t border-sea-100 pt-8">
         <a href="/itineraries" class="font-display text-sm font-medium text-sea-600 hover:text-sea-500">← All itineraries</a>
         {
           dest && (
             <a
-              href={`/?dest=${dest.slug?.current}`}
+              href={`/itineraries?dest=${dest.slug?.current}`}
               class="font-display text-sm font-medium text-sea-600 hover:text-sea-500"
             >
               More from {dest.city} →

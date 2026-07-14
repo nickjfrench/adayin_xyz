@@ -1,9 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHeader from "../../components/PageHeader.astro";
+import DestBar from "../../components/DestBar.astro";
 import ItineraryCard from "../../components/ItineraryCard.astro";
-import { getItineraries } from "../../utils/sanity";
+import { getDestinations, getItineraries } from "../../utils/sanity";
 
+const destinations = await getDestinations();
 const posts = await getItineraries();
 ---
 
@@ -14,19 +16,46 @@ const posts = await getItineraries();
     description="Browse all of our \"A day in…\" itineraries — each one walked and timed by us."
   />
 
-  <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+  <DestBar destinations={destinations} class="-mt-10" />
+
+  <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-16 sm:px-8">
+    <div class="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
+          The itineraries
+        </p>
+        <h2 id="stories-heading" class="mt-1 font-display text-3xl font-semibold text-sea-800">
+          Latest day plans
+        </h2>
+      </div>
+    </div>
+
     {
       posts.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
           <p class="font-display text-lg font-semibold text-sea-700">No itineraries yet</p>
         </div>
       ) : (
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <ItineraryCard post={post} />
-          ))}
-        </div>
+        <>
+          <div id="stories-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <ItineraryCard post={post} />
+            ))}
+          </div>
+          <p
+            id="stories-empty"
+            hidden
+            class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center text-sm text-deep/60"
+          >
+            No tested itineraries from this place yet — check back soon.
+          </p>
+        </>
       )
     }
   </section>
 </BaseLayout>
+
+<script>
+  import { initDestBar } from "../../utils/destBarClient";
+  initDestBar();
+</script>

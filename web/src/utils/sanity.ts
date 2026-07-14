@@ -31,6 +31,7 @@ const POST_QUERY = defineQuery(
     },
     "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, country, countryShort, slug },
+    closing,
     extendDay[]{ title, link, shortDesc, image }
   }`,
 );

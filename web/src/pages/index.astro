@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
+import DestBar from "../components/DestBar.astro";
 import ItineraryCard from "../components/ItineraryCard.astro";
 import { getDestinations, getItineraries } from "../utils/sanity";
 
@@ -11,33 +12,7 @@ const posts = await getItineraries();
 <BaseLayout headerVariant="light">
   <Hero destinations={destinations} />
 
-  <!-- Destinations strip -->
-  {
-    destinations.length > 0 && (
-      <section class="mx-auto -mt-10 max-w-6xl px-5 sm:px-8">
-        <div class="flex flex-wrap gap-3 rounded-2xl border border-sea-100 bg-white/90 p-4 shadow-lg shadow-sea-900/5 backdrop-blur">
-          <button
-            type="button"
-            data-dest="all"
-            class="dest-jump rounded-full bg-sea-500 px-4 py-2 font-display text-sm font-semibold text-white transition hover:bg-sea-600"
-          >
-            All
-          </button>
-          {destinations.map((d) => (
-            <button
-              type="button"
-              data-dest={d.slug?.current}
-              data-city={d.city}
-              class="dest-jump rounded-full border border-sea-100 px-4 py-2 font-display text-sm font-medium text-sea-700 transition hover:border-sea-300 hover:bg-sea-50"
-            >
-              {d.city}
-              <span class="ml-1 text-xs text-sand-500">{d.postCount ?? 0}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-    )
-  }
+  <DestBar destinations={destinations} class="-mt-10" />
 
   <!-- Stories grid -->
   <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-16 sm:px-8">
@@ -51,6 +26,7 @@ const posts = await getItineraries();
         </h2>
       </div>
       <a
+        id="view-all-link"
         href="/itineraries"
         class="hidden shrink-0 font-display text-sm font-medium text-sea-600 hover:text-sea-500 sm:inline"
         >View all →</a
@@ -87,13 +63,14 @@ const posts = await getItineraries();
 </BaseLayout>
 
 <script>
-  // Orchestrates the hero destination cycle + the dropdown filter for the grid.
+  import { initDestBar } from "../utils/destBarClient";
+
+  // ── Hero-specific elements ──
   const trigger = document.getElementById("dest-trigger");
   const label = document.getElementById("dest-label");
   const menu = document.getElementById("dest-menu");
   const bgLayers = Array.from(document.querySelectorAll<HTMLElement>(".hero-bg"));
-  const heading = document.getElementById("stories-heading");
-  const empty = document.getElementById("stories-empty");
+  const viewAllLink = document.getElementById("view-all-link") as HTMLAnchorElement | null;
 
   const dests = Array.from(document.querySelectorAll<HTMLElement>(".dest-option"))
     .filter((o) => o.dataset.index !== undefined)
@@ -103,8 +80,8 @@ const posts = await getItineraries();
       index: Number(o.dataset.index),
     }));
 
-  let current = 0; // active hero index
-  let manual = false; // user has chosen a destination → stop auto-cycle
+  let current = 0;
+  let manual = false;
   let menuOpen = false;
 
   function setHero(index: number) {
@@ -116,39 +93,10 @@ const posts = await getItineraries();
     if (label) label.textContent = dests[current].city;
   }
 
-  function filterGrid(slug: string, city?: string) {
-    const cards = Array.from(document.querySelectorAll<HTMLElement>(".post-card"));
-    let visible = 0;
-    cards.forEach((card) => {
-      const show = slug === "all" || card.dataset.destination === slug;
-      card.hidden = !show;
-      if (show) visible++;
-    });
-    if (heading) heading.textContent = slug === "all" ? "Latest day plans" : `A day in ${city ?? ""}`;
-    if (empty) empty.hidden = visible !== 0;
-  }
-
-  function syncUrl(slug: string) {
-    const url = new URL(window.location.href);
-    if (slug === "all") url.searchParams.delete("dest");
-    else url.searchParams.set("dest", slug);
-    history.replaceState({}, "", url);
-  }
-
-  function select(slug: string, opts: { scroll?: boolean } = {}) {
-    closeMenu();
-    if (slug === "all") {
-      manual = false;
-      filterGrid("all");
-    } else {
-      const d = dests.find((x) => x.slug === slug);
-      if (!d) return;
-      manual = true;
-      setHero(d.index);
-      filterGrid(slug, d.city);
-    }
-    syncUrl(slug);
-    if (opts.scroll) document.getElementById("stories")?.scrollIntoView({ behavior: "smooth" });
+  // ── Update "View all" link to carry the current dest filter ──
+  function syncViewAllLink(slug: string) {
+    if (!viewAllLink) return;
+    viewAllLink.href = slug === "all" ? "/itineraries" : `/itineraries?dest=${slug}`;
   }
 
   // ── Dropdown open/close ──
@@ -176,12 +124,37 @@ const posts = await getItineraries();
     if (e.key === "Escape") closeMenu();
   });
 
-  // Hero dropdown options + destination strip chips both drive `select`.
-  document.querySelectorAll<HTMLElement>(".dest-option").forEach((opt) => {
-    opt.addEventListener("click", () => select(opt.dataset.dest!));
+  // ── Init dest bar (chips, filtering, deep-link) ──
+  initDestBar((slug) => {
+    syncViewAllLink(slug);
+    if (slug === "all") {
+      manual = false;
+    } else {
+      const d = dests.find((x) => x.slug === slug);
+      if (d) {
+        manual = true;
+        setHero(d.index);
+      }
+    }
   });
-  document.querySelectorAll<HTMLElement>(".dest-jump").forEach((chip) => {
-    chip.addEventListener("click", () => select(chip.dataset.dest!, { scroll: true }));
+
+  // ── Hero dropdown options also drive the bar ──
+  document.querySelectorAll<HTMLElement>(".dest-option").forEach((opt) => {
+    opt.addEventListener("click", () => {
+      const slug = opt.dataset.dest!;
+      (window as any).__destBarSelect?.(slug);
+      syncViewAllLink(slug);
+      if (slug === "all") {
+        manual = false;
+      } else {
+        const d = dests.find((x) => x.slug === slug);
+        if (d) {
+          manual = true;
+          setHero(d.index);
+        }
+      }
+      closeMenu();
+    });
   });
 
   // ── Auto-cycle the hero word/background until the user picks something ──
@@ -191,8 +164,4 @@ const posts = await getItineraries();
       if (!manual && !menuOpen && dests.length > 1) setHero(current + 1);
     }, 3800);
   }
-
-  // ── Deep-link: /?dest=slug pre-selects a destination ──
-  const initial = new URL(window.location.href).searchParams.get("dest");
-  if (initial) select(initial);
 </script>

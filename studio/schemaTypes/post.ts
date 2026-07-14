@@ -240,7 +240,7 @@ export const post = defineType({
       ],
     }),
     defineField({
-      name: 'body',
+      name: 'closing',
       title: 'Closing notes',
       type: 'array',
       description: 'Optional extra notes — getting there, where to stay, what to skip.',
