@@ -32,6 +32,7 @@
   {@const slide = items[currentIndex]}
   <div class="relative">
     <!-- Image -->
+    <div class="relative">
     {#if slide.imageUrl}
       <img
         src={slide.imageUrl}
@@ -41,6 +42,13 @@
     {:else}
       <div class="aspect-video w-full rounded-xl bg-gradient-to-br from-sea-100 to-sea-200"></div>
     {/if}
+    {#if slide.type?.label}
+      <span class="absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm [&>svg]:h-3 [&>svg]:w-3" style={`background-color: ${slide.type.bgColor?.hex ?? 'rgba(255,255,255,0.9)'}; color: ${slide.type.textColor?.hex ?? '#1e3a5f'}`}>
+        {#if slide.type.icon?.svg}{@html slide.type.icon.svg}{/if}
+        {slide.type.label}
+      </span>
+    {/if}
+    </div>
 
     <!-- Content -->
     <div class="mt-4">

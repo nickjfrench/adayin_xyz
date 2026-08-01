@@ -32,7 +32,7 @@ const POST_QUERY = defineQuery(
     "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, country, countryShort, slug },
     closing,
-    extendDay[]{ title, link, shortDesc, image }
+    recommendations[]->{ label, "name": name.current, link, shortDesc, image, icon { provider, name, svg }, recommendationType->{ label, "name": name.current, bgColor, textColor, icon { provider, name, svg } } }
   }`,
 );
 
