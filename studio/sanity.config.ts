@@ -9,7 +9,7 @@ export default defineConfig({
   title: 'adayin.xyz',
 
   projectId: '9egf9s0z',
-  dataset: 'production',
+  dataset: process.env.SANITY_STUDIO_DATASET || 'production',
 
   plugins: [structureTool(), visionTool(), iconPicker()],
 

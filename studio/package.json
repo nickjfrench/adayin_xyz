@@ -8,21 +8,20 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy",
-    "dev": "sanity dev",
+    "dev": "SANITY_STUDIO_DATASET=development sanity dev",
     "start": "sanity start"
   },
-  "keywords": [
-    "sanity"
-  ],
+  "keywords": ["sanity"],
   "dependencies": {
-    "@sanity/vision": "^6.5.0",
+    "@sanity/vision": "^6.8.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "sanity": "^6.5.0",
+    "sanity": "^6.8.0",
     "sanity-plugin-icon-picker": "^4.0.0",
     "styled-components": "^6.1.18"
   },
   "devDependencies": {
+    "@sanity/client": "^7.26.0",
     "@sanity/eslint-config-studio": "^6.0.0",
     "@types/react": "^19.2.14",
     "eslint": "^9.28",
