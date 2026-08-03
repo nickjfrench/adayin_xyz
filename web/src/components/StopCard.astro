@@ -112,16 +112,6 @@ const mapsLink = stop.address
         config.accent,
       ]}>
         <div class="px-4 py-3">
-          {/* Sub-label */}
-          {(stop.time || isStart || isEnd) && (
-            <p class:list={[
-              "font-display text-xs font-semibold uppercase tracking-widest",
-              isStart ? "text-green-600" : isEnd ? "text-sand-500" : "text-sand-500",
-            ]}>
-              {isStart ? "Start" : isEnd ? "End" : stop.time}
-            </p>
-          )}
-
           {/* Title + Cost inline */}
           <div class="mt-0.5 flex flex-wrap items-center gap-2">
             <h3 class="stop-title cursor-pointer font-display text-lg font-semibold leading-snug text-sea-800 hover:text-sea-600 hover:underline" data-stop-index={index}>
@@ -131,6 +121,16 @@ const mapsLink = stop.address
               <CostPill cost={stop.cost} />
             )}
           </div>
+          
+          {/* Sub-label */}
+          {(stop.time || isStart || isEnd) && (
+            <p class:list={[
+              "mt-1 font-display text-xs font-semibold uppercase tracking-widest",
+              isStart ? "text-green-600" : isEnd ? "text-sand-500" : "text-sand-500",
+            ]}>
+              {isStart ? "Start" : isEnd ? "End" : stop.time}
+            </p>
+          )}
 
           {/* Callouts */}
           {stop.callouts && stop.callouts.length > 0 && (

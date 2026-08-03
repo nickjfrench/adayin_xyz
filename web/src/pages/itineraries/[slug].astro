@@ -115,7 +115,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
       {
         stops.length > 0 && (
           <section class="border-t border-sea-100 pt-8">
-            <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The day, stop by stop</h2>
+            <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">Our day, stop by stop</h2>
             <ol class="flex flex-col">
               {stops.filter(Boolean).map((stop, i) => (
                 <StopCard stop={stop} index={i} />
@@ -140,11 +140,8 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
         post.recommendations && post.recommendations.filter(Boolean).length > 0 && (
           <section class="border-t border-sea-100 pt-8">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
-              More recommendations
+              Extend your day
             </h2>
-            <p class="mb-6">
-              Want more? We have hand selected a few additional things for this itinerary if you wish to add to your day or switch things up.
-            </p>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {post.recommendations.filter(Boolean).map((item, i) => (
                 <button
