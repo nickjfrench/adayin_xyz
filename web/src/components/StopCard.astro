@@ -88,7 +88,7 @@ const mapsLink = stop.address
         {stop.title && (
           <>
             <span class="text-sea-300">·</span>
-            <span class="text-xs text-sea-600">{stop.title}</span>
+            <span class="stop-title cursor-pointer text-xs text-sea-600 hover:text-sea-800 hover:underline" data-stop-index={index}>{stop.title}</span>
           </>
         )}
         {stop.cost != null && stop.cost > 0 && (
@@ -124,7 +124,7 @@ const mapsLink = stop.address
 
           {/* Title + Cost inline */}
           <div class="mt-0.5 flex flex-wrap items-center gap-2">
-            <h3 class="font-display text-lg font-semibold leading-snug text-sea-800">
+            <h3 class="stop-title cursor-pointer font-display text-lg font-semibold leading-snug text-sea-800 hover:text-sea-600 hover:underline" data-stop-index={index}>
               {stop.title}
             </h3>
             {stop.cost != null && stop.cost > 0 && (

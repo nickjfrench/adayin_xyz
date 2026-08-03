@@ -12,8 +12,8 @@ const DESTINATIONS_QUERY = defineQuery(
 const POSTS_QUERY = defineQuery(
   `*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
     _id, title, slug, publishedAt, excerpt, mainImage, duration,
-    "stopCount": count(stops),
-    "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
+    "stopCount": count(stops[]._ref),
+    "totalCost": math::sum(stops[]->[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, countryShort, slug }
   }`,
 );
@@ -22,17 +22,18 @@ const POST_QUERY = defineQuery(
   `*[_type == "post" && slug.current == $slug][0]{
     _id, title, publishedAt, excerpt, mainImage, body,
     duration, testedOn, testedBy,
-    stops[]{
+    stops[]->{
       _type,
-      time, title, description, cost, address,
+      stopType->{ label, "name": name.current, icon { provider, name, svg } },
+      time, title, description, longDesc, cost, address,
       callouts[]{ kind->{ "name": name.current, label, accent, labelColor, icon { provider, name, svg } }, body },
       travelType->{ label, "name": name.current, icon { provider, name, svg } },
-      duration
+      duration, image, link
     },
-    "totalCost": math::sum(stops[(_type == "stop" || _type == "travel") && defined(cost)].cost),
+    "totalCost": math::sum(stops[]->[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, country, countryShort, slug },
     closing,
-    recommendations[]->{ label, "name": name.current, link, shortDesc, image, icon { provider, name, svg }, recommendationType->{ label, "name": name.current, bgColor, textColor, icon { provider, name, svg } } }
+    recommendations[]->{ _type, title, description, longDesc, image, link, stopType->{ label, "name": name.current, icon { provider, name, svg } } }
   }`,
 );
 

@@ -1,5 +1,4 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
-import {CalloutPreview} from '../components/CalloutPreview'
 
 export const post = defineType({
   name: 'post',
@@ -65,177 +64,13 @@ export const post = defineType({
       description: 'The day, stop by stop, in order.',
       of: [
         defineArrayMember({
-          name: 'stop',
-          title: 'Stop',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'time',
-              title: 'Time',
-              type: 'string',
-              description: 'e.g. "8:00 AM" or "Morning"',
-            }),
-            defineField({
-              name: 'title',
-              title: 'What / where',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'description',
-              title: 'Description',
-              type: 'text',
-              rows: 3,
-            }),
-            defineField({
-              name: 'callouts',
-              title: 'Callouts',
-              type: 'array',
-              description: 'Extra bite-sized notes — tips, what to order, things to watch for.',
-              of: [
-                defineArrayMember({
-                  name: 'callout',
-                  title: 'Callout',
-                  type: 'object',
-                  fields: [
-                    defineField({
-                      name: 'kind',
-                      title: 'Kind',
-                      type: 'reference',
-                      to: [{type: 'calloutKind'}],
-                      validation: (rule) => rule.required(),
-                    }),
-                    defineField({
-                      name: 'body',
-                      title: 'Body',
-                      type: 'text',
-                      rows: 2,
-                      validation: (rule) => rule.required(),
-                    }),
-                  ],
-                  preview: {
-                    select: {kind: 'kind', body: 'body'},
-                    prepare: (selected: Record<string, unknown>) => selected,
-                  },
-                  components: {
-                    preview: CalloutPreview,
-                  },
-                }),
-              ],
-            }),
-            defineField({
-              name: 'cost',
-              title: 'Cost',
-              type: 'number',
-              description: 'Estimated cost for this stop in local currency (e.g. 15 = $15).',
-            }),
-            defineField({
-              name: 'address',
-              title: 'Address',
-              type: 'string',
-              description: 'Full address — renders as a Google Maps link.',
-            }),
+          type: 'reference',
+          to: [
+            {type: 'stop'},
+            {type: 'travel'},
+            {type: 'startLocation'},
+            {type: 'endLocation'},
           ],
-          preview: {
-            select: {title: 'title', subtitle: 'time'},
-          },
-        }),
-        defineArrayMember({
-          name: 'startLocation',
-          title: 'Start location',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'title',
-              title: 'What / where',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'address',
-              title: 'Address',
-              type: 'string',
-              description: 'Full address — renders as a Google Maps link.',
-            }),
-          ],
-          preview: {
-            select: {title: 'title'},
-            prepare: ({title}) => ({title, subtitle: 'Start'}),
-          },
-        }),
-        defineArrayMember({
-          name: 'endLocation',
-          title: 'End location',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'title',
-              title: 'What / where',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'address',
-              title: 'Address',
-              type: 'string',
-              description: 'Full address — renders as a Google Maps link.',
-            }),
-          ],
-          preview: {
-            select: {title: 'title'},
-            prepare: ({title}) => ({title, subtitle: 'End'}),
-          },
-        }),
-        defineArrayMember({
-          name: 'travel',
-          title: 'Travel',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'travelType',
-              title: 'Travel type',
-              type: 'reference',
-              to: [{type: 'travelType'}],
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'title',
-              title: 'What / where',
-              type: 'string',
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'duration',
-              title: 'Duration',
-              type: 'string',
-              description: 'e.g. "12 min", "~1 hour"',
-            }),
-            defineField({
-              name: 'description',
-              title: 'Description',
-              type: 'text',
-              rows: 2,
-            }),
-            defineField({
-              name: 'address',
-              title: 'Address',
-              type: 'string',
-              description: 'Full address — renders as a Google Maps link.',
-            }),
-            defineField({
-              name: 'cost',
-              title: 'Cost',
-              type: 'number',
-              description: 'Estimated cost for this leg in local currency (e.g. 15 = $15).',
-            }),
-          ],
-          preview: {
-            select: {title: 'title', duration: 'duration'},
-            prepare: ({title, duration}) => ({
-              title: title ?? 'Travel',
-              subtitle: duration ?? undefined,
-            }),
-          },
         }),
       ],
     }),
@@ -253,7 +88,7 @@ export const post = defineType({
       description: 'Optional extra links for the reader to see more.',
       of: [defineArrayMember({
         type: 'reference',
-        to: [{type: 'recommendationsModal'}],
+        to: [{type: 'stop'}],
       })],
     }),
     defineField({

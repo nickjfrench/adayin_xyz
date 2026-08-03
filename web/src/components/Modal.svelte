@@ -30,7 +30,7 @@
   bind:this={dialog}
   onclose={handleClose}
   onclick={handleBackdropClick}
-  class="m-auto max-h-[90vh] max-w-2xl overflow-hidden rounded-2xl border border-white/25 bg-white/60 shadow-lg backdrop-blur-2xl backdrop:bg-sea-900/25 backdrop:backdrop-blur-2xs"
+  class="m-auto max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-white/25 bg-white/60 shadow-lg backdrop-blur-2xl backdrop:bg-sea-900/25 backdrop:backdrop-blur-2xs"
 >
   {#if open}
     <div class="relative overflow-auto p-6">
