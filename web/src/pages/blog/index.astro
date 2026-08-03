@@ -6,11 +6,11 @@ import { getArticles, urlFor } from "../../utils/sanity";
 const articles = await getArticles();
 ---
 
-<BaseLayout title="Articles — A Day In" headerVariant="dark">
+<BaseLayout title="Blog — A Day In" headerVariant="dark">
   <PageHeader
-    label="Stories & notes"
-    title="Articles"
-    description="Longer reads, travel notes, and whatever else doesn't fit a day itinerary."
+    label="Blog"
+    title="Some Itineraries Deserve a Story"
+    description="A detailed, behind the scenes look at some of our favourites."
   />
 
   <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
@@ -29,7 +29,7 @@ const articles = await getArticles();
             const post = article.post;
             return (
               <a
-                href={`/articles/${article.slug?.current}`}
+                href={`/blog/${article.slug?.current}`}
                 class="group block overflow-hidden rounded-2xl border border-sea-100 bg-white shadow-sm shadow-sea-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-sea-900/10"
               >
                 <div class="relative aspect-[4/3] overflow-hidden bg-sea-100">

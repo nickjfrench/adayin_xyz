@@ -15,9 +15,9 @@ const gradients = [
 
 <BaseLayout title="Destinations — A Day In">
   <PageHeader
-    label="Where we've been"
+    label="Find your next adventure"
     title="Destinations"
-    description="Off-the-beaten-track places, each with one tested day-itinerary. Tap a spot to filter its days."
+    description="Select a location below to discover your next day in..."
   />
 
   <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
@@ -55,7 +55,7 @@ const gradients = [
                   </h2>
                   <p class="text-sm text-white/85">
                     {d.country}
-                    <span class="ml-2 text-white/70">· {d.postCount ?? 0} {d.postCount === 1 ? "story" : "stories"}</span>
+                    <span class="ml-2 text-white/70">· {d.postCount ?? 0} {d.postCount === 1 ? "Itinerary" : "Itineraries"}</span>
                   </p>
                   {d.blurb && <p class="mt-1 line-clamp-2 text-sm text-white/75">{d.blurb}</p>}
                 </div>

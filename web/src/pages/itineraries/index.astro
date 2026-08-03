@@ -11,25 +11,13 @@ const posts = await getItineraries();
 
 <BaseLayout title="The Journal — A Day In">
   <PageHeader
-    label="The itineraries"
-    title="Every tested day, one place at a time"
-    description="Browse all of our \"A day in…\" itineraries — each one walked and timed by us."
+    label="Our Itineraries"
+    title="From Our Most Recent Adventures"
   />
 
   <DestBar destinations={destinations} class="-mt-10" />
 
-  <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-16 sm:px-8">
-    <div class="mb-8 flex items-end justify-between gap-4">
-      <div>
-        <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
-          The itineraries
-        </p>
-        <h2 id="stories-heading" class="mt-1 font-display text-3xl font-semibold text-sea-800">
-          Latest day plans
-        </h2>
-      </div>
-    </div>
-
+  <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-10 sm:px-8">
     {
       posts.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
@@ -47,7 +35,7 @@ const posts = await getItineraries();
             hidden
             class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center text-sm text-deep/60"
           >
-            No tested itineraries from this place yet — check back soon.
+            No itineraries from here yet — check back soon.
           </p>
         </>
       )

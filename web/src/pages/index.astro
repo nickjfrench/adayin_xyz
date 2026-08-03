@@ -15,14 +15,14 @@ const posts = await getItineraries();
   <DestBar destinations={destinations} class="-mt-10" />
 
   <!-- Stories grid -->
-  <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-16 sm:px-8">
+  <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 py-8 sm:px-8">
     <div class="mb-8 flex items-end justify-between gap-4">
       <div>
         <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
-          The itineraries
+          From our most recent adventures
         </p>
         <h2 id="stories-heading" class="mt-1 font-display text-3xl font-semibold text-sea-800">
-          Latest day plans
+          Our Itineraries
         </h2>
       </div>
       <a
@@ -37,10 +37,6 @@ const posts = await getItineraries();
       posts.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
           <p class="font-display text-lg font-semibold text-sea-700">No itineraries yet</p>
-          <p class="mt-2 text-sm text-deep/60">
-            Add a day itinerary in the Studio (<code class="rounded bg-sea-100 px-1.5 py-0.5">cd studio && bun run dev</code>)
-            and link it to a destination.
-          </p>
         </div>
       ) : (
         <>
