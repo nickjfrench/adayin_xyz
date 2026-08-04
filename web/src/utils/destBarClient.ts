@@ -20,9 +20,9 @@ export function setActiveChip(slug: string) {
   });
 }
 
-/** Show/hide `.post-card` elements and update heading + empty state. */
+/** Show/hide `.glass-card` elements and update heading + empty state. */
 export function filterGrid(slug: string, city?: string) {
-  const cards = Array.from(document.querySelectorAll<HTMLElement>(".post-card"));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>(".glass-card"));
   const heading = document.getElementById("stories-heading");
   const empty = document.getElementById("stories-empty");
   let visible = 0;

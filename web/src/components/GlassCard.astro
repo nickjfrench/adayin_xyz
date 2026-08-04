@@ -3,27 +3,28 @@ import { urlFor } from "../utils/sanity";
 import { costIndicator } from "../utils/cost";
 
 interface Props {
-  post: any;
+  entry: any;
+  hrefBase?: string;
 }
-const { post } = Astro.props;
-const dest = post.destination;
+const { entry, hrefBase = "/itineraries" } = Astro.props;
+const dest = entry.destination;
 const destSlug = dest?.slug?.current ?? "unknown";
 
-const img = post.mainImage
-  ? urlFor(post.mainImage).width(800).height(560).fit("crop").auto("format").url()
+const img = entry.mainImage
+  ? urlFor(entry.mainImage).width(800).height(560).fit("crop").auto("format").url()
   : null;
 
 ---
 <article
-  class="post-card group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-sm shadow-sea-900/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-sea-900/10"
+  class="glass-card group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-sm shadow-sea-900/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-sea-900/10"
   data-destination={destSlug}
 >
-  <a href={`/itineraries/${post.slug?.current}`} class="block h-full">
+  <a href={`${hrefBase}/${entry.slug?.current}`} class="block h-full">
     {
       img ? (
         <img
           src={img}
-          alt={post.title ?? ""}
+          alt={entry.title ?? ""}
           loading="lazy"
           class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -48,17 +49,17 @@ const img = post.mainImage
     <!-- Bordered glass panel for text — same aesthetic as the header pill -->
     <div class="absolute inset-x-3 bottom-3 rounded-xl border border-white/25 bg-foam/60 backdrop-blur-md p-4">
       <h3 class="font-display text-lg font-semibold leading-snug text-sea-800 group-hover:underline">
-        {post.title}
+        {entry.title}
       </h3>
-      {post.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{post.excerpt}</p>}
+      {entry.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{entry.excerpt}</p>}
       {
-        (post.duration || post.stopCount > 0 || (post.totalCost != null && post.totalCost > 0)) && (
+        (entry.duration || entry.stopCount > 0 || (entry.totalCost != null && entry.totalCost > 0)) && (
           <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
             <svg class="h-3.5 w-3.5 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             <span class="text-sea-600">Tested</span>
-            {post.duration && <span>· {post.duration}</span>}
-            {post.stopCount > 0 && <span>· {post.stopCount} stops</span>}
-            {post.totalCost != null && post.totalCost > 0 && <span>· {costIndicator(post.totalCost)}</span>}
+            {entry.duration && <span>· {entry.duration}</span>}
+            {entry.stopCount > 0 && <span>· {entry.stopCount} stops</span>}
+            {entry.totalCost != null && entry.totalCost > 0 && <span>· {costIndicator(entry.totalCost)}</span>}
           </p>
         )
       }
