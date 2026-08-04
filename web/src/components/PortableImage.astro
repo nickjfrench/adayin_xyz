@@ -1,0 +1,23 @@
+---
+import { urlFor } from "../utils/sanity";
+
+const { node } = Astro.props;
+const src = urlFor(node).width(1200).fit("max").auto("format").url();
+const alt = (node as any).alt ?? "";
+const caption = (node as any).caption;
+---
+
+<figure class="my-8">
+  {
+    node?.asset ? (
+      <img src={src} alt={alt} class="w-full rounded-xl" loading="lazy" />
+    ) : null
+  }
+  {
+    caption ? (
+      <figcaption class="mt-2 text-center text-sm italic text-sea-700/70">
+        {caption}
+      </figcaption>
+    ) : null
+  }
+</figure>

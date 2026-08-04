@@ -72,3 +72,12 @@
     color: var(--color-sea-700);
     margin-block: 1.4em;
 }
+.prose-sea :where(figure) {
+    margin-block: 2em;
+}
+.prose-sea :where(figcaption) {
+    margin-top: 0.5em;
+    font-size: 0.875rem;
+    font-style: italic;
+    color: color-mix(in srgb, var(--color-sea-700) 70%, transparent);
+}

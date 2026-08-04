@@ -1,5 +1,6 @@
 ---
 import { PortableText } from "astro-portabletext";
+import PortableImage from "../../components/PortableImage.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getArticle, getArticleSlugs, urlFor } from "../../utils/sanity";
 
@@ -74,7 +75,7 @@ const hero = article.mainImage
       {
         article.body ? (
           <div class="prose-sea prose prose-lg">
-            <PortableText value={article.body} />
+            <PortableText value={article.body} components={{ type: { bodyImage: PortableImage } }} />
           </div>
         ) : (
           <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">

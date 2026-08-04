@@ -1,4 +1,4 @@
-import {defineType, defineField} from 'sanity'
+import {defineType, defineField, defineArrayMember} from 'sanity'
 
 export const article = defineType({
   name: 'article',
@@ -49,7 +49,19 @@ export const article = defineType({
       name: 'body',
       title: 'Body',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [
+        defineArrayMember({type: 'block'}),
+        defineArrayMember({
+          type: 'image',
+          name: 'bodyImage',
+          title: 'Image',
+          options: {hotspot: true},
+          fields: [
+            defineField({name: 'alt', title: 'Alt text', type: 'string', description: 'Required for accessibility.'}),
+            defineField({name: 'caption', title: 'Caption', type: 'string'}),
+          ],
+        }),
+      ],
       description: 'Free-form rich text — write anything.',
     }),
     defineField({
