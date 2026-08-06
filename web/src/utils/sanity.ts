@@ -12,8 +12,7 @@ const DESTINATIONS_QUERY = defineQuery(
 const POSTS_QUERY = defineQuery(
   `*[_type == "post" && defined(slug.current)] | order(_createdAt desc){
     _id, _createdAt, title, slug, excerpt, mainImage, duration, authorName,
-    "stopCount": count(stops[]._ref),
-    "stopCosts": stops[]->{ cost, currency->{ name, code, icon { provider, name, svg } } },
+    "stopCosts": stops[]->{ _type, cost, currency->{ name, code, icon { provider, name, svg } } },
     "audiences": audiences[]->{ label, longName, "name": name.current, icon { provider, name, svg } },
     "destination": destination->{ _id, city, countryShort, slug }
   }`,

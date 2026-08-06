@@ -9,6 +9,16 @@ interface StopCost {
   currency?: Currency | null;
 }
 
+interface StopLike {
+  _type?: string;
+  [key: string]: unknown;
+}
+
+/** Count only real stops, excluding travel segments. */
+export function countStops(stops?: StopLike[] | null): number {
+  return (stops ?? []).filter((s) => s._type === 'stop').length;
+}
+
 /** Sum costs from a projected array of stop/travel cost objects. Missing values count as 0. */
 export function sumCosts(stops?: (StopCost | null)[] | null): number {
   return (stops ?? []).reduce((sum, s) => sum + (s?.cost ?? 0), 0);

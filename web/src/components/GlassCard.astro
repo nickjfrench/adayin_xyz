@@ -1,6 +1,6 @@
 ---
 import { urlFor } from "../utils/sanity";
-import { priceText, type Currency } from "../utils/cost";
+import { countStops, priceText, type Currency } from "../utils/cost";
 
 interface Props {
   entry: any;
@@ -12,6 +12,7 @@ interface Props {
 }
 const { entry, hrefBase = "/itineraries", totalCost, tripCurrency = null } = Astro.props;
 const dest = entry.destination;
+const stopCount = countStops(entry.stopCosts);
 const destSlug = dest?.slug?.current ?? "unknown";
 
 const img = entry.mainImage
@@ -84,13 +85,13 @@ const img = entry.mainImage
       </h3>
       {entry.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{entry.excerpt}</p>}
       {
-        (entry.duration || entry.stopCount > 0 || (totalCost != null && totalCost > 0)) && (
+        (entry.duration || stopCount > 0 || (totalCost != null && totalCost > 0)) && (
           <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
             {entry.duration && <span>{entry.duration}</span>}
-            {entry.stopCount > 0 && <span>{entry.duration && "· "}{entry.stopCount} stops</span>}
+            {stopCount > 0 && <span>{entry.duration && "· "}{stopCount} stops</span>}
             {totalCost != null && totalCost > 0 && (
               <span class="inline-flex items-center gap-1">
-                {(entry.duration || entry.stopCount > 0) && <span class="text-sea-400">·</span>}
+                {(entry.duration || stopCount > 0) && <span class="text-sea-400">·</span>}
                 {tripCurrency?.icon?.svg && (
                   <span class="inline-block h-3 w-3 text-sand-500 [&>svg]:h-3 [&>svg]:w-3" set:html={tripCurrency.icon.svg} />
                 )}
