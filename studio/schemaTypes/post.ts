@@ -34,6 +34,12 @@ export const post = defineType({
       description: 'A short, honest setup for the day — why it is worth the detour.',
     }),
     defineField({
+      name: 'authorName',
+      title: 'Author',
+      type: 'string',
+      description: 'Name shown as the byline on this itinerary, e.g. "Nick & Sam".',
+    }),
+    defineField({
       name: 'mainImage',
       title: 'Cover image',
       type: 'image',
@@ -92,9 +98,11 @@ export const post = defineType({
       })],
     }),
     defineField({
-      name: 'publishedAt',
-      title: 'Published at',
-      type: 'datetime',
+      name: 'audiences',
+      title: 'Audiences',
+      type: 'array',
+      description: 'Who this day suits, e.g. DINK, families, mobility-assisted.',
+      of: [defineArrayMember({ type: 'reference', to: [{type: 'audience'}] })],
     }),
   ],
   preview: {

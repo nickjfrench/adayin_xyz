@@ -4,6 +4,7 @@ import PageHeader from "../../components/PageHeader.astro";
 import DestBar from "../../components/DestBar.astro";
 import GlassCard from "../../components/GlassCard.astro";
 import { getDestinations, getItineraries } from "../../utils/sanity";
+import { sumCosts, tripCurrencyFrom } from "../../utils/cost"
 
 const destinations = await getDestinations();
 const posts = await getItineraries();
@@ -27,7 +28,7 @@ const posts = await getItineraries();
         <>
           <div id="stories-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-              <GlassCard entry={post} />
+              <GlassCard entry={post} totalCost={sumCosts(post.stopCosts)} tripCurrency={tripCurrencyFrom(post.stopCosts)} />
             ))}
           </div>
           <p

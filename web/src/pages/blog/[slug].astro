@@ -17,8 +17,8 @@ if (!article) {
 
 const dest = article.destination;
 const post = article.post;
-const date = article.publishedAt
-  ? new Date(article.publishedAt).toLocaleDateString("en-AU", {
+const date = article._createdAt
+  ? new Date(article._createdAt).toLocaleDateString("en-AU", {
       day: "numeric",
       month: "long",
       year: "numeric",

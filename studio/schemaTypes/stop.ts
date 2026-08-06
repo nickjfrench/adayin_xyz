@@ -49,7 +49,14 @@ export const stop = defineType({
       name: 'cost',
       title: 'Cost',
       type: 'number',
-      description: 'Estimated cost for this stop in local currency (e.g. 15 = $15).',
+      description: 'Estimated cost for this stop in the selected currency (e.g. 15 units).',
+    }),
+    defineField({
+      name: 'currency',
+      title: 'Currency',
+      type: 'reference',
+      to: [{type: 'currency'}],
+      description: 'Currency for this stop’s cost.',
     }),
     defineField({
       name: 'address',

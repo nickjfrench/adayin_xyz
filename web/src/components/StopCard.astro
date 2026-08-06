@@ -1,6 +1,7 @@
 ---
 import MapLink from "./MapLink.astro";
 import CostPill from "./CostPill.astro";
+import type { Currency } from "../utils/cost";
 
 interface Props {
   stop: {
@@ -9,6 +10,7 @@ interface Props {
     time?: string;
     description?: string;
     cost?: number;
+    currency?: Currency;
     address?: string;
     callouts?: Array<{
       kind?: {
@@ -94,7 +96,7 @@ const mapsLink = stop.address
         {stop.cost != null && stop.cost > 0 && (
           <>
             <span class="text-sea-300">·</span>
-            <CostPill cost={stop.cost} />
+            <CostPill cost={stop.cost} currency={stop.currency} />
           </>
         )}
         {mapsLink && (
@@ -118,7 +120,7 @@ const mapsLink = stop.address
               {stop.title}
             </h3>
             {stop.cost != null && stop.cost > 0 && (
-              <CostPill cost={stop.cost} />
+              <CostPill cost={stop.cost} currency={stop.currency} />
             )}
           </div>
           

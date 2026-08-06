@@ -1,5 +1,6 @@
 <script>
   import Modal from './Modal.svelte';
+  import { priceText } from '../utils/cost';
 
   /**
    * Stop detail modal — works with any of the 4 stop document types.
@@ -144,9 +145,11 @@
         {/if}
         {#if stop.cost != null && stop.cost > 0}
           <span class="text-sea-400">·</span>
-          <span class="inline-flex items-center gap-1 text-sea-600">
-            <svg class="h-3.5 w-3.5 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
-            {stop.cost}
+          <span class="inline-flex items-center gap-1 text-sea-600" title="Per person">
+            {#if stop.currency?.icon?.svg}
+              <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sand-500">{@html stop.currency.icon.svg}</span>
+            {/if}
+            {priceText(stop.cost, stop.currency)}
           </span>
         {/if}
       </div>

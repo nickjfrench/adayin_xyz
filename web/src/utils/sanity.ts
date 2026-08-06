@@ -10,27 +10,28 @@ const DESTINATIONS_QUERY = defineQuery(
 );
 
 const POSTS_QUERY = defineQuery(
-  `*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
-    _id, title, slug, publishedAt, excerpt, mainImage, duration,
+  `*[_type == "post" && defined(slug.current)] | order(_createdAt desc){
+    _id, _createdAt, title, slug, excerpt, mainImage, duration, authorName,
     "stopCount": count(stops[]._ref),
-    "totalCost": math::sum(stops[]->[(_type == "stop" || _type == "travel") && defined(cost)].cost),
+    "stopCosts": stops[]->{ cost, currency->{ name, code, icon { provider, name, svg } } },
+    "audiences": audiences[]->{ label, longName, "name": name.current, icon { provider, name, svg } },
     "destination": destination->{ _id, city, countryShort, slug }
   }`,
 );
 
 const POST_QUERY = defineQuery(
   `*[_type == "post" && slug.current == $slug][0]{
-    _id, title, publishedAt, excerpt, mainImage, body,
-    duration, testedOn, testedBy,
+    _id, _createdAt, title, excerpt, mainImage, body,
+    duration, testedOn, testedBy, authorName,
+    "audiences": audiences[]->{ label, longName, "name": name.current, icon { provider, name, svg } },
     stops[]->{
       _type,
       stopType->{ label, "name": name.current, icon { provider, name, svg } },
-      time, title, description, longDesc, cost, address,
+      time, title, description, longDesc, cost, currency->{ name, code, icon { provider, name, svg } }, address,
       callouts[]{ kind->{ "name": name.current, label, accent, labelColor, icon { provider, name, svg } }, body },
       travelType->{ label, "name": name.current, icon { provider, name, svg } },
       duration, image, link
     },
-    "totalCost": math::sum(stops[]->[(_type == "stop" || _type == "travel") && defined(cost)].cost),
     "destination": destination->{ _id, city, country, countryShort, slug },
     closing,
     recommendations[]->{ _type, title, description, longDesc, image, link, stopType->{ label, "name": name.current, icon { provider, name, svg } } }
@@ -46,8 +47,8 @@ const ARTICLE_SLUGS_QUERY = defineQuery(
 );
 
 const ARTICLES_QUERY = defineQuery(
-  `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){
-    _id, title, slug, publishedAt, excerpt, mainImage,
+  `*[_type == "article" && defined(slug.current)] | order(_createdAt desc){
+    _id, _createdAt, title, slug, excerpt, mainImage,
     "destination": destination->{ _id, city, countryShort, slug },
     "post": post->{ _id, title, slug }
   }`,
@@ -55,7 +56,7 @@ const ARTICLES_QUERY = defineQuery(
 
 const ARTICLE_QUERY = defineQuery(
   `*[_type == "article" && slug.current == $slug][0]{
-    _id, title, publishedAt, excerpt, mainImage, body,
+    _id, _createdAt, title, excerpt, mainImage, body,
     "destination": destination->{ _id, city, country, countryShort, slug },
     "post": post->{ _id, title, slug }
   }`,

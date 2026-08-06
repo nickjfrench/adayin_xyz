@@ -64,11 +64,6 @@ export const article = defineType({
       ],
       description: 'Free-form rich text — write anything.',
     }),
-    defineField({
-      name: 'publishedAt',
-      title: 'Published at',
-      type: 'datetime',
-    }),
   ],
   preview: {
     select: {title: 'title', subtitle: 'destination.city', media: 'mainImage'},

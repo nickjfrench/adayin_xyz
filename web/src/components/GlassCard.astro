@@ -1,12 +1,16 @@
 ---
 import { urlFor } from "../utils/sanity";
-import { costIndicator } from "../utils/cost";
+import { priceText, type Currency } from "../utils/cost";
 
 interface Props {
   entry: any;
   hrefBase?: string;
+  /** Calculated trip total (sum of stop/travel costs). Omit for non-itinerary cards. */
+  totalCost?: number;
+  /** Trip display currency (first priced stop's currency). */
+  tripCurrency?: Currency | null;
 }
-const { entry, hrefBase = "/itineraries" } = Astro.props;
+const { entry, hrefBase = "/itineraries", totalCost, tripCurrency = null } = Astro.props;
 const dest = entry.destination;
 const destSlug = dest?.slug?.current ?? "unknown";
 
@@ -36,14 +40,41 @@ const img = entry.mainImage
         </div>
       )
     }
-    {
-      dest && (
-        <span class="absolute left-3 top-3 rounded-full bg-foam/90 px-3 py-1 font-display text-xs font-semibold text-sea-700 backdrop-blur-sm">
-          {dest.city}
-          {dest.countryShort && <span class="text-sea-400">, {dest.countryShort}</span>}
-        </span>
-      )
-    }
+    <div class="pointer-events-none absolute inset-x-3 top-3 z-10 flex items-center gap-2">
+      {
+        dest && (
+          <span class="shrink-0 rounded-full bg-foam/90 px-3 py-1 font-display text-xs font-semibold text-sea-700 backdrop-blur-sm">
+            {dest.city}
+            {dest.countryShort && <span class="text-sea-400">, {dest.countryShort}</span>}
+          </span>
+        )
+      }
+      {
+        entry.audiences && entry.audiences.length > 0 && (
+          <div data-scroll-chips class="pointer-events-auto ml-auto flex max-w-1/2 min-w-0 items-center gap-1">
+            <button type="button" data-sc-prev aria-label="Scroll audience left" class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam">
+              <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <div data-sc-track class="flex min-w-0 gap-1.5 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {entry.audiences.map((a: any) => (
+                <span
+                  class="inline-flex shrink-0 items-center gap-1 rounded-full border border-sea-300 bg-sea-100/95 px-2 py-0.5 font-display text-[11px] font-semibold text-sea-700 backdrop-blur-sm"
+                  title={a.longName ?? a.label}
+                >
+                  {a.icon?.svg && (
+                    <span class="inline-block h-3 w-3 shrink-0 text-sea-600 [&>svg]:h-3 [&>svg]:w-3" set:html={a.icon.svg} />
+                  )}
+                  {a.label}
+                </span>
+              ))}
+            </div>
+            <button type="button" data-sc-next aria-label="Scroll audience right" class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam">
+              <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+          </div>
+        )
+      }
+    </div>
     <!-- Dark underlay — guarantees contrast on bright images -->
     <div class="absolute w-full bottom-0 h-1/2 rounded-xl bg-gradient-to-t from-sea-900/55 to-transparent pointer-events-none"></div>
     <!-- Bordered glass panel for text — same aesthetic as the header pill -->
@@ -53,16 +84,27 @@ const img = entry.mainImage
       </h3>
       {entry.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{entry.excerpt}</p>}
       {
-        (entry.duration || entry.stopCount > 0 || (entry.totalCost != null && entry.totalCost > 0)) && (
+        (entry.duration || entry.stopCount > 0 || (totalCost != null && totalCost > 0)) && (
           <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
-            <svg class="h-3.5 w-3.5 text-sand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            <span class="text-sea-600">Tested</span>
-            {entry.duration && <span>· {entry.duration}</span>}
-            {entry.stopCount > 0 && <span>· {entry.stopCount} stops</span>}
-            {entry.totalCost != null && entry.totalCost > 0 && <span>· {costIndicator(entry.totalCost)}</span>}
+            {entry.duration && <span>{entry.duration}</span>}
+            {entry.stopCount > 0 && <span>{entry.duration && "· "}{entry.stopCount} stops</span>}
+            {totalCost != null && totalCost > 0 && (
+              <span class="inline-flex items-center gap-1">
+                {(entry.duration || entry.stopCount > 0) && <span class="text-sea-400">·</span>}
+                {tripCurrency?.icon?.svg && (
+                  <span class="inline-block h-3 w-3 text-sand-500 [&>svg]:h-3 [&>svg]:w-3" set:html={tripCurrency.icon.svg} />
+                )}
+                {priceText(totalCost, tripCurrency)}
+              </span>
+            )}
           </p>
         )
       }
     </div>
   </a>
 </article>
+
+<script>
+  import { initAllScrollChips } from "../utils/scrollChips";
+  initAllScrollChips();
+</script>

@@ -10,26 +10,29 @@ const { destinations, class: wrapperClass } = Astro.props;
 {
   destinations.length > 0 && (
     <section class:list={["mx-auto max-w-6xl px-5 sm:px-8", wrapperClass]}>
-      <div class="flex flex-wrap gap-3 rounded-2xl border border-sea-100 bg-white/90 p-4 shadow-lg shadow-sea-900/5 backdrop-blur">
-        <button
-          type="button"
-          data-dest="all"
-          class="dest-jump rounded-full bg-sea-500 px-4 py-2 font-display text-sm font-semibold text-white transition hover:bg-sea-600"
-        >
-          All
+      <div data-scroll-chips class="relative flex items-center gap-2 rounded-2xl border border-sea-100 bg-white/90 p-4 shadow-lg shadow-sea-900/5 backdrop-blur">
+        <button type="button" data-sc-prev aria-label="Scroll left" class="dest-arrow hidden shrink-0 rounded-full border border-sea-100 bg-white p-1.5 text-sea-600 shadow-sm transition hover:bg-sea-50">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
         </button>
-        {destinations.map((d) =>
-          d.postCount > 0 ? <button
-            type="button"
-            data-dest={d.slug?.current}
-            data-city={d.city}
-            class="dest-jump rounded-full border border-sea-100 px-4 py-2 font-display text-sm font-medium text-sea-700 transition hover:border-sea-300 hover:bg-sea-50"
-          >
-            {d.city}
-            <span class="ml-1 text-xs text-sand-500">{d.postCount}</span>
-          </button>
-        : null)}
+        <div data-sc-track class="flex flex-1 gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <button type="button" data-dest="all" class="dest-jump shrink-0 rounded-full bg-sea-500 px-4 py-2 font-display text-sm font-semibold text-white transition hover:bg-sea-600">All</button>
+          {destinations.map((d) => d.postCount > 0 ? (
+            <button type="button" data-dest={d.slug?.current} data-city={d.city} class="dest-jump shrink-0 rounded-full border border-sea-100 px-4 py-2 font-display text-sm font-medium text-sea-700 transition hover:border-sea-300 hover:bg-sea-50">
+              {d.city}
+              <span class="ml-1 text-xs text-sand-500">{d.postCount}</span>
+            </button>
+          ) : null)}
+        </div>
+        <button type="button" data-sc-next aria-label="Scroll right" class="dest-arrow hidden shrink-0 rounded-full border border-sea-100 bg-white p-1.5 text-sea-600 shadow-sm transition hover:bg-sea-50">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </button>
       </div>
     </section>
   )
 }
+
+
+<script>
+  import { initAllScrollChips } from "../utils/scrollChips";
+  initAllScrollChips();
+</script>

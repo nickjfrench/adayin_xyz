@@ -1,32 +1,36 @@
-/**
- * Maps total itinerary cost (sum of stop costs) to a dollar-sign indicator.
- * Edit the `max` values to adjust thresholds. Currency-agnostic —
- * assumes all stops use the same currency.
- */
-export const COST_TIERS = [
-  {max: 0, symbol: 'Free'},
-  {max: 30, symbol: '$'},
-  {max: 75, symbol: '$$'},
-  {max: 150, symbol: '$$$'},
-  {max: Infinity, symbol: '$$$$'},
-] as const;
-
-export function costIndicator(total: number): string {
-  for (const tier of COST_TIERS) {
-    if (total <= tier.max) return tier.symbol;
-  }
-  return '$$$$';
+export interface Currency {
+  code?: string;
+  name?: string;
+  icon?: { provider: string; name: string; svg?: string };
 }
 
-export function costRange(total: number): string {
-  let prev = 0;
-  for (const tier of COST_TIERS) {
-    if (total <= tier.max) {
-      if (tier.max === 0) return 'Free';
-      if (tier.max === Infinity) return `$${prev}+`;
-      return `$${prev} – $${tier.max}`;
-    }
-    prev = tier.max;
-  }
-  return `$${prev}+`;
+interface StopCost {
+  cost?: number | null;
+  currency?: Currency | null;
+}
+
+/** Sum costs from a projected array of stop/travel cost objects. Missing values count as 0. */
+export function sumCosts(stops?: (StopCost | null)[] | null): number {
+  return (stops ?? []).reduce((sum, s) => sum + (s?.cost ?? 0), 0);
+}
+
+/** Find the first priced stop's currency for trip display. */
+export function tripCurrencyFrom(stops?: (StopCost | null)[] | null): Currency | null {
+  return (stops ?? []).find((s) => s?.cost != null && s.cost > 0 && s?.currency)?.currency ?? null;
+}
+
+/**
+ * Text portion of a price, e.g. "400 AUD PP".
+ * Caller renders the currency icon svg separately, then this string.
+ * Falls back to "{amount} PP" when currency is missing.
+ */
+export function priceText(
+  amount: number,
+  currency?: Currency | null,
+  opts: { perPerson?: boolean } = {},
+): string {
+  const pp = opts.perPerson !== false;
+  const code = currency?.code ? ` ${currency.code}` : '';
+  const formatted = Number.isInteger(amount) ? `${amount}` : amount.toFixed(2);
+  return `${formatted}${code}${pp ? ' PP' : ''}`;
 }

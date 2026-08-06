@@ -47,7 +47,14 @@ export const travel = defineType({
       name: 'cost',
       title: 'Cost',
       type: 'number',
-      description: 'Estimated cost for this leg in local currency (e.g. 15 = $15).',
+      description: 'Estimated cost for this leg in the selected currency (e.g. 15 units).',
+    }),
+    defineField({
+      name: 'currency',
+      title: 'Currency',
+      type: 'reference',
+      to: [{type: 'currency'}],
+      description: 'Currency for this travel leg’s cost.',
     }),
   ],
   preview: {
