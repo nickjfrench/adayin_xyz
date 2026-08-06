@@ -3,8 +3,8 @@ import { defineQuery } from "groq";
 import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 
 const DESTINATIONS_QUERY = defineQuery(
-  `*[_type == "destination" && defined(slug.current)] | order(order asc, city asc){
-    _id, city, country, countryShort, slug, blurb, order, heroImage,
+  `*[_type == "destination" && defined(slug.current)] | order(city asc){
+    _id, city, country, countryShort, slug, blurb, heroImage,
     "postCount": count(*[_type == "post" && references(^._id)])
   }`,
 );

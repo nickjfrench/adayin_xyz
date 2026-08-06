@@ -47,13 +47,6 @@ export const destination = defineType({
       rows: 2,
       description: 'One-line teaser shown on destination cards.',
     }),
-    defineField({
-      name: 'order',
-      title: 'Display order',
-      type: 'number',
-      description: 'Lower numbers appear first in the hero cycle and dropdown.',
-      initialValue: 0,
-    }),
   ],
   preview: {
     select: {title: 'city', subtitle: 'country', media: 'heroImage'},
