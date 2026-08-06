@@ -12,7 +12,7 @@ const DESTINATIONS_QUERY = defineQuery(
 const POSTS_QUERY = defineQuery(
   `*[_type == "post" && defined(slug.current)] | order(_createdAt desc){
     _id, _createdAt, title, slug, excerpt, mainImage, duration, authorName,
-    "stopCosts": stops[]->{ _type, cost, currency->{ name, code, icon { provider, name, svg } } },
+    "stopCosts": stops[]->{ _type, cost, currency->{ name, code, icon { provider, name, svg }, ranges[] { value } } },
     "audiences": audiences[]->{ label, longName, "name": name.current, icon { provider, name, svg } },
     "destination": destination->{ _id, city, countryShort, slug }
   }`,
@@ -26,7 +26,7 @@ const POST_QUERY = defineQuery(
     stops[]->{
       _type,
       stopType->{ label, "name": name.current, icon { provider, name, svg } },
-      time, title, description, longDesc, cost, currency->{ name, code, icon { provider, name, svg } }, address,
+      time, title, description, longDesc, cost, currency->{ name, code, icon { provider, name, svg }, ranges[] { value } }, address,
       callouts[]{ kind->{ "name": name.current, label, accent, labelColor, icon { provider, name, svg } }, body },
       travelType->{ label, "name": name.current, icon { provider, name, svg } },
       duration, image, link

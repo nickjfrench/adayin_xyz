@@ -2,7 +2,7 @@
 import { PortableText } from "astro-portabletext";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
-import { priceText, sumCosts, tripCurrencyFrom, countStops } from "../../utils/cost";
+import { priceText, sumCosts, tripCurrencyFrom, countStops, priceTier } from "../../utils/cost";
 import StopCard from "../../components/StopCard.astro";
 import ItineraryStopModal from "../../components/ItineraryStopModal.svelte";
 
@@ -37,6 +37,8 @@ const stopCount = countStops(stops);
 
 const tripTotal = sumCosts(stops);
 const tripCurrency = tripCurrencyFrom(stops);
+const tier = tripTotal > 0 ? priceTier(tripTotal, tripCurrency) : null;
+const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
 
 // Prepare stop data with resolved image URLs for the modal (urlFor is build-time only)
 const modalStops = stops.filter(Boolean).map((s) => ({
@@ -135,11 +137,18 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
       {post.duration && <span class="whitespace-nowrap text-sea-600">{post.duration}</span>}
       {stopCount > 0 && <span class="whitespace-nowrap text-sea-600">{stopCount} stops</span>}
       {tripTotal > 0 ? (
-        <span class="inline-flex items-center gap-1 whitespace-nowrap font-medium text-sea-700" title="Per person total">
-          {tripCurrency?.icon?.svg && (
-            <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sand-500" set:html={tripCurrency.icon.svg} />
+        <span class="inline-flex items-center whitespace-nowrap font-medium text-sea-700" title="Per person total">
+          {showTier && Array.from({length: tier ?? 0}).map(() => (
+            <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sea-600" set:html={tripCurrency?.icon?.svg ?? ''} />
+          ))}
+          {!showTier && (
+            <>
+              {tripCurrency?.icon?.svg && (
+                <span class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sea-600" set:html={tripCurrency.icon.svg} />
+              )}
+              {priceText(tripTotal, tripCurrency)}
+            </>
           )}
-          {priceText(tripTotal, tripCurrency)}
         </span>
       ) : (
         <span class="whitespace-nowrap font-medium text-sea-600">Free</span>
