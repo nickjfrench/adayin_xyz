@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
+import teamPhoto from "../assets/nick-kayley-square.webp";
 ---
 
 <BaseLayout title="About — A Day In">
@@ -47,26 +48,29 @@ import PageHeader from "../components/PageHeader.astro";
       <h2 class="font-display text-3xl font-semibold text-deep mb-4">The Faces Behind 'A Day In'</h2>
       <p class="text-sea-600 mb-12 max-w-xl mx-auto">Just two travellers who love sharing what they discover.</p>
 
+      <div class="mb-10">
+        <img
+          src={teamPhoto.src}
+          alt="Nick and Kayley"
+          class="mx-auto aspect-square w-full max-w-md rounded-2xl object-cover shadow-lg shadow-sea-900/10"
+          loading="lazy"
+        />
+      </div>
+
       <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 sm:gap-16">
         <!-- Nick -->
         <div class="flex flex-col items-center">
-          <div class="mb-5 h-44 w-44 overflow-hidden rounded-full border-4 border-sea-200 shadow-md shadow-sea-900/10 bg-gradient-to-br from-sea-200 to-sea-400 flex items-center justify-center">
-            <span class="font-display text-4xl font-bold text-white/80">N</span>
-          </div>
           <h3 class="font-display text-xl font-semibold text-deep">Nick</h3>
           <p class="mt-2 text-sm text-sea-700 max-w-xs">
-            Australian-born, perpetually chasing the long way round on foot. Believes every good day starts with getting a little lost.
+            Aussie, Chief Exploration Officer, prefers to take the long way around, and believes the perfect day involves getting a little lost.
           </p>
         </div>
 
         <!-- Kayley -->
         <div class="flex flex-col items-center">
-          <div class="mb-5 h-44 w-44 overflow-hidden rounded-full border-4 border-sand-300 shadow-md shadow-sea-900/10 bg-gradient-to-br from-sand-200 to-sand-400 flex items-center justify-center">
-            <span class="font-display text-4xl font-bold text-white/80">K</span>
-          </div>
           <h3 class="font-display text-xl font-semibold text-deep">Kayley</h3>
           <p class="mt-2 text-sm text-sea-700 max-w-xs">
-            Canadian at heart with a soft spot for hidden gems. The planner who still leaves room for spontaneity.
+            Canadian, Chief Logistics Officer, loves a plan that allows for spontaneity, and believes the perfect day starts with adventure and ends with a virgin piña colada.
           </p>
         </div>
       </div>
