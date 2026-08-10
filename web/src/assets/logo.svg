@@ -2,11 +2,13 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="100%" height="100%" viewBox="0 0 1000 1000" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
     <g id="Logo" transform="matrix(1.189879,0,0,1.189879,-93.209787,-111.912696)">
-        <g transform="matrix(0.807683,0,0,0.807683,140.459666,82.611455)">
-            <circle cx="443.351" cy="555.351" r="499.351" style="fill:rgb(225,244,244);"/>
-        </g>
-        <g transform="matrix(0.807683,0,0,0.807683,140.459666,82.611455)">
-            <path d="M442.271,588.281C717.87,588.281 942.701,279.752 942.701,555.351C942.701,830.95 718.95,1054.701 443.351,1054.701C167.752,1054.701 -56,830.95 -56,555.351C-56,279.752 166.672,588.281 442.271,588.281Z" style="fill:rgb(199,241,221);"/>
+        <g id="BG---clean" serif:id="BG - clean">
+            <g transform="matrix(0.807683,0,0,0.807683,140.459666,82.611455)">
+                <circle cx="443.351" cy="555.351" r="499.351" style="fill:rgb(225,244,244);"/>
+            </g>
+            <g transform="matrix(0.807683,0,0,0.807683,140.459666,82.611455)">
+                <path d="M442.271,588.281C717.87,588.281 942.701,279.752 942.701,555.351C942.701,830.95 718.95,1054.701 443.351,1054.701C167.752,1054.701 -56,830.95 -56,555.351C-56,279.752 166.672,588.281 442.271,588.281Z" style="fill:rgb(199,241,221);"/>
+            </g>
         </g>
         <g id="Curves" transform="matrix(0.39067,0,0,0.390836,93.074448,88.890135)">
             <g transform="matrix(5.555556,0,0,5.555556,0,0.000025)">
