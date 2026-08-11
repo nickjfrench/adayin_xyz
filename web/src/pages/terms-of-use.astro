@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
+
+const lastUpdatedDate = "2026-08-11"
+const contactEmail = "adayin.xyz@gmail.com"
+const contactEmailLink = "mailto:" + contactEmail
+---
+
+<BaseLayout title="Terms of Use — A Day In">
+  <PageHeader
+    label="Legal"
+    title="Terms of Use"
+    description="The rules governing your use of this site."
+  />
+
+  <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+    <div class="prose-sea">
+<p><strong>Last updated: {lastUpdatedDate}</strong></p>
+<p>Welcome to ADayIn.xyz (the &quot;site&quot;). These Terms of Use (&quot;Terms&quot;) govern your access to and use of the site. By using the site, you agree to these Terms. If you don&#39;t agree, please don&#39;t use the site.</p>
+<p>Questions about these Terms: <strong><a href={contactEmailLink}>{contactEmail}</a></strong></p>
+<hr>
+<h2 id="1-what-this-site-is">1. What This Site Is</h2>
+<p>ADayIn.xyz publishes hand-tested day itineraries and travel content for destinations around the world. Our itineraries reflect our own personal experiences, timed and priced at the time we visited.</p>
+<hr>
+<h2 id="2-content-is-for-general-guidance-only">2. Content Is for General Guidance Only</h2>
+<p>Our itineraries, stop times, prices, distances, and recommendations are based on our own experience at a specific point in time. They are provided for general informational and inspirational purposes only and are <strong>not professional travel advice</strong>.</p>
+<p>Conditions change. Businesses close or change hours, prices shift, weather affects accessibility, and travel times vary based on traffic, transportation choices, and season. We do our best to keep content accurate and up to date, but we make no guarantee that any itinerary, price, timing, address, or recommendation is current, complete, or accurate at the time you use it.</p>
+<p><strong>You are responsible for verifying details yourself</strong> before relying on them, including opening hours, admission requirements, current pricing, safety conditions, and any permits or bookings required.</p>
+<hr>
+<h2 id="3-assumption-of-risk">3. Assumption of Risk</h2>
+<p>Travel and outdoor activities carry inherent risks, including but not limited to physical injury, property loss, weather-related hazards, transportation delays, and unfamiliar environments. By following any itinerary or recommendation on this site, you do so <strong>at your own risk</strong>.</p>
+<p>We are not responsible for any injury, loss, delay, expense, or other rough time you experience as a result of following, or attempting to follow, an itinerary or recommendation published on this site. This includes issues arising from businesses, attractions, transportation providers, or accommodations mentioned in our content, none of which we control or operate.</p>
+<hr>
+<h2 id="4-audience-badges">4. Audience Badges</h2>
+<p>From time to time, we may display badges or labels on itineraries (for example, relating to accessibility, family-friendliness, or similar characteristics) based on our own subjective, first-hand observations during our visit.</p>
+<p><strong>These badges are not certifications, guarantees, or approvals from any government body, accessibility authority, or regulatory organization.</strong> They do not indicate that a location, route, or activity meets any official standard (such as those set by government accessibility legislation in Australia or elsewhere), and should not be relied upon as such.</p>
+<p>If accessibility, mobility accommodations, or similar needs are important for your trip, we strongly encourage you to contact the specific venue, operator, or local authority directly to confirm current conditions before you travel.</p>
+<hr>
+<h2 id="5-affiliate-links-and-sponsored-content">5. Affiliate Links and Sponsored Content</h2>
+<p>This site participates in affiliate programs, including hotel and travel affiliate programs (such as Marriott), and may publish sponsored content. Where this applies:</p>
+<ul>
+<li>We may earn a commission if you click an affiliate link and complete a booking or purchase, at no extra cost to you.</li>
+<li>Sponsored content is clearly labeled as such.</li>
+<li>Affiliate relationships do not influence the honesty of our itinerary content; hotels and businesses mentioned outside of clearly labeled sponsored sections are included because we genuinely used or recommend them.</li>
+</ul>
+<p>We are not responsible for the products, services, policies, or conduct of any third party linked from this site, including hotels, tour operators, or other businesses. Any transaction you make with a third party is solely between you and that third party.</p>
+<hr>
+<h2 id="6-third-party-links">6. Third-Party Links</h2>
+<p>Our content may link to third-party websites (maps, businesses, booking platforms, etc.) that we don&#39;t own or control. We&#39;re not responsible for the content, accuracy, or practices of any linked third-party site. Visiting a linked site is at your own discretion and risk.</p>
+<hr>
+<h2 id="7-intellectual-property">7. Intellectual Property</h2>
+<p>All text, photographs, and original content published on this site are owned by us or used with permission, and are protected by copyright. Unless explicitly stated otherwise, <strong>all rights are reserved</strong>.</p>
+<h3 id="photography">Photography</h3>
+<p>The photographs featured throughout our itineraries and articles are our own original work, unless otherwise credited or stated.<em> You may <em>*not</em></em> copy, download, reproduce, republish, redistribute, modify, or use our photographs, in whole or in part, on any other website, publication, social media account, print material, dataset, or AI training set, without our prior written permission.</p>
+<p>You&#39;re welcome to:</p>
+<ul>
+<li>Share a link to our articles or itineraries</li>
+<li>Use a small excerpt of text with clear attribution and a link back to the original page, consistent with fair use</li>
+</ul>
+<p>You may <strong>not</strong>:</p>
+<ul>
+<li>Save, screenshot, or otherwise reproduce our photographs for use anywhere else</li>
+<li>Use our photographs or written content, in whole or in part, to train AI or machine learning models</li>
+<li>Republish our itineraries, in whole or substantial part, on another site or platform</li>
+</ul>
+<p>If you&#39;d like to license a photo or feature our content elsewhere, contact us at the email below and we&#39;re happy to discuss it.</p>
+<p>*Occasionally we may feature a photo that isn&#39;t our own (for example, supplied by a venue, partner, or another photographer). In those cases, we credit the source directly on or near the image, and that photo remains the property of its respective owner.</p>
+<h3 id="third-party-material-visible-in-our-photos">Third-party material visible in our photos</h3>
+<p>Our photographs are taken in public places and may incidentally include buildings, shopfronts, signage, billboards, artwork, or other material that carries its own copyright or trademark ownership by third parties. We don&#39;t claim ownership over that material, and its appearance in our photos doesn&#39;t imply any endorsement, sponsorship, or affiliation with us or with ADayIn.xyz. All such trademarks, logos, and designs remain the property of their respective owners.</p>
+<h3 id="takedown-requests">Takedown requests</h3>
+<p>If you believe your own copyrighted work has been used on this site without permission, contact us at the email below with details, and we&#39;ll review and address it promptly.</p>
+<hr>
+<h2 id="8-no-warranty">8. No Warranty</h2>
+<p>This site and its content are provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind, either express or implied, including but not limited to accuracy, completeness, or fitness for a particular purpose.</p>
+<hr>
+<h2 id="9-limitation-of-liability">9. Limitation of Liability</h2>
+<p>To the fullest extent permitted by law, ADayIn.xyz and its operators are not liable for any direct, indirect, incidental, or consequential damages arising from your use of the site or reliance on its content, including but not limited to travel mishaps, financial loss, injury, or missed bookings.</p>
+<hr>
+<h2 id="10-changes-to-the-site-or-these-terms">10. Changes to the Site or These Terms</h2>
+<p>We may update, modify, or remove content on the site at any time without notice. We may also update these Terms as the site evolves. We&#39;ll update the &quot;Last updated&quot; date above when changes are made. Continued use of the site after changes means you accept the updated Terms.</p>
+<hr>
+<h2 id="11-contact">11. Contact</h2>
+<p>Questions about these Terms: <strong><a href={contactEmailLink}>{contactEmail}</a></strong></p>
+
+    </div>
+  </section>
+</BaseLayout>

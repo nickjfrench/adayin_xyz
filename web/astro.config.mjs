@@ -8,6 +8,8 @@ import svelte from '@astrojs/svelte';
 
 import partytown from '@astrojs/partytown';
 
+import sitemap from '@astrojs/sitemap';
+
 // astro.config.mjs runs before Astro's env loading, so read PUBLIC_* via Vite's loadEnv.
 const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
     process.env.NODE_ENV ?? 'development',
@@ -17,15 +19,16 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
 
 // https://astro.build/config
 export default defineConfig({
+site: 'https://adayin.xyz',
     integrations: [sanity({
         projectId: PUBLIC_SANITY_PROJECT_ID,
         dataset: PUBLIC_SANITY_DATASET,
         useCdn: false,
-		}), svelte(), partytown({
+        }), svelte(), partytown({
       config: {
         forward: ["dataLayer.push"],
       },
-})],
+}), sitemap()],
     vite: {
         plugins: [tailwindcss()],
     },

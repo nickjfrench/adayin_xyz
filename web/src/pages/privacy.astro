@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
+
+const lastUpdatedDate = "2026-08-11"
+const contactEmail = "adayin.xyz@gmail.com"
+const contactEmailLink = "mailto:" + contactEmail
+---
+
+<BaseLayout title="Privacy Policy — A Day In">
+  <PageHeader
+    label="Legal"
+    title="Privacy Policy"
+    description="How we collect, use, and protect your information."
+  />
+
+  <section class="mx-auto max-w-6xl px-5 py-14 sm:px-8">
+    <div class="prose-sea">
+      <p><strong>Last updated: {lastUpdatedDate}</strong></p>
+<p>This Privacy Policy explains how ADayIn.xyz (&quot;we,&quot; &quot;us,&quot; or &quot;this site&quot;) collects, uses, and shares information when you visit. This site is independently operated. If you have questions about this policy or your data, contact us at:</p>
+<p>For any questions, feel free to reach out at: <strong><a href={contactEmailLink}>{contactEmail}</a></strong></p>
+<hr>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>This Privacy Policy applies to all visitors of ADayIn.xyz (the &quot;site&quot;). By using the site, you agree to the practices described below. This policy covers what information we collect, why we collect it, who we share it with, and the rights you have over your information.</p>
+<hr>
+<h2 id="2-what-information-do-we-collect-">2. What Information Do We Collect?</h2>
+<h3 id="server-logs-via-cloudflare-">Server logs (via Cloudflare)</h3>
+<p>This site is hosted on Cloudflare Pages. Like most web hosts, Cloudflare automatically logs certain technical information for every visitor as part of delivering and securing the site, including your IP address, browser type, device type, referring page, and the pages you request. These logs are collected and processed by Cloudflare on our behalf. We do not directly access or use this data for tracking purposes, but it exists as part of normal web hosting operations.</p>
+<p>More on Cloudflare's own data practices: <a href="https://www.cloudflare.com/privacypolicy/">https://www.cloudflare.com/privacypolicy/</a></p>
+<h3 id="analytics">Analytics</h3>
+<p>We use <strong>Cloudflare Web Analytics</strong> to understand which pages are popular and how visitors generally use the site. This tool is cookieless and does not track you across other websites or build a personal profile of you. It reports aggregated, anonymized traffic patterns only.</p>
+<p>We do not currently use Google Analytics, Google AdSense, or any other third-party advertising or tracking tool. If that changes in the future, we will update this policy in advance and, where required by law, request your consent before any such tool is activated.</p>
+<h3 id="information-you-provide-directly">Information you provide directly</h3>
+<p>If you contact us directly (for example, by email), we&#39;ll have access to whatever information you choose to share with us, such as your email address and the contents of your message. We use this only to respond to you.</p>
+<hr>
+<h2 id="3-how-do-we-use-your-information-">3. How Do We Use Your Information?</h2>
+<p>We use the information described above to:</p>
+<ul>
+<li>Operate, maintain, and secure the site</li>
+<li>Understand which content is popular so we can improve the site</li>
+<li>Respond to messages sent to us directly</li>
+<li>Demonstrate the site&#39;s audience size and engagement to affiliate partners and sponsors, using aggregated data only</li>
+</ul>
+<p>We do not use your information for automated decision-making, profiling, or to make decisions that have a legal or similarly significant effect on you.</p>
+<hr>
+<h2 id="4-will-your-information-be-shared-with-anyone-">4. Will Your Information Be Shared With Anyone?</h2>
+<h3 id="hosting-provider">Hosting provider</h3>
+<p>Cloudflare, our hosting provider, processes server log data as described above in the course of delivering and securing the site.</p>
+<h3 id="affiliate-programs-and-sponsors">Affiliate programs and sponsors</h3>
+<p>This site may participate in affiliate programs (for example, hotel or travel affiliate programs) and may occasionally publish sponsored content. Where this applies:</p>
+<ul>
+<li>Affiliate links are clearly identified near the link itself.</li>
+<li>Sponsored posts are clearly labeled as such at the top of the post.</li>
+<li>We may earn a commission if you click an affiliate link and make a purchase or booking, at no extra cost to you.</li>
+</ul>
+<p>We may share <strong>aggregated, anonymized traffic and audience metrics</strong> (such as overall page views or general audience size) with affiliate partners or sponsors to demonstrate the reach of the site. We do not share personally identifiable information about individual visitors with these partners.</p>
+<p>If this changes, for example, if a partnership requires more detailed tracking, we will update this policy first.</p>
+<h3 id="we-do-not-sell-your-information">We do not sell your information</h3>
+<p>We do not sell, rent, or trade personal information to third parties.</p>
+<hr>
+<h2 id="5-do-we-use-cookies-and-other-tracking-technologies-">5. Do We Use Cookies and Other Tracking Technologies?</h2>
+<p>This site does not currently set non-essential cookies. Cloudflare Web Analytics does not use cookies. If we introduce tools that do (such as analytics, advertising, or affiliate tracking), we will update this policy and add a cookie consent mechanism before those tools are activated, where required by law.</p>
+<hr>
+<h2 id="6-do-we-transfer-your-information-internationally-">6. Do We Transfer Your Information Internationally?</h2>
+<p>This site can be accessed from anywhere in the world. Because our hosting infrastructure (Cloudflare) operates across multiple regions, your information may be processed in a country other than your own, including the United States. We rely on our hosting provider&#39;s own compliance mechanisms for any such transfers.</p>
+<hr>
+<h2 id="7-how-long-do-we-keep-your-information-">7. How Long Do We Keep Your Information?</h2>
+<p>We retain data only for as long as necessary for the purposes described in this policy. Server logs collected by Cloudflare are kept according to Cloudflare&#39;s own retention practices, which you can review in their privacy policy linked above. We don&#39;t independently store or archive personal data beyond what&#39;s needed to operate and secure the site.</p>
+<hr>
+<h2 id="8-how-do-we-keep-your-information-safe-">8. How Do We Keep Your Information Safe?</h2>
+<p>We rely on Cloudflare&#39;s infrastructure to host and secure this site, including standard protections like encrypted connections (HTTPS) and network-level security. We don&#39;t operate our own servers or databases, so most technical security safeguards are handled at the hosting layer by Cloudflare.</p>
+<hr>
+<h2 id="9-what-are-your-privacy-rights-">9. What Are Your Privacy Rights?</h2>
+<p>Depending on where you live, you may have rights over your personal data, including the right to:</p>
+<ul>
+<li>Ask what information we (or our hosting provider) hold about you</li>
+<li>Ask us to correct or delete that information</li>
+<li>Object to certain types of processing</li>
+</ul>
+<p>Because we collect very limited personal data directly (we do not run accounts, logins, or personal profiles), most of these requests will relate to server-level data held by Cloudflare rather than data we hold ourselves. You can reach out to us at the contact email above, and we&#39;ll help direct your request appropriately.</p>
+<p>If you are in the EU/EEA or UK, you also have the right to lodge a complaint with your local data protection authority. If you are a California resident, you have rights under the CCPA, including the right to know what personal information is collected and to opt out of its sale (we do not sell personal information).</p>
+<hr>
+<h2 id="10-controls-for-do-not-track-features">10. Controls for Do-Not-Track Features</h2>
+<p>Some browsers offer a &quot;Do Not Track&quot; (DNT) setting or send a Global Privacy Control (GPC) signal. Because this site doesn&#39;t currently use tracking cookies, behavioral advertising, or cross-site tracking, we don&#39;t process or respond to these signals at this time. If we add tools in the future that would be affected by DNT or GPC (such as advertising or cross-site tracking), we&#39;ll update this section to explain how we handle those signals.</p>
+<hr>
+<h2 id="11-do-we-collect-information-from-minors-">11. Do We Collect Information From Minors?</h2>
+<p>This site is not directed at children under 13 (or under 16 in the EU/EEA, where applicable), and we do not knowingly collect personal information from children.</p>
+<hr>
+<h2 id="12-do-we-make-updates-to-this-notice-">12. Do We Make Updates to This Notice?</h2>
+<p>We may update this policy as the site evolves, for example, if we add analytics tools, advertising, or new affiliate/sponsorship relationships. We&#39;ll update the &quot;Last updated&quot; date above when changes are made. Material changes (such as adding tracking cookies or ad personalization) will be reflected here before those changes take effect.</p>
+<hr>
+<h2 id="13-how-can-you-contact-us-about-this-notice-">13. How Can You Contact Us About This Notice?</h2>
+<p>For questions about this policy or how your information is handled, please contact us at <strong><a href={contactEmailLink}>{contactEmail}</a></strong></p>
+    </div>
+  </section>
+</BaseLayout>
