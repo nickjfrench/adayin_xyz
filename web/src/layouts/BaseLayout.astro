@@ -34,6 +34,15 @@ const {
     />
     <title>{title}</title>
   </head>
+  <!-- Google tag (gtag.js) -->
+  <script type="text/partytown" async src="https://www.googletagmanager.com/gtag/js?id=G-2HCZHFWV8T"></script>
+  <script type="text/partytown">
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-2HCZHFWV8T');
+  </script>
   <body class="flex min-h-screen flex-col bg-foam text-deep font-sans antialiased">
     <Header variant={headerVariant} />
     <main class="flex-1">
