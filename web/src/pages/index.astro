@@ -99,6 +99,12 @@ const posts = await getItineraries();
   // ── Dropdown open/close ──
   function openMenu() {
     if (!menu || !trigger) return;
+    // Cap dropdown height to the space between the trigger and the DestBar
+    const destBarEl = document.querySelector<HTMLElement>("[data-scroll-chips]");
+    if (destBarEl) {
+      const gap = destBarEl.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom - 8;
+      menu.style.maxHeight = Math.max(gap, 120) + "px";
+    }
     menu.hidden = false;
     trigger.setAttribute("aria-expanded", "true");
     menuOpen = true;

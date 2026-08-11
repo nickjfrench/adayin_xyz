@@ -4,7 +4,8 @@ import { urlFor } from "../utils/sanity";
 interface Props {
   destinations: any[];
 }
-const { destinations } = Astro.props;
+const { destinations: rawDestinations } = Astro.props;
+const destinations = rawDestinations.filter((d: any) => (d.postCount ?? 0) > 0);
 
 // Ocean gradient fallbacks used when a destination has no hero image yet.
 const gradients = [
@@ -23,9 +24,9 @@ const layers = destinations.map((d, i) => ({
 }));
 ---
 
-<section id="hero-section" class="relative isolate flex min-h-[88vh] flex-col justify-center overflow-hidden">
+<section id="hero-section" class="relative isolate flex min-h-[88vh] flex-col justify-center">
   <!-- Background layers (one per destination), crossfaded by JS -->
-  <div class="absolute inset-0 -z-10">
+  <div class="absolute inset-0 -z-10 overflow-hidden">
     {
       layers.map((l, i) => (
         <div
