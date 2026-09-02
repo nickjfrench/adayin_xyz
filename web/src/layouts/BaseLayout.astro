@@ -10,12 +10,18 @@ interface Props {
   headerVariant?: "light" | "dark";
   footerVariant?: "light" | "dark";
 }
+let defaultTitle = "A Day In.xyz"
 const {
-  title = "A Day In — tested itineraries, off the beaten track",
-  description = "Hand-tested day-itineraries for off-the-beaten-track places worth the detour.",
+  title = defaultTitle,
+  description = "Day itineraries for destinations worth the detour. Every route tested, timed, and vouched for by us.",
   headerVariant = "dark",
   footerVariant = "light",
 } = Astro.props;
+
+let pageTitle = title
+if (pageTitle !== defaultTitle) {
+  pageTitle = `${title} | A Day In.xyz`
+}
 ---
 
 <!doctype html>
@@ -32,7 +38,7 @@ const {
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
   </head>
   <body class="flex min-h-screen flex-col bg-foam text-deep font-sans antialiased">
     <Header variant={headerVariant} />

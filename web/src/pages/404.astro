@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
+---
+
+<BaseLayout
+  title="Page Not Found"
+  description="The page you're looking for doesn't exist. Browse tested day itineraries instead."
+>
+  <PageHeader
+    label="404"
+    title="Page not found"
+    description="Looks like we've drifted off the map."
+  />
+
+  <section class="mx-auto max-w-6xl px-5 py-14 text-center sm:px-8">
+    <p class="mt-6 text-lg text-deep/70">Try one of the buttons below.</p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/itineraries"
+        class="inline-flex items-center gap-2 rounded-full bg-sea-500/95 px-5 py-2.5 font-display text-sm font-semibold tracking-wide text-white shadow-md ring-1 ring-white/20 transition hover:bg-sea-500"
+      >
+        See the itineraries
+      </a>
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 rounded-full border border-sea-200 bg-sea-50 px-5 py-2.5 text-sm font-medium text-sea-700 transition-colors hover:bg-sea-100"
+      >
+        Back to home
+      </a>
+    </div>
+  </section>
+</BaseLayout>

@@ -7,7 +7,7 @@ import { getArticles } from "../../utils/sanity";
 const articles = await getArticles();
 ---
 
-<BaseLayout title="Blog — A Day In" headerVariant="dark">
+<BaseLayout title="Blog" headerVariant="dark">
   <PageHeader
     label="Blog"
     title="Some Itineraries Deserve a Story"
@@ -18,7 +18,9 @@ const articles = await getArticles();
     {
       articles.length === 0 ? (
         <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
-          <p class="font-display text-lg font-semibold text-sea-700">No articles yet</p>
+          <p class="font-display text-lg font-semibold text-sea-700">
+            No articles yet
+          </p>
         </div>
       ) : (
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
