@@ -12,7 +12,7 @@ export const travel = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'travelType', 
+      name: 'travelType',
       title: 'Travel type',
       type: 'reference',
       to: [{type: 'travelType'}],
@@ -27,8 +27,8 @@ export const travel = defineType({
     defineField({
       name: 'longDesc',
       title: 'Long description',
-      type: 'text',
-      rows: 3,
+      type: 'array',
+      of: [{type: 'block'}],
       description: 'To be displayed on popup modal.',
     }),
     defineField({

@@ -81,3 +81,13 @@
     font-style: italic;
     color: color-mix(in srgb, var(--color-sea-700) 70%, transparent);
 }
+
+/* Inline Portable Text styling (callouts, stop/travel descriptions) */
+.pt-inline :where(a) {
+    color: var(--color-sea-600);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.pt-inline :where(p) + :where(p) {
+    margin-top: 0.5em;
+}

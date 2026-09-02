@@ -1,6 +1,8 @@
 <script>
   import Modal from './Modal.svelte';
   import { priceText } from '../utils/cost';
+  import { PortableText } from '@portabletext/svelte';
+  import PortableLink from './PortableLink.svelte';
 
   /**
    * Stop detail modal — works with any of the 4 stop document types.
@@ -10,9 +12,11 @@
    *
    * The `stop` prop is a dereferenced stop/travel/startLocation/endLocation doc.
    * Null = closed. Set to a stop object to open.
+   * `longDesc` and callout `body` are Portable Text arrays rendered via @portabletext/svelte.
    */
-
   let { stop = $bindable(null), onclose } = $props();
+
+  const ptComponents = { marks: { link: PortableLink } };
 
   let show = $state(false);
 
@@ -46,20 +50,20 @@
 
 {#snippet body()}
   {#if stop.longDesc}
-    <p class="text-sm italic text-sea-600">{stop.longDesc}</p>
+    <div class="pt-inline text-sm italic text-sea-600"><PortableText value={stop.longDesc} components={ptComponents} /></div>
   {/if}
 
   {#if stop.callouts?.length > 0}
     <div class="mt-4 flex flex-col gap-2">
       {#each stop.callouts as callout}
-        <p class="flex items-start gap-2 text-sm text-sea-700">
+        <div class="flex items-start gap-2 text-sm text-sea-700 pt-inline">
           {#if callout.kind?.icon?.svg}
             <span class="inline-block h-3.5 w-3.5 shrink-0 mt-0.5 [&>svg]:h-full [&>svg]:w-full {callout.kind?.labelColor ?? 'text-sand-500'}">{@html callout.kind.icon.svg}</span>
           {:else}
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full {callout.kind?.labelColor ?? 'bg-sand-400'}"></span>
           {/if}
-          <span>{callout.body}</span>
-        </p>
+          <PortableText value={callout.body} components={ptComponents} />
+        </div>
       {/each}
     </div>
   {/if}

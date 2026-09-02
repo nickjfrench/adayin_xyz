@@ -1,6 +1,8 @@
 ---
 import MapLink from "./MapLink.astro";
+import { PortableText } from "astro-portabletext";
 import CostPill from "./CostPill.astro";
+import PortableLink from "./PortableLink.astro";
 import type { Currency } from "../utils/cost";
 
 interface Props {
@@ -8,7 +10,7 @@ interface Props {
     _type: string;
     title?: string;
     time?: string;
-    description?: string;
+    description?: unknown;
     cost?: number;
     currency?: Currency;
     address?: string;
@@ -20,7 +22,7 @@ interface Props {
         labelColor?: string;
         icon?: { provider: string; name: string; svg?: string };
       };
-      body: string;
+      body: unknown;
     }>;
     travelType?: {
       label: string;
@@ -33,6 +35,8 @@ interface Props {
 }
 
 const { stop, index } = Astro.props;
+
+const ptComponents = { mark: { link: PortableLink } };
 
 const isTravel = stop._type === "travel";
 const isStart = stop._type === "startLocation";
@@ -138,7 +142,7 @@ const mapsLink = stop.address
           {stop.callouts && stop.callouts.length > 0 && (
             <div class="mt-2.5 flex flex-col gap-1.5">
               {stop.callouts.map((callout) => (
-                <p class="flex items-start gap-2 text-sm text-sea-700">
+                <div class="flex items-start gap-2 text-sm text-sea-700 pt-inline">
                   {callout.kind?.icon?.svg ? (
                     <span
                       class:list={["inline-block h-3.5 w-3.5 shrink-0 mt-0.5 [&>svg]:h-full [&>svg]:w-full", callout.kind?.labelColor ?? "text-sand-500"]}
@@ -147,17 +151,17 @@ const mapsLink = stop.address
                   ) : (
                     <span class:list={["mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", callout.kind?.labelColor ?? "bg-sand-400"]} />
                   )}
-                  <span>{callout.body}</span>
-                </p>
+                  <PortableText value={callout.body} components={ptComponents} />
+                </div>
               ))}
             </div>
           )}
 
           {/* Description */}
           {stop.description && (
-            <p class="mt-2.5 text-sm leading-relaxed text-deep/60">
-              {stop.description}
-            </p>
+            <div class="pt-inline mt-2.5 text-sm leading-relaxed text-deep/60">
+              <PortableText value={stop.description} components={ptComponents} />
+            </div>
           )}
 
           {/* Address */}

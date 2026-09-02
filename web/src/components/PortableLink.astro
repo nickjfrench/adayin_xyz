@@ -1,0 +1,19 @@
+---
+// Portable Text link mark override — renders links that open in a new tab.
+import type { Mark } from "astro-portabletext/types";
+
+export type Props = Mark<{ href?: string }>;
+
+const { node } = Astro.props;
+const href = node?.markDef?.href;
+---
+
+{
+  typeof href === "string" ? (
+    <a {href} target="_blank" rel="noopener noreferrer">
+      <slot />
+    </a>
+  ) : (
+    <slot />
+  )
+}

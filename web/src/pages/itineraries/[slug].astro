@@ -1,5 +1,5 @@
 ---
-import { PortableText } from "astro-portabletext";
+import { PortableText, toPlainText } from "astro-portabletext";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
 import {
@@ -10,6 +10,7 @@ import {
   priceTier,
 } from "../../utils/cost";
 import StopCard from "../../components/StopCard.astro";
+import PortableLink from "../../components/PortableLink.astro";
 import ItineraryStopModal from "../../components/ItineraryStopModal.svelte";
 
 export async function getStaticPaths() {
@@ -49,9 +50,12 @@ const tripCurrency = tripCurrencyFrom(stops);
 const tier = tripTotal > 0 ? priceTier(tripTotal, tripCurrency) : null;
 const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
 
-// Prepare stop data with resolved image URLs for the modal (urlFor is build-time only)
+// Prepare stop data with resolved image URLs for the modal (urlFor is build-time only).
+// structuredClone: astro-portabletext mutates Portable Text blocks in place during SSR
+// (PortableText.astro overwrites block.children), so the island must not share those
+// objects with the statically rendered cards.
 const modalStops = stops.filter(Boolean).map((s) => ({
-  ...s,
+  ...structuredClone(s),
   imageUrl: s.image
     ? urlFor(s.image).width(1200).height(514).fit("crop").auto("format").url()
     : undefined,
@@ -69,14 +73,9 @@ const hero = post.mainImage
 const modalRecommendations = (post.recommendations ?? [])
   .filter(Boolean)
   .map((item) => ({
-    ...item,
+    ...structuredClone(item),
     imageUrl: item.image
-      ? urlFor(item.image)
-          .width(1200)
-          .height(514)
-          .fit("crop")
-          .auto("format")
-          .url()
+      ? urlFor(item.image).width(1200).height(514).fit("crop").auto("format").url()
       : undefined,
   }));
 ---
@@ -299,7 +298,7 @@ const modalRecommendations = (post.recommendations ?? [])
               Closing notes
             </h2>
             <div class="prose-sea">
-              <PortableText value={post.closing} />
+              <PortableText value={post.closing} components={{ mark: { link: PortableLink } }} />
             </div>
           </div>
         )
@@ -363,7 +362,9 @@ const modalRecommendations = (post.recommendations ?? [])
                       </h3>
                       {item.description && (
                         <p class="mt-0.5 line-clamp-1 text-xs text-white/80">
-                          {item.description}
+                          {Array.isArray(item.description)
+                            ? toPlainText(item.description)
+                            : item.description}
                         </p>
                       )}
                     </div>

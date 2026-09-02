@@ -28,15 +28,15 @@ export const stop = defineType({
     defineField({
       name: 'description',
       title: 'Description',
-      type: 'text',
-      rows: 2,
-      description: 'Showed only on the itinerary list.'
+      type: 'array',
+      of: [{type: 'block'}],
+      description: 'Showed only on the itinerary list.',
     }),
     defineField({
       name: 'longDesc',
       title: 'Long description',
-      type: 'text',
-      rows: 3,
+      type: 'array',
+      of: [{type: 'block'}],
       description: 'To be displayed on popup modal.',
     }),
     defineField({
@@ -85,8 +85,8 @@ export const stop = defineType({
             defineField({
               name: 'body',
               title: 'Body',
-              type: 'text',
-              rows: 2,
+              type: 'array',
+              of: [{type: 'block'}],
               validation: (rule) => rule.required(),
             }),
           ],
