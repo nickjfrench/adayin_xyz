@@ -1,8 +1,8 @@
 import L from 'leaflet'
 import {FEATURE_STYLE, PIN_COLOR} from './leafletConfig'
 
-export type ShapeName = 'point' | 'polyline' | 'polygon' | 'circle'
-export const SHAPE_NAMES = ['point', 'polyline', 'polygon', 'circle'] as const
+export type ShapeName = 'polygon' | 'circle'
+export const SHAPE_NAMES = ['polygon', 'circle'] as const
 
 export interface MapFeatureItem {
   _key: string
@@ -28,40 +28,10 @@ export interface ShapeDef {
  * The shape registry — single source of truth for shape behavior. A new shape
  * kind is ONE entry here plus one entry in the web renderer registry
  * (web/src/utils/mapFeatures.ts); the schema list derives from SHAPE_NAMES.
- * Detection order follows SHAPE_NAMES: L.Polygon must be excluded from
- * polyline (it extends Polyline), so polygon is detected before falling through.
+ * Only area shapes are supported: a region is what makes a stop clickable on
+ * the itinerary map without a pin.
  */
 export const SHAPE_DEFS: Record<ShapeName, ShapeDef> = {
-  point: {
-    name: 'point',
-    glyph: '●',
-    detect: (layer) => layer instanceof L.Marker,
-    layerFromFeature: (f) =>
-      f.position ? L.marker([f.position.lat, f.position.lng], {icon: createDotIcon(16)}) : null,
-    featureFromLayer: (layer) =>
-      layer instanceof L.Marker
-        ? {shape: 'point', position: {lat: layer.getLatLng().lat, lng: layer.getLatLng().lng}}
-        : null,
-    boundsOf: (f) => (f.position ? L.latLngBounds([[f.position.lat, f.position.lng]]) : null),
-  },
-  polyline: {
-    name: 'polyline',
-    glyph: '⋯',
-    detect: (layer) => layer instanceof L.Polyline && !(layer instanceof L.Polygon),
-    layerFromFeature: (f) =>
-      f.points && f.points.length >= 2
-        ? L.polyline(f.points.map((p) => [p.lat, p.lng]), FEATURE_STYLE)
-        : null,
-    featureFromLayer: (layer) =>
-      layer instanceof L.Polyline
-        ? {
-            shape: 'polyline',
-            points: (layer.getLatLngs() as L.LatLng[]).map((p) => ({lat: p.lat, lng: p.lng})),
-          }
-        : null,
-    boundsOf: (f) =>
-      f.points && f.points.length > 0 ? L.latLngBounds(f.points.map((p) => [p.lat, p.lng])) : null,
-  },
   polygon: {
     name: 'polygon',
     glyph: '⬟',
@@ -110,8 +80,7 @@ export function shapeFromLayer(layer: L.Layer): ShapeDef | null {
 
 /**
  * Shared circular pin — inline-styled span with a white ring (className ''
- * drops Leaflet's default white box). Used by the geopoint marker and point
- * features so both render identically.
+ * drops Leaflet's default white box). Used by the location pin marker.
  */
 export function createDotIcon(size: number): L.DivIcon {
   const ring = Math.max(2, Math.round(size / 8))

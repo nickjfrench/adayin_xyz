@@ -18,27 +18,16 @@ export const FEATURE_STYLE = {
   lineCap: 'round',
 };
 
-export const FEATURE_DOT_ICON = L.divIcon({
-  className: '', // drop leaflet's default white box
-  html: '<span class="flex h-3.5 w-3.5 rounded-full bg-sea-600 ring-2 ring-white shadow"></span>',
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
-
 const toLatLng = (p: { lat: number; lng: number }) => [p.lat, p.lng] as [number, number];
 
 // One entry per shape kind — adding a shape later = one entry here + one studio
-// registry entry (studio/components/leaflet/shapes.ts).
+// registry entry (studio/components/leaflet/shapes.ts). Only area shapes:
+// a region makes a stop clickable without a pin.
 export const SHAPE_RENDERERS: Record<string, (f: MapFeatureSlim) => L.Layer | null> = {
   polygon: (f) => (f.points.length >= 3 ? L.polygon(f.points.map(toLatLng), FEATURE_STYLE) : null),
-  polyline: (f) => (f.points.length >= 2 ? L.polyline(f.points.map(toLatLng), FEATURE_STYLE) : null),
   circle: (f) =>
     f.position && f.radius
       ? L.circle([f.position.lat, f.position.lng], { ...FEATURE_STYLE, radius: f.radius })
-      : null,
-  point: (f) =>
-    f.position
-      ? L.marker([f.position.lat, f.position.lng], { icon: FEATURE_DOT_ICON, title: f.label ?? '' })
       : null,
 };
 
@@ -54,11 +43,8 @@ export function featureBounds(f: MapFeatureSlim): L.LatLngBounds | null {
   if (f.shape === 'circle' && f.position && f.radius) {
     return L.latLng(f.position.lat, f.position.lng).toBounds(f.radius * 2);
   }
-  if ((f.shape === 'polygon' || f.shape === 'polyline') && f.points.length > 0) {
+  if (f.shape === 'polygon' && f.points.length > 0) {
     return L.latLngBounds(f.points.map(toLatLng));
-  }
-  if (f.shape === 'point' && f.position) {
-    return L.latLngBounds([[f.position.lat, f.position.lng]]);
   }
   return null;
 }

@@ -12,12 +12,6 @@ export const endLocation = defineType({
       type: 'string',
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      description: 'Full address — renders as a Google Maps link.',
-    }),
     locationField,
     defineField({
       name: 'time',

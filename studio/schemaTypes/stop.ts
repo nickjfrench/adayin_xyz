@@ -59,19 +59,19 @@ export const stop = defineType({
       to: [{type: 'currency'}],
       description: 'Currency for this stop’s cost.',
     }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      description: 'Full address — renders as a Google Maps link.',
-    }),
-    locationField,
+    {
+      ...locationField,
+      // The combined pin+region map (StopMapFieldInput via leafletMapInput)
+      // hosts this field on stops.
+      description: 'Pin the stop on the itinerary route map, or draw a clickable region instead.',
+    },
     defineField({
       name: 'mapFeatures',
       title: 'Map features',
       type: 'mapFeatures',
-      description:
-        'Optional regions and alternate spots — draw on the map. Label a feature to list it as an option.',
+      // Hidden — regions are drawn on the location field's combined map.
+      hidden: true,
+      description: 'Optional clickable regions — drawn on the stop map. Label a region to list it as an option.',
     }),
     defineField({
       name: 'callouts',

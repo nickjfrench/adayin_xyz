@@ -25,7 +25,7 @@ export const mapFeature = defineType({
       name: 'position',
       title: 'Position',
       type: 'geopoint',
-      description: 'Center — used by point and circle.',
+      description: 'Center — used by circle.',
     }),
     defineField({
       name: 'radius',
@@ -37,7 +37,7 @@ export const mapFeature = defineType({
       title: 'Points',
       type: 'array',
       of: [{type: 'geopoint'}],
-      description: 'Vertices — used by polyline and polygon.',
+      description: 'Vertices — used by polygon.',
     }),
   ],
   preview: {

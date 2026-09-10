@@ -38,12 +38,6 @@ export const travel = defineType({
       type: 'image',
       options: {hotspot: true},
     }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      description: 'Full address — renders as a Google Maps link.',
-    }),
     locationField,
     defineField({
       name: 'cost',
