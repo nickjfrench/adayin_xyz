@@ -1,6 +1,9 @@
-import {useCallback, useEffect, useRef} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
 import {FormPatch, ObjectInputProps, set, setIfMissing, unset} from 'sanity'
 import {Button, Flex, Stack, Text} from '@sanity/ui'
+import {CollapseIcon} from '@sanity/icons/Collapse'
+import {ExpandIcon} from '@sanity/icons/Expand'
 import {TrashIcon} from '@sanity/icons/Trash'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -19,27 +22,34 @@ import './mapInput.css'
  */
 export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}) {
   const {value, onChange, schemaType, readOnly, apiKey} = props
-  const containerRef = useRef<HTMLDivElement | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const lat = value?.lat
   const lng = value?.lng
   const formattedAddress = value?.formattedAddress
   const hasValue = lat != null && lng != null
 
-  const map = useLeafletMap(
-    containerRef,
+  const {setContainer, map} = useLeafletMap(
     hasValue ? [lat, lng] : DEFAULT_CENTER,
     hasValue ? VALUE_ZOOM : DEFAULT_ZOOM,
   )
 
   // Converges legacy geopoint-typed values to `location` on first edit.
-  const typePatch = useCallback((): FormPatch[] =>
-    value?._type != null && value._type !== schemaType.name ? [set(schemaType.name, ['_type'])] : [], [value?._type, schemaType])
+  const typePatch = useCallback(
+    (): FormPatch[] =>
+      value?._type != null && value._type !== schemaType.name
+        ? [set(schemaType.name, ['_type'])]
+        : [],
+    [value?._type, schemaType],
+  )
 
   // Manual placement (map click, marker drag): mapsUri becomes a lat,lng query URL.
   const handlePin = useCallback(
     (pin: {lat: number; lng: number}) => {
-      const patches: FormPatch[] = [setIfMissing({_type: schemaType.name}), set(pin.lat, ['lat']), set(pin.lng, ['lng'])]
+      const patches: FormPatch[] = [
+        setIfMissing({_type: schemaType.name}),
+        set(pin.lat, ['lat']),
+        set(pin.lng, ['lng']),
+      ]
       onChange([...patches, ...typePatch(), set(mapsQueryUrl(pin.lat, pin.lng), ['mapsUri'])])
     },
     [onChange, schemaType, typePatch],
@@ -48,7 +58,11 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
   // Place search: store the Place's formattedAddress + googleMapsURI.
   const handlePlace = useCallback(
     (place: SelectedPlace) => {
-      const patches: FormPatch[] = [setIfMissing({_type: schemaType.name}), set(place.lat, ['lat']), set(place.lng, ['lng'])]
+      const patches: FormPatch[] = [
+        setIfMissing({_type: schemaType.name}),
+        set(place.lat, ['lat']),
+        set(place.lng, ['lng']),
+      ]
       for (const key of ['formattedAddress', 'mapsUri'] as const) {
         patches.push(place[key] != null ? set(place[key], [key]) : unset([key]))
       }
@@ -95,25 +109,72 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
     }
   }, [map, lat, lng, readOnly, handlePin])
 
+  // Near-fullscreen expand. Fixed positioning keeps the same Leaflet instance
+  // alive (no remount); useLeafletMap's ResizeObserver re-sizes the map.
+  const [expanded, setExpanded] = useState(false)
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+  // The hook disables wheel zoom so the form scrolls; through a fullscreen
+  // overlay the form isn't reachable, so wheel zoom is safe while expanded.
+  useEffect(() => {
+    if (!map) return
+    if (expanded) map.scrollWheelZoom.enable()
+    else map.scrollWheelZoom.disable()
+    return () => {
+      map.scrollWheelZoom.disable()
+    }
+  }, [map, expanded])
+
+  // The fullscreen overlay portals to document.body: fixed positioning inside
+  // the studio form can be hijacked by transformed/contained ancestors and
+  // loses the stacking war with studio chrome. Portalling remounts the map
+  // node (useLeafletMap rebuilds the instance; the pin refits from the value).
+  const mapNode = (
+    <div
+      ref={setContainer}
+      className={expanded ? 'leaflet-input-map leaflet-input-expanded' : 'leaflet-input-map'}
+    >
+      {apiKey && map && (
+        <PlacesSearch
+          apiKey={apiKey}
+          actions={[
+            {
+              label: 'Set as location',
+              onPick: (place) => {
+                handlePlace(place)
+                map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+              },
+            },
+          ]}
+        />
+      )}
+      <Button
+        aria-label={expanded ? 'Collapse map' : 'Expand map'}
+        icon={expanded ? CollapseIcon : ExpandIcon}
+        mode="bleed"
+        className="leaflet-input-expand"
+        onClick={() => setExpanded(!expanded)}
+      />
+    </div>
+  )
+
   return (
     <Stack space={2}>
-      <div ref={containerRef} className="leaflet-input-map">
-        {apiKey && map && (
-          <PlacesSearch
-            apiKey={apiKey}
-            onSelect={(place) => {
-              handlePlace(place)
-              map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
-            }}
-          />
-        )}
+      <div className="leaflet-input-map-slot">
+        {expanded ? createPortal(mapNode, document.body) : mapNode}
       </div>
       {hasValue ? (
         <Stack space={2}>
           <Flex align="center" gap={2}>
             <Text size={1} muted style={{flex: 1}}>
               {/* Primary line mirrors what the site renders as the Maps link text. */}
-              {formattedAddress || `${lat.toFixed(6)}, ${lng.toFixed(6)}`}
+              Primary POI: {formattedAddress || `${lat.toFixed(6)}, ${lng.toFixed(6)}`}
             </Text>
             <Button
               icon={TrashIcon}
@@ -132,7 +193,7 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
         </Stack>
       ) : (
         <Text size={1} muted>
-          Click the map or search to set the location
+          Click the map or search to set the pin — drag the pin to move it.
         </Text>
       )}
     </Stack>

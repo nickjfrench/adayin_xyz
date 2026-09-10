@@ -22,3 +22,9 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 - Use Bun always, never use NPM.
 - Don't try to run the server, check if the ports are running (4321 for web) and (3333 for sanity) and connect via that.
 - Don't try to connect to Sanity via the browser, it requires auth. Ask the user to troubleshoot.
+
+## UI Styling
+
+- For anything in `web/` match the styling outlined in `web/STLYING.md`.
+- Prefer Tailwind CSS and Astro Components over custom CSS classes.
+- Use Svelte Components when state and interactivity needs to be managed outside what can be achieved with simple in JS and Astro.

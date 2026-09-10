@@ -1,8 +1,8 @@
 import L from 'leaflet'
-import {FEATURE_STYLE, PIN_COLOR} from './leafletConfig'
+import {FEATURE_STYLE, PIN_COLOR, POINT_COLOR} from './leafletConfig'
 
-export type ShapeName = 'polygon' | 'circle'
-export const SHAPE_NAMES = ['polygon', 'circle'] as const
+export type ShapeName = 'point' | 'text' | 'polygon' | 'circle'
+export const SHAPE_NAMES = ['point', 'text', 'polygon', 'circle'] as const
 
 export interface MapFeatureItem {
   _key: string
@@ -20,7 +20,9 @@ export interface ShapeDef {
   glyph: string
   detect(layer: L.Layer): boolean
   layerFromFeature(f: MapFeatureItem): L.Layer | null
-  featureFromLayer(layer: L.Layer): Pick<MapFeatureItem, 'shape' | 'position' | 'radius' | 'points'> | null
+  featureFromLayer(
+    layer: L.Layer
+  ): Pick<MapFeatureItem, 'shape' | 'position' | 'radius' | 'points'> & {label?: string} | null
   boundsOf(f: MapFeatureItem): L.LatLngBounds | null
 }
 
@@ -28,10 +30,47 @@ export interface ShapeDef {
  * The shape registry — single source of truth for shape behavior. A new shape
  * kind is ONE entry here plus one entry in the web renderer registry
  * (web/src/utils/mapFeatures.ts); the schema list derives from SHAPE_NAMES.
- * Only area shapes are supported: a region is what makes a stop clickable on
- * the itinerary map without a pin.
+ * A region is what makes a stop clickable on the itinerary map; point and
+ * text markers add map annotations. Markers must check textMarker before the
+ * point def so Geoman text markers don't classify as points.
  */
+/** A Geoman text marker carries its editable content in `options.text`. */
+type TextMarker = L.Marker & {options: {textMarker?: boolean; text?: string}}
 export const SHAPE_DEFS: Record<ShapeName, ShapeDef> = {
+  point: {
+    name: 'point',
+    glyph: '●',
+    detect: (layer) =>
+      layer instanceof L.Marker && !(layer as TextMarker).options.textMarker,
+    layerFromFeature: (f) =>
+      f.position
+        ? L.marker([f.position.lat, f.position.lng], {icon: createDotIcon(12, POINT_COLOR)})
+        : null,
+    featureFromLayer: (layer) =>
+      layer instanceof L.Marker
+        ? {shape: 'point', position: {lat: layer.getLatLng().lat, lng: layer.getLatLng().lng}}
+        : null,
+    boundsOf: (f) => (f.position ? L.latLngBounds([[f.position.lat, f.position.lng]]) : null),
+  },
+  text: {
+    name: 'text',
+    glyph: 'T',
+    detect: (layer) => (layer as TextMarker).options.textMarker === true,
+    layerFromFeature: (f) =>
+      f.position
+        ? L.marker([f.position.lat, f.position.lng], {textMarker: true, text: f.label ?? ''})
+        : null,
+    featureFromLayer: (layer) => {
+      const marker = layer as TextMarker
+      if (marker.options?.textMarker !== true) return null
+      return {
+        shape: 'text',
+        position: {lat: marker.getLatLng().lat, lng: marker.getLatLng().lng},
+        label: marker.options.text ?? undefined,
+      }
+    },
+    boundsOf: (f) => (f.position ? L.latLngBounds([[f.position.lat, f.position.lng]]) : null),
+  },
   polygon: {
     name: 'polygon',
     glyph: '⬟',
@@ -82,14 +121,14 @@ export function shapeFromLayer(layer: L.Layer): ShapeDef | null {
  * Shared circular pin — inline-styled span with a white ring (className ''
  * drops Leaflet's default white box). Used by the location pin marker.
  */
-export function createDotIcon(size: number): L.DivIcon {
+export function createDotIcon(size: number, color: string = PIN_COLOR): L.DivIcon {
   const ring = Math.max(2, Math.round(size / 8))
   const total = size + ring * 2
   return L.divIcon({
     className: '',
     html:
       `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;` +
-      `background:${PIN_COLOR};box-shadow:0 0 0 ${ring}px #fff, 0 1px 3px rgba(0,0,0,0.35)"></span>`,
+      `background:${color};box-shadow:0 0 0 ${ring}px #fff, 0 1px 3px rgba(0,0,0,0.35)"></span>`,
     iconSize: [total, total],
     iconAnchor: [total / 2, total / 2],
   })

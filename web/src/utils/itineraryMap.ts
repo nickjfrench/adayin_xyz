@@ -120,10 +120,11 @@ function addStopFeatures(map: L.Map, item: MapStopItem, index: number) {
 }
 
 /**
- * Builds the itinerary route map into `container`. Returns a cleanup function,
- * or null when there is nothing to draw (no anchors and no features).
+ * Builds the itinerary route map into `container`. Returns the Leaflet map
+ * (for resize handling) and a destroy function, or null when there is nothing
+ * to draw (no anchors and no features).
  */
-export function createItineraryMap(container: HTMLElement, stops: MapStopItem[]): (() => void) | null {
+export function createItineraryMap(container: HTMLElement, stops: MapStopItem[]): { map: L.Map; destroy: () => void } | null {
   const points: [number, number][] = [];
   const featureCorners: [number, number][] = [];
   stops.forEach((s) => {
@@ -176,5 +177,5 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
   if (all.length > 1) map.fitBounds(all, { padding: [40, 40], maxZoom: 16 });
   else map.setView(all[0], 15);
 
-  return () => map.remove();
+  return { map, destroy: () => map.remove() };
 }

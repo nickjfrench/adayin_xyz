@@ -1,6 +1,9 @@
-import {createContext, useCallback, useContext, useEffect, useMemo, useRef} from 'react'
+import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
 import {FormPatch, ObjectInputProps, set, setIfMissing, unset} from 'sanity'
 import {Button, Flex, Grid, Stack, Text, TextInput} from '@sanity/ui'
+import {CollapseIcon} from '@sanity/icons/Collapse'
+import {ExpandIcon} from '@sanity/icons/Expand'
 import {TrashIcon} from '@sanity/icons/Trash'
 import L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free'
@@ -10,7 +13,7 @@ import {useLeafletMap} from './useLeafletMap'
 import {SHAPE_DEFS, createDotIcon, shapeFromLayer, type MapFeatureItem} from './shapes'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
 import {mapsQueryUrl} from './mapsUrl'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, VALUE_ZOOM} from './leafletConfig'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
 import {LeafletLocationInput} from './LeafletLocationInput'
 import './mapInput.css'
 
@@ -77,6 +80,9 @@ function itemFromLayer(layer: L.Layer, key: string): MapFeatureItem | null {
   const stored: Record<string, unknown> = {_key: key, _type: 'mapFeature', shape: geom.shape}
   if (geom.position) stored.position = {_type: 'geopoint', ...geom.position}
   if (typeof geom.radius === 'number') stored.radius = geom.radius
+  // Text markers carry their content as label — required so the pm:edit
+  // merge (syncFromLayer) picks up Geoman inline text edits.
+  if (geom.label) stored.label = geom.label
   if (geom.points?.length) {
     stored.points = geom.points.map((p) => ({
       _key: crypto.randomUUID(),
@@ -108,9 +114,8 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
   const {value, onChange, schemaType, readOnly, apiKey} = props
   const {docOnChange, features} = useStopMap()
   const items = features
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const markerRef = useRef<L.Marker | null>(null)
   const keyMapRef = useRef(new Map<string, L.Layer>())
+  const markerRef = useRef<L.Marker | null>(null)
   const lastEmittedRef = useRef<string | null>(null)
   if (lastEmittedRef.current === null) lastEmittedRef.current = sig(items)
 
@@ -118,8 +123,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
   const lng = value?.lng
   const formattedAddress = value?.formattedAddress
   const hasValue = lat != null && lng != null
-
-  const map = useLeafletMap(containerRef, DEFAULT_CENTER, DEFAULT_ZOOM)
+  const {setContainer, map} = useLeafletMap(DEFAULT_CENTER, DEFAULT_ZOOM)
 
   // Latest values for event handlers; avoids stale closures between renders.
   const valueRef = useRef(items)
@@ -136,20 +140,13 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     [docOnChange],
   )
 
-  const addLayerFor = useCallback(
-    (item: MapFeatureItem) => {
-      if (!map) return
-      const def = SHAPE_DEFS[item.shape]
-      if (!def) return
-      const layer = def.layerFromFeature(item)
-      if (!layer) return
-      if (item.label) layer.bindTooltip(item.label)
-      keyMapRef.current.set(item._key, layer)
-      layer.addTo(map)
-
-      // pm:update fires when edit mode closes on a changed layer, pm:edit on
-      // discrete vertex changes, pm:dragend after drag-mode drags. All rebuild
-      // the item from the layer's current geometry.
+  /**
+   * Wires the pm:update/pm:edit/pm:dragend/pm:remove sync handlers onto a
+   * layer. Used both by redraws (addLayerFor) and freshly drawn layers
+   * (onCreate), so edits on brand-new shapes persist without a redraw.
+   */
+  const attachLayerHandlers = useCallback(
+    (layer: L.Layer, item: MapFeatureItem) => {
       const syncFromLayer = () => {
         const updated = itemFromLayer(layer, item._key)
         if (updated)
@@ -157,16 +154,46 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       }
       const onLayerRemove = () => {
         keyMapRef.current.delete(item._key)
-        emit(valueRef.current.filter((i) => i._key !== item._key))
+        const next = valueRef.current.filter((i) => i._key !== item._key)
+        valueRef.current = next
+        lastEmittedRef.current = sig(next)
+        docOnChange(unset(['mapFeatures', {_key: item._key}]))
       }
       layer.on('pm:update', syncFromLayer)
       layer.on('pm:edit', syncFromLayer)
       layer.on('pm:dragend', syncFromLayer)
       layer.on('pm:remove', onLayerRemove)
     },
-    [map, emit],
+    [emit, docOnChange],
   )
 
+  const addLayerFor = useCallback(
+    (item: MapFeatureItem) => {
+      if (!map) return
+      const def = SHAPE_DEFS[item.shape]
+      if (!def) return
+      const layer = def.layerFromFeature(item)
+      if (!layer) return
+      if (item.label && item.shape !== 'text') layer.bindTooltip(item.label)
+      keyMapRef.current.set(item._key, layer)
+      layer.addTo(map)
+      attachLayerHandlers(layer, item)
+    },
+    [map, attachLayerHandlers],
+  )
+
+  // List-driven removal: external map.removeLayer does NOT fire pm:remove
+  // (only Geoman's removal tool does), so this emits the unset itself.
+  // Geoman-tool removals arrive via the layer's own onLayerRemove instead.
+  const removeItem = (key: string) => {
+    const layer = keyMapRef.current.get(key)
+    keyMapRef.current.delete(key)
+    if (layer && map) map.removeLayer(layer)
+    const next = valueRef.current.filter((i) => i._key !== key)
+    valueRef.current = next
+    lastEmittedRef.current = sig(next)
+    docOnChange(unset(['mapFeatures', {_key: key}]))
+  }
   // Converges legacy geopoint-typed values to `location` on first edit.
   const typePatch = useCallback(
     (): FormPatch[] =>
@@ -193,6 +220,42 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       onChange([...patches, ...typePatch()])
     },
     [onChange, schemaType, typePatch],
+  )
+
+  // Search destination choices: set the stop location, or append a point
+  // feature (repeated picks accumulate). The place's displayName — the
+  // searched thing's own name, e.g. a viewpoint inside a park — seeds the
+  // label; formattedAddress is often just the enclosing park's address.
+  // Editable in the feature list afterwards.
+  const searchActions = useMemo(
+    () =>
+      apiKey && map && !readOnly
+        ? [
+            {
+              label: 'Set as stop location',
+              onPick: (place: SelectedPlace) => {
+                handlePlace(place)
+                map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+              },
+            },
+            {
+              label: 'Add as map point',
+              onPick: (place: SelectedPlace) => {
+                const item: MapFeatureItem = {
+                  _key: crypto.randomUUID(),
+                  _type: 'mapFeature',
+                  shape: 'point',
+                  label: place.displayName ?? place.formattedAddress ?? undefined,
+                  position: {lat: place.lat, lng: place.lng},
+                }
+                emit([...valueRef.current, item])
+                addLayerFor(item)
+                map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+              },
+            },
+          ]
+        : [],
+    [apiKey, map, readOnly, handlePlace, emit, addLayerFor],
   )
 
   // Map click sets a pin only when none exists yet (prevents accidental moves)
@@ -246,8 +309,13 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     if (!readOnly) {
       map.pm.addControls({
         position: 'topright',
+        drawMarker: true,
         drawPolygon: true,
         drawCircle: true,
+        drawCircleMarker: false,
+        drawPolyline: false,
+        drawRectangle: false,
+        drawText: false,
         editMode: true,
         dragMode: true,
         removalMode: true,
@@ -259,8 +327,14 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     const onCreate: L.PM.CreateEventHandler = (e) => {
       const item = itemFromLayer(e.layer, crypto.randomUUID())
       if (!item) return
+      // Geoman drops a default blue pin for markers — restyle points to the
+      // amber feature dot.
+      if (item.shape === 'point') (e.layer as L.Marker).setIcon(createDotIcon(12, POINT_COLOR))
       keyMap.set(item._key, e.layer)
       emit([...valueRef.current, item])
+      // Geoman already put the layer on the map; wiring handlers here makes
+      // edits/drags/removals on brand-new shapes persist without a redraw.
+      attachLayerHandlers(e.layer, item)
     }
     map.on('pm:create', onCreate)
 
@@ -287,7 +361,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       keyMap.clear()
       if (!readOnly) map.pm.removeControls()
     }
-  }, [map, readOnly, emit, addLayerFor])
+  }, [map, readOnly, emit, addLayerFor, attachLayerHandlers])
 
   // External value changes (undo, collaborative edits): redraw everything.
   // Local emissions keep sig equal, so this is a no-op for our own patches.
@@ -302,34 +376,84 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     lastEmittedRef.current = s
   }, [map, items, addLayerFor])
 
+  // Near-fullscreen expand. Fixed positioning keeps the same Leaflet instance
+  // alive (no remount); useLeafletMap's ResizeObserver re-sizes the map.
+  const [expanded, setExpanded] = useState(false)
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+  // The hook disables wheel zoom so the form scrolls; through a fullscreen
+  // overlay the form isn't reachable, so wheel zoom is safe while expanded.
+  useEffect(() => {
+    if (!map) return
+    if (expanded) map.scrollWheelZoom.enable()
+    else map.scrollWheelZoom.disable()
+    return () => {
+      map.scrollWheelZoom.disable()
+    }
+  }, [map, expanded])
+
+  // Per-keystroke label edit: patches only this member's label so sibling
+  // features aren't rewritten. Bookkeeping updates the refs so the redraw
+  // effect treats it as our own emission (no-op), like emit does.
   const setLabel = (key: string, label: string) => {
-    emit(valueRef.current.map((i) => (i._key === key ? {...i, label: label || undefined} : i)))
+    const next = valueRef.current.map((i) => (i._key === key ? {...i, label: label || undefined} : i))
+    valueRef.current = next
+    lastEmittedRef.current = sig(next)
+    docOnChange(
+      label
+        ? set(label, ['mapFeatures', {_key: key}, 'label'])
+        : unset(['mapFeatures', {_key: key}, 'label']),
+    )
     const layer = keyMapRef.current.get(key)
-    if (layer) {
+    const shape = valueRef.current.find((i) => i._key === key)?.shape
+    if (layer && shape === 'text') {
+      // Text markers render their label inline — push the list edit into the
+      // Geoman text area so the marker shows the stored content. Geoman's
+      // setText skips empty values, so clear the textarea directly then.
+      const pm = (layer as unknown as {pm?: {setText?: (t: string) => void}}).pm
+      pm?.setText?.(label)
+      const el = (layer as L.Marker).getElement()?.querySelector('textarea')
+      if (el && el.value !== label) {
+        el.value = label
+        ;(pm as {_autoResize?: () => void} | undefined)?._autoResize?.()
+      }
+    } else if (layer) {
+      // Area shapes carry a Leaflet tooltip; text markers render their label.
       if (label) layer.bindTooltip(label)
       else layer.unbindTooltip()
     }
   }
 
-  const removeItem = (key: string) => {
-    const layer = keyMapRef.current.get(key)
-    keyMapRef.current.delete(key)
-    if (layer) map?.removeLayer(layer)
-    emit(valueRef.current.filter((i) => i._key !== key))
-  }
+  // The fullscreen overlay portals to document.body: fixed positioning inside
+  // the studio form can be hijacked by transformed/contained ancestors and
+  // loses the stacking war with studio chrome. Portalling remounts the map
+  // node (useLeafletMap rebuilds the instance; layers refit from the value).
+  const mapNode = (
+    <div
+      ref={setContainer}
+      className={expanded ? 'leaflet-input-map leaflet-input-expanded' : 'leaflet-input-map'}
+    >
+      {apiKey && map && <PlacesSearch apiKey={apiKey} actions={searchActions} />}
+      <Button
+        aria-label={expanded ? 'Collapse map' : 'Expand map'}
+        icon={expanded ? CollapseIcon : ExpandIcon}
+        mode="bleed"
+        className="leaflet-input-expand"
+        onClick={() => setExpanded(!expanded)}
+      />
+    </div>
+  )
 
   return (
     <Stack space={2}>
-      <div ref={containerRef} className="leaflet-input-map">
-        {apiKey && map && (
-          <PlacesSearch
-            apiKey={apiKey}
-            onSelect={(place) => {
-              handlePlace(place)
-              map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
-            }}
-          />
-        )}
+      <div className="leaflet-input-map-slot">
+        {expanded ? createPortal(mapNode, document.body) : mapNode}
       </div>
       {hasValue ? (
         <Stack space={2}>
@@ -355,7 +479,8 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
         </Stack>
       ) : (
         <Text size={1} muted>
-          Click the map or search to set the location — or draw a region instead of a pin.
+          Click the map or search to set the pin — drag the pin to move it. Draw a polygon or
+          circle to add a clickable region.
         </Text>
       )}
       {items.length === 0 ? (

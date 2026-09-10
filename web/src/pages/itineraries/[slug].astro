@@ -299,9 +299,7 @@ const modalRecommendations = (post.recommendations ?? [])
         hasMapPoints && (
           <section class="border-t border-sea-100 pt-8">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The route</h2>
-            <div class="overflow-hidden rounded-xl border border-sea-100 shadow-sm shadow-sea-900/5">
-              <ItineraryMap client:only="svelte" stops={mapStops} />
-            </div>
+            <ItineraryMap client:only="svelte" stops={mapStops} />
           </section>
         )
       }

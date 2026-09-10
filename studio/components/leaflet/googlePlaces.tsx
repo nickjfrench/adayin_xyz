@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import L from 'leaflet'
+import {Button} from '@sanity/ui'
 
 let loader: Promise<void> | null = null
 
@@ -24,6 +25,7 @@ export interface SelectedPlace {
   lat: number
   lng: number
   formattedAddress: string | null
+  displayName: string | null
   mapsUri: string | null
 }
 
@@ -33,12 +35,14 @@ export interface SelectedPlace {
  */
 export function PlacesSearch({
   apiKey,
-  onSelect,
+  actions,
 }: {
   apiKey: string
-  onSelect: (place: SelectedPlace) => void
+  actions: Array<{label: string; onPick: (place: SelectedPlace) => void}>
 }) {
   const [ready, setReady] = useState(false)
+  // A selected place waiting for the user to pick a destination action.
+  const [pending, setPending] = useState<SelectedPlace | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -63,31 +67,80 @@ export function PlacesSearch({
     }
   }, [ready])
 
+  const pick = (place: SelectedPlace) => {
+    // One action = no choice to make (standalone pin map): invoke directly.
+    if (actions.length === 1) {
+      actions[0].onPick(place)
+      return
+    }
+    setPending(place)
+  }
+
+  // Escape dismisses the pending choice wherever focus sits.
+  useEffect(() => {
+    if (pending == null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPending(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pending])
+
   if (!ready) return <div className="leaflet-input-search" />
 
+  const choosing = pending != null && actions.length > 1
+
   return (
-    <div ref={searchRef} className="leaflet-input-search">
-      <gmp-place-autocomplete
-        ongmp-select={async ({placePrediction}: google.maps.places.PlacePredictionSelectEvent) => {
-          try {
-            const place = placePrediction.toPlace()
-            await place.fetchFields({fields: ['location', 'googleMapsURI', 'formattedAddress']})
-            const location = place.location
-            if (!location) return
-            onSelect({
-              lat: location.lat(),
-              lng: location.lng(),
-              formattedAddress: place.formattedAddress ?? null,
-              mapsUri:
-                place.googleMapsURI ??
-                (place as {googleMapsUri?: string | null}).googleMapsUri ??
-                null,
-            })
-          } catch (err) {
-            console.error('Failed to fetch selected place', err)
-          }
-        }}
-      />
-    </div>
+    <>
+      <div ref={searchRef} className="leaflet-input-search">
+        <gmp-place-autocomplete
+          ongmp-select={async ({placePrediction}: google.maps.places.PlacePredictionSelectEvent) => {
+            try {
+              const place = placePrediction.toPlace()
+              await place.fetchFields({
+                fields: ['location', 'googleMapsURI', 'formattedAddress', 'displayName'],
+              })
+              const location = place.location
+              if (!location) return
+              pick({
+                lat: location.lat(),
+                lng: location.lng(),
+                formattedAddress: place.formattedAddress ?? null,
+                displayName: place.displayName ?? null,
+                mapsUri:
+                  place.googleMapsURI ??
+                  (place as {googleMapsUri?: string | null}).googleMapsUri ??
+                  null,
+              })
+            } catch (err) {
+              console.error('Failed to fetch selected place', err)
+            }
+          }}
+        />
+        {choosing && (
+          <div className="leaflet-input-choices">
+            {actions.map((action) => (
+              <Button
+                key={action.label}
+                text={action.label}
+                mode="ghost"
+                justify="flex-start"
+                onClick={() => {
+                  const place = pending!
+                  setPending(null)
+                  action.onPick(place)
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      {choosing && (
+        /* Click-away shield: eats map interactions until a choice or dismissal.
+           z-index 999 sits above Leaflet panes (<=700) and below controls
+           (>=1000), so toolbars/search stay usable while a choice is pending. */
+        <div className="leaflet-input-shield" onClick={() => setPending(null)} />
+      )}
+    </>
   )
 }
