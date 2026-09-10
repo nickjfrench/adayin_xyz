@@ -44,13 +44,26 @@
   );
 
   const hasBody = $derived(
-    stop && (stop.longDesc || stop.callouts?.length > 0 || stop.link || mapsLink)
+    stop && (stop.longDesc || stop.callouts?.length > 0 || stop.link || mapsLink || (stop.mapFeatures?.some((f) => f.label) ?? false))
   );
 </script>
 
 {#snippet body()}
   {#if stop.longDesc}
     <div class="pt-inline text-sm italic text-sea-600"><PortableText value={stop.longDesc} components={ptComponents} /></div>
+  {/if}
+
+  {#if stop.mapFeatures?.some((f) => f.label)}
+    <div class="mt-4 flex flex-col gap-1.5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-sand-500">Spots &amp; options</p>
+      <ul class="flex flex-col gap-1">
+        {#each stop.mapFeatures.filter((f) => f.label) as f}
+          <li class="flex items-center gap-2 text-sm text-sea-700">
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-sea-400"></span>{f.label}
+          </li>
+        {/each}
+      </ul>
+    </div>
   {/if}
 
   {#if stop.callouts?.length > 0}

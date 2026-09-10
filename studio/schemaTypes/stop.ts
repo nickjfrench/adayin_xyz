@@ -65,6 +65,19 @@ export const stop = defineType({
       description: 'Full address — renders as a Google Maps link.',
     }),
     defineField({
+      name: 'location',
+      title: 'Location',
+      type: 'geopoint',
+      description: 'Map pin — plots this stop on the itinerary route map.',
+    }),
+    defineField({
+      name: 'mapFeatures',
+      title: 'Map features',
+      type: 'mapFeatures',
+      description:
+        'Optional regions and alternate spots — draw on the map. Label a feature to list it as an option.',
+    }),
+    defineField({
       name: 'callouts',
       title: 'Callouts',
       type: 'array',

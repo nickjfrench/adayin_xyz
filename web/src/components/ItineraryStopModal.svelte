@@ -25,11 +25,21 @@
       }
     }
 
+    // Map island (ItineraryMap.svelte) dispatches this to open the same modal.
+    function handleOpenEvent(e) {
+      const idx = Number(e.detail);
+      if (Number.isInteger(idx) && idx >= 0 && idx < stops.length) {
+        selectedStop = stops[idx];
+      }
+    }
+    window.addEventListener('itinerary:open-stop', handleOpenEvent);
+
     stopEls.forEach(el => el.addEventListener('click', handleStopClick));
     recEls.forEach(el => el.addEventListener('click', handleRecClick));
     return () => {
       stopEls.forEach(el => el.removeEventListener('click', handleStopClick));
       recEls.forEach(el => el.removeEventListener('click', handleRecClick));
+      window.removeEventListener('itinerary:open-stop', handleOpenEvent);
     };
   });
 </script>

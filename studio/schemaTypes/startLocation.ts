@@ -18,6 +18,12 @@ export const startLocation = defineType({
       description: 'Full address — renders as a Google Maps link.',
     }),
     defineField({
+      name: 'location',
+      title: 'Location',
+      type: 'geopoint',
+      description: 'Map pin — plots this stop on the itinerary route map.',
+    }),
+    defineField({
       name: 'time',
       title: 'Time',
       type: 'string',
