@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import StopModal from './StopModal.svelte';
+  import { STOP_OPEN_EVENT } from '../utils/mapEvents';
 
   /** @type {Array<import('../utils/sanity').Post['stops'][number] & {imageUrl?: string}>} */
   let { stops = [], recommendations = [] } = $props();
@@ -32,14 +33,14 @@
         selectedStop = stops[idx];
       }
     }
-    window.addEventListener('itinerary:open-stop', handleOpenEvent);
+    window.addEventListener(STOP_OPEN_EVENT, handleOpenEvent);
 
     stopEls.forEach(el => el.addEventListener('click', handleStopClick));
     recEls.forEach(el => el.addEventListener('click', handleRecClick));
     return () => {
       stopEls.forEach(el => el.removeEventListener('click', handleStopClick));
       recEls.forEach(el => el.removeEventListener('click', handleRecClick));
-      window.removeEventListener('itinerary:open-stop', handleOpenEvent);
+      window.removeEventListener(STOP_OPEN_EVENT, handleOpenEvent);
     };
   });
 </script>

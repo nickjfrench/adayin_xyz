@@ -1,6 +1,6 @@
 <script>
   import Modal from './Modal.svelte';
-  import { priceText } from '../utils/cost';
+  import { mapsLinkFor, mapsLinkText } from '../utils/maps';
   import { PortableText } from '@portabletext/svelte';
   import PortableLink from './PortableLink.svelte';
 
@@ -33,18 +33,16 @@
   const isStart = $derived(stop?._type === 'startLocation');
   const isEnd = $derived(stop?._type === 'endLocation');
 
-  const mapsLink = $derived(
-    stop?.address
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.address)}`
-      : null
-  );
+  const mapsLink = $derived(mapsLinkFor(stop?.location, stop?.address));
+  const mapsText = $derived(mapsLinkText(stop?.location, stop?.address) ?? '');
 
   const hasMeta = $derived(
     stop && (stop.time || stop.duration || (stop.cost != null && stop.cost > 0))
   );
 
+  const labeledFeatures = $derived((stop?.mapFeatures ?? []).filter((f) => f.label));
   const hasBody = $derived(
-    stop && (stop.longDesc || stop.callouts?.length > 0 || stop.link || mapsLink || (stop.mapFeatures?.some((f) => f.label) ?? false))
+    stop && (stop.longDesc || stop.callouts?.length > 0 || stop.link || mapsLink || labeledFeatures.length > 0)
   );
 </script>
 
@@ -53,11 +51,11 @@
     <div class="pt-inline text-sm italic text-sea-600"><PortableText value={stop.longDesc} components={ptComponents} /></div>
   {/if}
 
-  {#if stop.mapFeatures?.some((f) => f.label)}
+  {#if labeledFeatures.length > 0}
     <div class="mt-4 flex flex-col gap-1.5">
       <p class="text-xs font-semibold uppercase tracking-wide text-sand-500">Spots &amp; options</p>
       <ul class="flex flex-col gap-1">
-        {#each stop.mapFeatures.filter((f) => f.label) as f}
+        {#each labeledFeatures as f}
           <li class="flex items-center gap-2 text-sm text-sea-700">
             <span class="inline-block h-1.5 w-1.5 rounded-full bg-sea-400"></span>{f.label}
           </li>
@@ -93,7 +91,7 @@
     <div class="mt-4">
       <a href={mapsLink} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs text-sea-500 transition-colors hover:text-sea-700">
         <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-        {stop.address}
+        {mapsText}
       </a>
     </div>
   {/if}

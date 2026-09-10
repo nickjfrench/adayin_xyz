@@ -4,6 +4,7 @@ import { PortableText } from "astro-portabletext";
 import CostPill from "./CostPill.astro";
 import PortableLink from "./PortableLink.astro";
 import type { Currency } from "../utils/cost";
+import { mapsLinkFor, mapsLinkText, type LocationValue } from "../utils/maps";
 
 interface Props {
   stop: {
@@ -14,6 +15,7 @@ interface Props {
     cost?: number;
     currency?: Currency;
     address?: string;
+    location?: LocationValue;
     callouts?: Array<{
       kind?: {
         name?: string;
@@ -53,9 +55,8 @@ const config = CONFIG[stop._type] ?? CONFIG.stop;
 
 const dotLabel = isStart ? "S" : isEnd ? "E" : null;
 
-const mapsLink = stop.address
-  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.address)}`
-  : null;
+const mapsLink = mapsLinkFor(stop.location, stop.address);
+const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
 ---
 
 <li class:list={["relative pb-8 last:pb-0", config.dim && "opacity-60"]} data-travel={isTravel || undefined}>
@@ -94,7 +95,7 @@ const mapsLink = stop.address
         {stop.title && (
           <>
             <span class="text-sea-300">·</span>
-            <span class="stop-title cursor-pointer text-xs text-sea-600 hover:text-sea-800 hover:underline" data-stop-index={index}>{stop.title}</span>
+            <button type="button" class="stop-title cursor-pointer text-xs text-sea-600 hover:text-sea-800 hover:underline" data-stop-index={index}>{stop.title}</button>
           </>
         )}
         {stop.cost != null && stop.cost > 0 && (
@@ -106,7 +107,7 @@ const mapsLink = stop.address
         {mapsLink && (
           <>
             <span class="text-sea-300">·</span>
-            <MapLink address={stop.address!} class="text-sea-400 hover:text-sea-600" />
+            <MapLink href={mapsLink} text={mapsText} class="text-sea-400 hover:text-sea-600" />
           </>
         )}
       </div>
@@ -120,8 +121,10 @@ const mapsLink = stop.address
         <div class="px-4 py-3">
           {/* Title + Cost inline */}
           <div class="mt-0.5 flex flex-wrap items-center gap-2">
-            <h3 class="stop-title cursor-pointer font-display text-lg font-semibold leading-snug text-sea-800 hover:text-sea-600 hover:underline" data-stop-index={index}>
-              {stop.title}
+            <h3 class="font-display text-lg font-semibold leading-snug">
+              <button type="button" class="stop-title cursor-pointer text-sea-800 hover:text-sea-600 hover:underline" data-stop-index={index}>
+                {stop.title}
+              </button>
             </h3>
             {stop.cost != null && stop.cost > 0 && (
               <CostPill cost={stop.cost} currency={stop.currency} />
@@ -167,7 +170,7 @@ const mapsLink = stop.address
           {/* Address */}
           {mapsLink && (
             <div class="mt-2.5">
-              <MapLink address={stop.address!} class="text-sea-400 hover:text-sea-600" />
+              <MapLink href={mapsLink} text={mapsText} class="text-sea-400 hover:text-sea-600" />
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import {defineType, defineField} from 'sanity'
+import {locationField} from './locationField'
 
 export const endLocation = defineType({
   name: 'endLocation',
@@ -6,7 +7,7 @@ export const endLocation = defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'title', 
+      name: 'title',
       title: 'What / where',
       type: 'string',
       validation: (rule) => rule.required(),
@@ -17,12 +18,7 @@ export const endLocation = defineType({
       type: 'string',
       description: 'Full address — renders as a Google Maps link.',
     }),
-    defineField({
-      name: 'location',
-      title: 'Location',
-      type: 'geopoint',
-      description: 'Map pin — plots this stop on the itinerary route map.',
-    }),
+    locationField,
     defineField({
       name: 'time',
       title: 'Time',

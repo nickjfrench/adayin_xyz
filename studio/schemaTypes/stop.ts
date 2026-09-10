@@ -1,5 +1,6 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
 import {CalloutPreview} from '../components/CalloutPreview'
+import {locationField} from './locationField'
 
 export const stop = defineType({
   name: 'stop',
@@ -64,12 +65,7 @@ export const stop = defineType({
       type: 'string',
       description: 'Full address — renders as a Google Maps link.',
     }),
-    defineField({
-      name: 'location',
-      title: 'Location',
-      type: 'geopoint',
-      description: 'Map pin — plots this stop on the itinerary route map.',
-    }),
+    locationField,
     defineField({
       name: 'mapFeatures',
       title: 'Map features',

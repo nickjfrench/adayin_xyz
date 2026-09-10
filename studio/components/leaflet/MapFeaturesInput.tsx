@@ -91,7 +91,8 @@ export function MapFeaturesInput(props: ArrayOfObjectsInputProps & {apiKey?: str
       // the item from the layer's current geometry.
       const syncFromLayer = () => {
         const updated = itemFromLayer(layer, item._key)
-        if (updated) emit(valueRef.current.map((i) => (i._key === item._key ? updated : i)))
+        if (updated)
+          emit(valueRef.current.map((i) => (i._key === item._key ? {...i, ...updated} : i)))
       }
       const onLayerRemove = () => {
         keyMapRef.current.delete(item._key)
@@ -142,12 +143,17 @@ export function MapFeaturesInput(props: ArrayOfObjectsInputProps & {apiKey?: str
       const b = SHAPE_DEFS[f.shape]?.boundsOf(f)
       if (b) corners.push(b.getSouthWest(), b.getNorthEast())
     })
-    if (corners.length > 0) map.fitBounds(L.latLngBounds(corners), {padding: [20, 20]})
+    if (corners.length > 0) map.fitBounds(L.latLngBounds(corners), {padding: [20, 20], maxZoom: 16})
 
     valueRef.current.forEach(addLayerFor)
 
     return () => {
       map.off('pm:create', onCreate)
+      // Layers belong to this map instance — dropping them here keeps effect
+      // re-runs (readOnly flips) and StrictMode remounts from leaving
+      // duplicate layers or orphans keyMap can no longer address.
+      keyMap.forEach((layer) => map.removeLayer(layer))
+      keyMap.clear()
       if (!readOnly) map.pm.removeControls()
     }
   }, [map, readOnly, emit, addLayerFor])
@@ -187,14 +193,16 @@ export function MapFeaturesInput(props: ArrayOfObjectsInputProps & {apiKey?: str
         {apiKey && map && (
           <PlacesSearch
             apiKey={apiKey}
-            onSelect={(latLng) => map.setView([latLng.lat, latLng.lng], Math.max(map.getZoom(), 15))}
+            onSelect={(latLng) =>
+              map.setView([latLng.lat, latLng.lng], Math.max(map.getZoom(), 15))
+            }
           />
         )}
       </div>
       {items.length === 0 ? (
         <Text size={1} muted>
-          Draw a point, line, polygon, or circle to mark where this stop happens — label a feature to
-          list it as an option.
+          Draw a point, line, polygon, or circle to mark where this stop happens — label a feature
+          to list it as an option.
         </Text>
       ) : (
         <Stack space={2} padding={1}>
@@ -210,6 +218,7 @@ export function MapFeaturesInput(props: ArrayOfObjectsInputProps & {apiKey?: str
                 onChange={(e) => setLabel(item._key, e.currentTarget.value)}
               />
               <Button
+                aria-label="Remove feature"
                 icon={TrashIcon}
                 mode="ghost"
                 tone="critical"

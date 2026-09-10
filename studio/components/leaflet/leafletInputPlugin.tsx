@@ -1,6 +1,6 @@
 import {definePlugin} from 'sanity'
 import type {ArrayOfObjectsInputProps, InputProps, ObjectInputProps, SchemaType} from 'sanity'
-import {LeafletGeopointInput} from './LeafletGeopointInput'
+import {LeafletLocationInput} from './LeafletLocationInput'
 import {MapFeaturesInput} from './MapFeaturesInput'
 
 export interface LeafletInputConfig {
@@ -12,8 +12,8 @@ export const leafletMapInput = definePlugin<LeafletInputConfig>((config) => ({
   form: {
     components: {
       input: (props: InputProps) => {
-        if (isType('geopoint', props.schemaType)) {
-          return <LeafletGeopointInput {...(props as ObjectInputProps)} apiKey={config.googlePlacesApiKey} />
+        if (isType('location', props.schemaType)) {
+          return <LeafletLocationInput {...(props as ObjectInputProps)} apiKey={config.googlePlacesApiKey} />
         }
         if (isType('mapFeatures', props.schemaType)) {
           return <MapFeaturesInput {...(props as ArrayOfObjectsInputProps)} apiKey={config.googlePlacesApiKey} />

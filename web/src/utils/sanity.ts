@@ -26,7 +26,7 @@ const POST_QUERY = defineQuery(
     stops[]->{
       _type,
       stopType->{ label, "name": name.current, icon { provider, name, svg } },
-      time, title, description, longDesc, cost, currency->{ name, code, icon { provider, name, svg }, ranges[] { value } }, address, location, mapFeatures,
+      time, title, description, longDesc, cost, currency->{ name, code, icon { provider, name, svg }, ranges[] { value } }, address, location{lat, lng, formattedAddress, mapsUri}, mapFeatures,
       callouts[]{ kind->{ "name": name.current, label, accent, labelColor, icon { provider, name, svg } }, body },
       travelType->{ label, "name": name.current, icon { provider, name, svg } },
       duration, image, link

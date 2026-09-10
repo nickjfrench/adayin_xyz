@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // the package owns its CSS
 import { featureLayer, featureBounds, type MapFeatureSlim } from './mapFeatures';
+import { STOP_OPEN_EVENT } from './mapEvents';
 
 export interface MapStopItem {
   _type: string;
@@ -9,8 +10,6 @@ export interface MapStopItem {
   icon: string | null;
   features: MapFeatureSlim[] | null;
 }
-
-const EVENT = 'itinerary:open-stop';
 
 // Full literal class strings (Tailwind v4 scans this file's text).
 const MARKER_CONFIG: Record<string, { classes: string; label: string | null }> = {
@@ -30,7 +29,7 @@ const SEA_300 = 'oklch(0.74 0.065 185)'; // --color-sea-300
 type Located = { latlng: [number, number]; index: number };
 
 function openStop(index: number) {
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: index }));
+  window.dispatchEvent(new CustomEvent(STOP_OPEN_EVENT, { detail: index }));
 }
 
 function markerInner(item: MapStopItem, config: { label: string | null }) {
@@ -145,6 +144,8 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     scrollWheelZoom: false,                    // page scroll passes over the map
     renderer: L.canvas({ tolerance: 20 }),     // ~20px click tolerance around thin arcs
   });
+  // Mirrors studio/components/leaflet/leafletConfig.ts TILE_URL/TILE_OPTIONS —
+  // keep both in sync when changing tiles, zoom or attribution.
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -165,12 +166,12 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     const latlng: [number, number] = [s.location.lat, s.location.lng];
     if (lastLocated) {
       drawSegment(map, lastLocated, { latlng, index: i }, pendingTravels);
-      pendingTravels = [];
     }
+    pendingTravels = [];
     addStopMarker(map, s, i, latlng);
     lastLocated = { latlng, index: i };
   });
-  // Leftover pendingTravels with no following located point: intentionally not drawn.
+  // Travels before the first located point or after the last: intentionally not drawn.
   const all = [...points, ...featureCorners];
   if (all.length > 1) map.fitBounds(all, { padding: [40, 40], maxZoom: 16 });
   else map.setView(all[0], 15);

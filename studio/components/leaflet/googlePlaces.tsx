@@ -1,4 +1,5 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
+import L from 'leaflet'
 
 let loader: Promise<void> | null = null
 
@@ -9,10 +10,21 @@ export function loadGooglePlaces(apiKey: string): Promise<void> {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&loading=async&v=weekly`
     script.async = true
     script.addEventListener('load', () => resolve())
-    script.addEventListener('error', () => reject(new Error('Google Places failed to load')))
+    script.addEventListener('error', () => {
+      loader = null // transient script failure must not disable search for the session
+      reject(new Error('Google Places failed to load'))
+    })
     document.head.appendChild(script)
   })
   return loader
+}
+
+/** A place selected from autocomplete — the multipart payload for `location`. */
+export interface SelectedPlace {
+  lat: number
+  lng: number
+  formattedAddress: string | null
+  mapsUri: string | null
 }
 
 /**
@@ -24,7 +36,7 @@ export function PlacesSearch({
   onSelect,
 }: {
   apiKey: string
-  onSelect: (latLng: {lat: number; lng: number}) => void
+  onSelect: (place: SelectedPlace) => void
 }) {
   const [ready, setReady] = useState(false)
 
@@ -39,18 +51,41 @@ export function PlacesSearch({
       cancelled = true
     }
   }, [apiKey])
+  // The search element sits inside the Leaflet map container: without this
+  // shield, pointer events from the popup bubble into the map's drag/click
+  // handlers, which light-dismiss the autocomplete before a click selects.
+  const searchRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = searchRef.current
+    if (el) {
+      L.DomEvent.disableClickPropagation(el)
+      L.DomEvent.disableScrollPropagation(el)
+    }
+  }, [ready])
 
   if (!ready) return <div className="leaflet-input-search" />
 
   return (
-    <div className="leaflet-input-search">
+    <div ref={searchRef} className="leaflet-input-search">
       <gmp-place-autocomplete
         ongmp-select={async ({placePrediction}: google.maps.places.PlacePredictionSelectEvent) => {
-          const place = placePrediction.toPlace()
-          await place.fetchFields({fields: ['location']})
-          const location = place.location
-          if (!location) return
-          onSelect({lat: location.lat(), lng: location.lng()})
+          try {
+            const place = placePrediction.toPlace()
+            await place.fetchFields({fields: ['location', 'googleMapsURI', 'formattedAddress']})
+            const location = place.location
+            if (!location) return
+            onSelect({
+              lat: location.lat(),
+              lng: location.lng(),
+              formattedAddress: place.formattedAddress ?? null,
+              mapsUri:
+                place.googleMapsURI ??
+                (place as {googleMapsUri?: string | null}).googleMapsUri ??
+                null,
+            })
+          } catch (err) {
+            console.error('Failed to fetch selected place', err)
+          }
         }}
       />
     </div>

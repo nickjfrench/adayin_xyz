@@ -62,6 +62,9 @@ const modalStops = filtered.map((s) => ({
   imageUrl: s.image
     ? urlFor(s.image).width(1200).height(514).fit("crop").auto("format").url()
     : undefined,
+  // StopModal only renders feature labels — geometry is already serialized
+  // slim in mapStops, so vertices don't ship twice in island props.
+  mapFeatures: (s.mapFeatures ?? []).filter((f) => f.label).map((f) => ({ label: f.label })),
 }));
 
 // Slim items for the route map island — index-aligned with modalStops/StopCard
@@ -79,7 +82,7 @@ const mapStops = filtered.map((s) => ({
     points: (f.points ?? []).map((p) => ({ lat: p.lat, lng: p.lng })),
   })),
 }));
-const hasMapPoints = mapStops.some((s) => s.location);
+const hasMapPoints = mapStops.some((s) => s.location || s.features.length > 0);
 
 const hero = post.mainImage
   ? urlFor(post.mainImage)
