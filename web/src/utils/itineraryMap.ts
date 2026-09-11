@@ -270,6 +270,10 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // OSMF rejects tile requests that carry no Referer with 403 "Access
+    // blocked"; the per-tile attribute overrides any stricter document referrer
+    // policy the embedding page may set (which the tile usage policy forbids).
+    referrerPolicy: 'strict-origin-when-cross-origin',
   }).addTo(map);
 
   // Walk the ordered array: located items become markers and close segments;
