@@ -10,6 +10,7 @@
   let { stops = [] } = $props();
 
   let container;
+  let backdrop;
   /** @type {import('leaflet').Map | null} */
   let map = null;
   let enlarged = $state(false);
@@ -25,19 +26,37 @@
     enlarged = !enlarged;
     // Leaflet doesn't observe container resizes; recalculate after the class flip.
     requestAnimationFrame(() => map?.invalidateSize());
+    // Inline map keeps wheel zoom off so page scroll passes over it; the
+    // fullscreen overlay locks page scroll, so wheel = zoom there.
+    map?.scrollWheelZoom[enlarged ? 'enable' : 'disable']();
   }
 
-  // While enlarged (fixed overlay): lock page scroll behind it, close on Escape.
+  // While enlarged (fixed overlay): lock page scroll behind it, close on
+  // Escape, and close on click-outside. Click-outside lives on document
+  // rather than the backdrop div, which keeps the div free of click
+  // semantics in markup (a11y) — keyboard users close via Escape.
   $effect(() => {
     if (!enlarged) return;
     document.body.style.overflow = 'hidden';
     const onKey = (e) => {
-      if (e.key === 'Escape') enlarged = false;
+      if (e.key !== 'Escape') return;
+      // A stop modal is a native <dialog> on top; ESC belongs to it first —
+      // its own close handler consumes that press. Only close the map once
+      // no modal dialog is open.
+      if (document.querySelector('dialog[open]')) return;
+      enlarged = false;
+    };
+    // Only a click on the backdrop itself closes; clicks on its children
+    // (the map) must not, hence target identity rather than bubbling.
+    const onClick = (e) => {
+      if (e.target === backdrop) enlarged = false;
     };
     window.addEventListener('keydown', onKey);
+    document.addEventListener('click', onClick);
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', onKey);
+      document.removeEventListener('click', onClick);
     };
   });
 </script>
@@ -53,15 +72,13 @@
   would wipe leaflet's runtime-added `leaflet-container` class and break tile
   sizing/overflow — all reactive sizing lives on the wrapper instead.
 -->
-<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
-<!-- Escape handling is on window; the div is purely the modal backdrop. -->
+<!-- Escape + click-outside handling are programmatic (window keydown,
+     document click); the div is purely the modal backdrop. -->
 <div
+  bind:this={backdrop}
   class={enlarged
     ? 'fixed inset-0 z-50 flex items-center justify-center bg-sea-900/25 backdrop-blur-2xs'
     : ''}
-  onclick={(e) => {
-    if (enlarged && e.target === e.currentTarget) enlarged = false;
-  }}
 >
   <div class="relative {enlarged ? 'h-[70vh] w-[70vw] shadow-lg shadow-sea-900/10' : 'h-80'}">
     <div
@@ -114,5 +131,25 @@
 <style>
   :global(.leaflet-container) {
     background: transparent;
+  }
+
+  /* Hover labels bound in itineraryMap.ts (labelMarker): leaflet's default
+     white tooltip, retinted to the site's display font and sea palette. Two
+     classes beat leaflet.css's own `.leaflet-tooltip` rules whatever the
+     stylesheet order; the arrow keeps its default white, so the box is white. */
+  :global(.leaflet-tooltip.itinerary-tooltip) {
+    max-width: 16rem;
+    padding: 3px 8px;
+    border: none;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--color-sea-800);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    white-space: normal;
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--color-sea-900) 30%, transparent);
   }
 </style>

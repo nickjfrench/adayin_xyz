@@ -9,33 +9,37 @@ export interface MapFeatureSlim {
   points: Array<{ lat: number; lng: number }>;
 }
 
-// --color-sea-500
+// Shared base style; `color` is overridden per stop by callers that pass one.
 export const FEATURE_STYLE = {
   color: 'oklch(0.53 0.085 185)',
   weight: 3,
   opacity: 0.8,
   fillOpacity: 0.12,
   lineCap: 'round',
-};
+} as const;
+
+type ShapeRenderer = (f: MapFeatureSlim, color: string) => L.Layer | null;
 
 const toLatLng = (p: { lat: number; lng: number }) => [p.lat, p.lng] as [number, number];
 
 // One entry per shape kind — adding a shape later = one entry here + one studio
 // registry entry (studio/components/leaflet/shapes.ts). Points and text labels
 // are map annotations; polygons/circles make a stop clickable without a pin.
-export const SHAPE_RENDERERS: Record<string, (f: MapFeatureSlim) => L.Layer | null> = {
-  point: (f) => (f.position ? L.marker(toLatLng(f.position), { icon: dotIcon() }) : null),
+export const SHAPE_RENDERERS: Record<string, ShapeRenderer> = {
+  point: (f, color) => (f.position ? L.marker(toLatLng(f.position), { icon: dotIcon(color) }) : null),
   text: (f) => (f.label && f.position ? L.marker(toLatLng(f.position), { icon: textLabelIcon(f.label) }) : null),
-  polygon: (f) => (f.points.length >= 3 ? L.polygon(f.points.map(toLatLng), FEATURE_STYLE) : null),
-  circle: (f) =>
+  polygon: (f, color) => (f.points.length >= 3 ? L.polygon(f.points.map(toLatLng), { ...FEATURE_STYLE, color }) : null),
+  circle: (f, color) =>
     f.position && f.radius
-      ? L.circle([f.position.lat, f.position.lng], { ...FEATURE_STYLE, radius: f.radius })
+      ? L.circle([f.position.lat, f.position.lng], { ...FEATURE_STYLE, color, radius: f.radius })
       : null,
 };
 
-/** Renders a feature via the registry, binding its label as tooltip when present. */
-export function featureLayer(f: MapFeatureSlim): L.Layer | null {
-  const layer = SHAPE_RENDERERS[f.shape]?.(f) ?? null;
+/** Renders a feature via the registry, binding its label as tooltip when present.
+ * `color` tints the shape/dot — callers pass a per-stop color so overlapping
+ * regions stay attributable. */
+export function featureLayer(f: MapFeatureSlim, color: string = FEATURE_STYLE.color): L.Layer | null {
+  const layer = SHAPE_RENDERERS[f.shape]?.(f, color) ?? null;
   // Text labels render their content in the marker itself; only the other
   // shapes carry a Leaflet tooltip.
   if (layer && f.label && f.shape !== 'text') layer.bindTooltip(f.label);
@@ -56,14 +60,14 @@ export function featureBounds(f: MapFeatureSlim): L.LatLngBounds | null {
   return null;
 }
 
-/** Small teal dot matching the studio's feature points (createDotIcon style). */
-function dotIcon(): L.DivIcon {
+/** Small dot matching the studio's feature points; `color` defaults to sea. */
+function dotIcon(color: string = FEATURE_STYLE.color): L.DivIcon {
   const size = 12;
   const ring = 2;
   const total = size + ring * 2;
   return L.divIcon({
     className: '',
-    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${FEATURE_STYLE.color};box-shadow:0 0 0 ${ring}px #fff, 0 1px 3px rgba(0,0,0,0.35)"></span>`,
+    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};box-shadow:0 0 0 ${ring}px #fff, 0 1px 3px rgba(0,0,0,0.35)"></span>`,
     iconSize: [total, total],
     iconAnchor: [total / 2, total / 2],
   });

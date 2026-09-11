@@ -5,6 +5,7 @@ import CostPill from "./CostPill.astro";
 import PortableLink from "./PortableLink.astro";
 import type { Currency } from "../utils/cost";
 import { mapsLinkFor, mapsLinkText, type LocationValue } from "../utils/maps";
+import { stopGlyph } from "../utils/stopGlyph";
 
 interface Props {
   stop: {
@@ -53,7 +54,10 @@ const CONFIG: Record<string, { accent: string; dot: string; label: string; dim: 
 
 const config = CONFIG[stop._type] ?? CONFIG.stop;
 
-const dotLabel = isStart ? "S" : isEnd ? "E" : null;
+// Letter dots (S/E) drop the white ring and carry the label instead.
+const labelled = isStart || isEnd;
+// Same glyph builder as the map pins — icon, letter and box all match.
+const glyph = stopGlyph({ type: stop._type, icon: stop.travelType?.icon?.svg }, "h-3 w-3");
 
 const mapsLink = mapsLinkFor(stop.location, stop.address);
 const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
@@ -67,20 +71,10 @@ const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
       class:list={[
         "flex h-5 w-5 items-center justify-center rounded-full text-white",
         config.dot,
-        dotLabel ? "text-[10px] font-bold" : "ring-[3px] ring-white",
+        labelled ? "text-[10px] font-bold" : "ring-[3px] ring-white",
       ]}
-    >
-      {dotLabel ? (
-        dotLabel
-      ) : isTravel && stop.travelType?.icon?.svg ? (
-        <span class="travel-icon inline-block h-3 w-3" set:html={stop.travelType.icon.svg} />
-      ) : isTravel ? (
-        <span class="text-[10px] font-bold">→</span>
-      ) : (
-        /* Map pin icon for stops */
-        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
-      )}
-    </span>
+      set:html={glyph}
+    />
   </div>
 
   {/* ── Content column ── */}
@@ -196,10 +190,5 @@ const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
   }
   li[data-travel]::before {
     border-left-style: dashed;
-  }
-  /* Font Awesome SVGs injected via set:html need global targeting */
-  :global(.travel-icon svg) {
-    height: 0.75rem !important;
-    width: 0.75rem !important;
   }
 </style>

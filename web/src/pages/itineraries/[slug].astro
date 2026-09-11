@@ -6,9 +6,9 @@ import {
   priceText,
   sumCosts,
   tripCurrencyFrom,
-  countStops,
   priceTier,
 } from "../../utils/cost";
+import { countStops } from "../../utils/stops";
 import StopCard from "../../components/StopCard.astro";
 import PortableLink from "../../components/PortableLink.astro";
 import ItineraryStopModal from "../../components/ItineraryStopModal.svelte";
@@ -73,7 +73,8 @@ const mapStops = filtered.map((s) => ({
   _type: s._type,
   title: s.title ?? null,
   location: s.location ? { lat: s.location.lat, lng: s.location.lng } : null,
-  icon: (s._type === "travel" ? s.travelType?.icon?.svg : s.stopType?.icon?.svg) ?? null,
+  // Travel legs carry their glyph; stop pins render their stop number.
+  icon: s._type === "travel" ? (s.travelType?.icon?.svg ?? null) : null,
   features: (s.mapFeatures ?? []).map((f) => ({
     label: f.label ?? null,
     shape: f.shape,
