@@ -9,6 +9,7 @@ import {
   priceTier,
 } from "../../utils/cost";
 import { countStops } from "../../utils/stops";
+import { isMapFocusable } from "../../utils/mapFocus";
 import StopCard from "../../components/StopCard.astro";
 import PortableLink from "../../components/PortableLink.astro";
 import ItineraryStopModal from "../../components/ItineraryStopModal.svelte";
@@ -84,6 +85,10 @@ const mapStops = filtered.map((s) => ({
   })),
 }));
 const hasMapPoints = mapStops.some((s) => s.location || s.features.length > 0);
+
+// Stops the map island can fly to — index-aligned with mapStops/filtered; gates
+// the "Show on Map" button on each card.
+const mapFocusTargets = mapStops.map(isMapFocusable);
 
 const hero = post.mainImage
   ? urlFor(post.mainImage)
@@ -317,7 +322,7 @@ const modalRecommendations = (post.recommendations ?? [])
             </p>
             <ol class="flex flex-col">
               {filtered.map((stop, i) => (
-                <StopCard stop={stop} index={i} />
+                <StopCard stop={stop} index={i} mapTarget={mapFocusTargets[i]} />
               ))}
             </ol>
           </section>

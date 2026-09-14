@@ -19,7 +19,18 @@
     const built = createItineraryMap(container, stops);
     if (!built) return;
     map = built.map;
-    return built.destroy;
+
+    // "Show on Map" buttons in the stop list (StopCard.astro) hand their click to
+    // the map. They are server-rendered and this island mounts after them, hence
+    // the query rather than a prop.
+    const buttons = document.querySelectorAll('[data-show-on-map]');
+    const onShowOnMap = (e) => built.focus(Number(e.currentTarget.dataset.showOnMap));
+    buttons.forEach((el) => el.addEventListener('click', onShowOnMap));
+
+    return () => {
+      buttons.forEach((el) => el.removeEventListener('click', onShowOnMap));
+      built.destroy();
+    };
   });
 
   function toggleEnlarge() {

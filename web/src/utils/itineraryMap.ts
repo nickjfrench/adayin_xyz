@@ -4,6 +4,7 @@ import { featureLayer, featureBounds, type MapFeatureSlim } from './mapFeatures'
 import { STOP_OPEN_EVENT } from './mapEvents';
 import { stopGlyph } from './stopGlyph';
 import { stopNumbers } from './stops';
+import { flashPin } from './pinFlash';
 
 export interface MapStopItem {
   _type: string;
@@ -33,6 +34,10 @@ const TRAVEL_GLYPH_CLASSES = 'h-3 w-3';
 // these mirror the ramps in global.css (grep the token names on change).
 const SEA_500 = 'oklch(0.53 0.085 185)'; // --color-sea-500
 const SEA_300 = 'oklch(0.74 0.065 185)'; // --color-sea-300
+
+// Zoom ceiling for framing the whole route and for a "Show on Map" flight:
+// street-level readable, neighbourhood still in frame.
+const VIEW_MAX_ZOOM = 16;
 
 // Per-stop palette — the `--color-stop-*` hues from global.css, ordered so
 // consecutive stops are far apart on the wheel (adjacent stops ≥0.18 ΔE, any
@@ -244,10 +249,11 @@ function stepEmphasis() {
 
 /**
  * Builds the itinerary route map into `container`. Returns the Leaflet map
- * (for resize handling) and a destroy function, or null when there is nothing
- * to draw (no anchors and no features).
+ * (for resize handling), a destroy function, and focus(index) — the stop
+ * list's "Show on Map" entry point — or null when there is nothing to draw
+ * (no anchors and no features).
  */
-export function createItineraryMap(container: HTMLElement, stops: MapStopItem[]): { map: L.Map; destroy: () => void } | null {
+export function createItineraryMap(container: HTMLElement, stops: MapStopItem[]): { map: L.Map; destroy: () => void; focus: (index: number) => void } | null {
   const points: [number, number][] = [];
   const featureCorners: [number, number][] = [];
   stops.forEach((s) => {
@@ -289,6 +295,8 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
   const palette = stopPalette();
   // Stop number per array slot — the metabar/cards' count (see stops.ts).
   const numbers = stopNumbers(stops);
+  // Marker per array index, for the stop list's "Show on Map" flight (blink target).
+  const pins = new Map<number, L.Marker>();
   // Hover wiring for every step layer created below (see stepEmphasis).
   const trackStepLayer = stepEmphasis();
   let stopOrdinal = 0;
@@ -311,13 +319,58 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     }
     pendingTravels = [];
     const marker = addStopMarker(map, s, i, latlng, STOP_CLASSES[slot], numbers[i]);
+    pins.set(i, marker);
     trackStepLayer(i, marker, layerFade(marker));
     lastLocated = { latlng, index: i, color };
   });
   // Travels before the first located point or after the last: intentionally not drawn.
   const all = [...points, ...featureCorners];
-  if (all.length > 1) map.fitBounds(all, { padding: [40, 40], maxZoom: 16 });
+  if (all.length > 1) map.fitBounds(all, { padding: [40, 40], maxZoom: VIEW_MAX_ZOOM });
   else map.setView(all[0], 15);
 
-  return { map, destroy: () => map.remove() };
+  // Latest focus wins: only the most recent click may trigger the blink.
+  let focusSeq = 0;
+  /**
+   * Flies to one stop's drawn geometry (pin and/or features) and blinks its
+   * pin — the stop list's "Show on Map". Scrolls the map into view first (the
+   * list sits below it) and holds the blink until the flight has landed with
+   * the map in frame, so scrolling up from the bottom still catches it.
+   */
+  function focus(index: number) {
+    const item = stops[index];
+    if (!item) return;
+    const bounds = L.latLngBounds([]);
+    const { lat, lng } = item.location ?? {};
+    if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) bounds.extend([lat, lng]);
+    (item.features ?? []).forEach((f) => {
+      const b = featureBounds(f);
+      if (b) bounds.extend(b);
+    });
+    if (!bounds.isValid()) return; // nothing drawn for this item
+    map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // The blink waits for the flight to land AND the map to be on screen —
+    // from deep in the stop list the smooth scroll is still running when
+    // moveend fires, and a blink nobody sees is wasted. Same UX wherever the
+    // click came from. Guard timeout so a missed event can't suppress it.
+    const seq = ++focusSeq;
+    const pin = pins.get(index)?.getElement() ?? null;
+    const landed = new Promise<void>((resolve) => map.once('moveend', () => resolve()));
+    const framed = new Promise<void>((resolve) => {
+      const rect = map.getContainer().getBoundingClientRect();
+      if (rect.top >= 0 && rect.bottom <= window.innerHeight) return resolve();
+      const io = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.intersectionRatio >= 0.9)) return;
+        io.disconnect();
+        resolve();
+      }, { threshold: 0.9 });
+      io.observe(map.getContainer());
+    });
+    const guard = new Promise<void>((resolve) => setTimeout(resolve, 3500));
+    Promise.race([Promise.all([landed, framed]), guard]).then(() => {
+      if (seq === focusSeq) flashPin(pin);
+    });
+    map.flyToBounds(bounds, { padding: [40, 40], maxZoom: VIEW_MAX_ZOOM });
+  }
+
+  return { map, destroy: () => map.remove(), focus };
 }

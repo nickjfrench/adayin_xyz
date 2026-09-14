@@ -35,9 +35,11 @@ interface Props {
     duration?: string;
   };
   index: number;
+  /** Map island can fly to this stop (see utils/mapFocus.ts) — renders the button. */
+  mapTarget?: boolean;
 }
 
-const { stop, index } = Astro.props;
+const { stop, index, mapTarget = false } = Astro.props;
 
 const ptComponents = { mark: { link: PortableLink } };
 
@@ -122,6 +124,35 @@ const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
             </h3>
             {stop.cost != null && stop.cost > 0 && (
               <CostPill cost={stop.cost} currency={stop.currency} />
+            )}
+            {mapTarget && (
+              <button
+                type="button"
+                data-show-on-map={index}
+                aria-label="Show on Map"
+                class="group ml-auto inline-flex shrink-0 cursor-pointer items-center rounded-full border border-sea-200 bg-white px-1.5 py-1 text-sea-500 shadow-sm transition-colors hover:border-sea-300 hover:text-sea-600"
+              >
+                <svg
+                  class="h-3.5 w-3.5 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <line x1="12" y1="18" x2="12" y2="22" />
+                  <line x1="2" y1="12" x2="6" y2="12" />
+                  <line x1="18" y1="12" x2="22" y2="12" />
+                </svg>
+                <span
+                  aria-hidden="true"
+                  class="max-w-0 overflow-hidden font-display text-xs font-medium whitespace-nowrap opacity-0 transition-all duration-200 group-hover:ml-1 group-hover:max-w-[7rem] group-hover:opacity-100"
+                  >Show on Map</span
+                >
+              </button>
             )}
           </div>
           
