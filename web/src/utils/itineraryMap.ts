@@ -215,25 +215,28 @@ function layerFade(layer: L.Layer): Fade {
  * arcs and their apex icons. Registering a layer wires its hover: while any
  * layer of step `i` is hovered, `i` keeps its authored opacity and every other
  * step fades, so overlapping regions and crossings read as the step under the
- * cursor.
+ * cursor. `keep` names further steps that stay lit alongside the hovered one —
+ * travel legs pass their endpoint stops, so a hovered path leaves only itself
+ * and its from/to stops readable.
  */
 function stepEmphasis() {
-  const faders = new Map<number, Fade[]>();
+  const steps = new Map<number, { fades: Fade[]; keep: readonly number[] }>();
   let hovered: number | null = null;
 
   const setHovered = (next: number | null) => {
     if (next === hovered) return;
     hovered = next;
-    faders.forEach((fades, step) => {
-      const dimmed = next !== null && step !== next;
+    const keep = next === null ? undefined : steps.get(next)?.keep;
+    steps.forEach(({ fades }, step) => {
+      const dimmed = next !== null && step !== next && !keep?.includes(step);
       fades.forEach((fade) => fade(dimmed));
     });
   };
 
-  return (index: number, layer: L.Layer, fade: Fade) => {
-    const fades = faders.get(index);
-    if (fades) fades.push(fade);
-    else faders.set(index, [fade]);
+  return (index: number, layer: L.Layer, fade: Fade, keep: readonly number[] = []) => {
+    const entry = steps.get(index);
+    if (entry) entry.fades.push(fade);
+    else steps.set(index, { fades: [fade], keep });
     layer.on('mouseover', () => setHovered(index));
     layer.on('mouseout', () => setHovered(null));
   };
@@ -302,7 +305,9 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     const latlng: [number, number] = [s.location.lat, s.location.lng];
     if (lastLocated) {
       const legs = drawSegment(map, lastLocated, { latlng, index: i, color }, pendingTravels);
-      legs.forEach(({ index, layer }) => trackStepLayer(index, layer, layerFade(layer)));
+      // Hovering a leg keeps its endpoints lit: from (lastLocated) and to (i).
+      const keep = [lastLocated.index, i];
+      legs.forEach(({ index, layer }) => trackStepLayer(index, layer, layerFade(layer), keep));
     }
     pendingTravels = [];
     const marker = addStopMarker(map, s, i, latlng, STOP_CLASSES[slot], numbers[i]);
