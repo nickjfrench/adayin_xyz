@@ -1,0 +1,57 @@
+/* Wrapper keeps the form's height while the map leaves the flow — the
+   fullscreen toggle portals the map to document.body. */
+.leaflet-input-map-slot {
+  position: relative;
+  height: 400px;
+}
+.leaflet-input-map {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--card-border-color);
+}
+/* Near-fullscreen overlay (the container is portalled to document.body, so
+   nothing inside the studio layout can clip or stack above it). */
+.leaflet-input-map.leaflet-input-expanded {
+  position: fixed;
+  inset: 24px;
+  z-index: 100000;
+}
+/* Bottom-left, 10px inset — symmetric with the search strip. Sanity's own
+   button styles are injected later and win ties against a single class, so
+   anchor via the map container to keep the absolute placement. */
+.leaflet-input-map .leaflet-input-expand {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1000;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.leaflet-input-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 55px;
+  z-index: 1000;
+}
+/* Choice prompt: the layer covers the map — blocking Leaflet interactions
+   until the place is placed or the prompt dismissed — and centres the card,
+   so it lands mid-map collapsed and mid-viewport expanded. z-index 999 sits
+   above Leaflet panes (<=700) and below controls (>=1000), so search, zoom
+   and draw toolbars stay usable. Clicks that miss the card cancel. */
+.leaflet-input-choice-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+.leaflet-input-choice {
+  width: 280px;
+  max-width: 100%;
+}
