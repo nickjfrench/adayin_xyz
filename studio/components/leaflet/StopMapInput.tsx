@@ -40,7 +40,9 @@ function useStopMap(): StopMapContextValue {
 export function StopMapDocumentInput(props: ObjectInputProps) {
   const ctx = useMemo(() => {
     const value = props.value as {mapFeatures?: unknown} | undefined
-    const features = Array.isArray(value?.mapFeatures) ? (value!.mapFeatures as MapFeatureItem[]) : []
+    const features = Array.isArray(value?.mapFeatures)
+      ? (value!.mapFeatures as MapFeatureItem[])
+      : []
     return {docOnChange: props.onChange, features}
   }, [props.onChange, props.value])
   return <StopMapContext.Provider value={ctx}>{props.renderDefault(props)}</StopMapContext.Provider>
@@ -139,33 +141,38 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     },
     [docOnChange],
   )
+  // Event closures (geoman layer handlers, marker dragend) read these refs so
+  // they never capture a stale emit/docOnChange from an earlier render.
+  const emitRef = useRef(emit)
+  emitRef.current = emit
+  const docOnChangeRef = useRef(docOnChange)
+  docOnChangeRef.current = docOnChange
 
   /**
    * Wires the pm:update/pm:edit/pm:dragend/pm:remove sync handlers onto a
    * layer. Used both by redraws (addLayerFor) and freshly drawn layers
    * (onCreate), so edits on brand-new shapes persist without a redraw.
    */
-  const attachLayerHandlers = useCallback(
-    (layer: L.Layer, item: MapFeatureItem) => {
-      const syncFromLayer = () => {
-        const updated = itemFromLayer(layer, item._key)
-        if (updated)
-          emit(valueRef.current.map((i) => (i._key === item._key ? {...i, ...updated} : i)))
-      }
-      const onLayerRemove = () => {
-        keyMapRef.current.delete(item._key)
-        const next = valueRef.current.filter((i) => i._key !== item._key)
-        valueRef.current = next
-        lastEmittedRef.current = sig(next)
-        docOnChange(unset(['mapFeatures', {_key: item._key}]))
-      }
-      layer.on('pm:update', syncFromLayer)
-      layer.on('pm:edit', syncFromLayer)
-      layer.on('pm:dragend', syncFromLayer)
-      layer.on('pm:remove', onLayerRemove)
-    },
-    [emit, docOnChange],
-  )
+  const attachLayerHandlers = useCallback((layer: L.Layer, item: MapFeatureItem) => {
+    const syncFromLayer = () => {
+      const updated = itemFromLayer(layer, item._key)
+      if (updated)
+        emitRef.current(
+          valueRef.current.map((i) => (i._key === item._key ? {...i, ...updated} : i)),
+        )
+    }
+    const onLayerRemove = () => {
+      keyMapRef.current.delete(item._key)
+      const next = valueRef.current.filter((i) => i._key !== item._key)
+      valueRef.current = next
+      lastEmittedRef.current = sig(next)
+      docOnChangeRef.current(unset(['mapFeatures', {_key: item._key}]))
+    }
+    layer.on('pm:update', syncFromLayer)
+    layer.on('pm:edit', syncFromLayer)
+    layer.on('pm:dragend', syncFromLayer)
+    layer.on('pm:remove', onLayerRemove)
+  }, [])
 
   const addLayerFor = useCallback(
     (item: MapFeatureItem) => {
@@ -197,23 +204,36 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
   // Converges legacy geopoint-typed values to `location` on first edit.
   const typePatch = useCallback(
     (): FormPatch[] =>
-      value?._type != null && value._type !== schemaType.name ? [set(schemaType.name, ['_type'])] : [],
+      value?._type != null && value._type !== schemaType.name
+        ? [set(schemaType.name, ['_type'])]
+        : [],
     [value?._type, schemaType],
   )
 
   // Manual placement (map click, marker drag): mapsUri becomes a lat,lng query URL.
   const handlePin = useCallback(
     (pin: {lat: number; lng: number}) => {
-      const patches: FormPatch[] = [setIfMissing({_type: schemaType.name}), set(pin.lat, ['lat']), set(pin.lng, ['lng'])]
+      const patches: FormPatch[] = [
+        setIfMissing({_type: schemaType.name}),
+        set(pin.lat, ['lat']),
+        set(pin.lng, ['lng']),
+      ]
       onChange([...patches, ...typePatch(), set(mapsQueryUrl(pin.lat, pin.lng), ['mapsUri'])])
     },
     [onChange, schemaType, typePatch],
   )
+  // Event closures (marker dragend) read the ref so they never go stale.
+  const handlePinRef = useRef(handlePin)
+  handlePinRef.current = handlePin
 
   // Place search: store the Place's formattedAddress + googleMapsURI.
   const handlePlace = useCallback(
     (place: SelectedPlace) => {
-      const patches: FormPatch[] = [setIfMissing({_type: schemaType.name}), set(place.lat, ['lat']), set(place.lng, ['lng'])]
+      const patches: FormPatch[] = [
+        setIfMissing({_type: schemaType.name}),
+        set(place.lat, ['lat']),
+        set(place.lng, ['lng']),
+      ]
       for (const key of ['formattedAddress', 'mapsUri'] as const) {
         patches.push(place[key] != null ? set(place[key], [key]) : unset([key]))
       }
@@ -263,7 +283,8 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
   useEffect(() => {
     if (!map) return
     const onClick = (e: L.LeafletMouseEvent) => {
-      if (!readOnly && !hasValue && !geomanBusy(map)) handlePin({lat: e.latlng.lat, lng: e.latlng.lng})
+      if (!readOnly && !hasValue && !geomanBusy(map))
+        handlePin({lat: e.latlng.lat, lng: e.latlng.lng})
     }
     map.on('click', onClick)
     return () => {
@@ -283,16 +304,22 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       }
       return
     }
-    // A marker ref left over from a destroyed map instance (StrictMode
-    // remount) is stale — rebuild it on this map.
-    const stale = markerRef.current && !map.hasLayer(markerRef.current)
-    if (stale) markerRef.current = null
+    // A marker ref can be stale (leftover from a destroyed map instance after
+    // a portal-toggle remount) or misconfigured (readOnly flipped since
+    // creation froze `draggable`) — drop it so the branch below rebuilds it.
+    if (
+      markerRef.current &&
+      (!map.hasLayer(markerRef.current) || markerRef.current.options.draggable === readOnly)
+    ) {
+      map.removeLayer(markerRef.current)
+      markerRef.current = null
+    }
     const marker = markerRef.current
     if (!marker) {
       const m = L.marker([lat, lng], {icon: createDotIcon(16), draggable: !readOnly}).addTo(map)
       m.on('dragend', () => {
         const p = m.getLatLng()
-        handlePin({lat: p.lat, lng: p.lng})
+        handlePinRef.current({lat: p.lat, lng: p.lng})
       })
       markerRef.current = m
     } else if (marker.getLatLng().lat !== lat || marker.getLatLng().lng !== lng) {
@@ -331,7 +358,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       // amber feature dot.
       if (item.shape === 'point') (e.layer as L.Marker).setIcon(createDotIcon(12, POINT_COLOR))
       keyMap.set(item._key, e.layer)
-      emit([...valueRef.current, item])
+      emitRef.current([...valueRef.current, item])
       // Geoman already put the layer on the map; wiring handlers here makes
       // edits/drags/removals on brand-new shapes persist without a redraw.
       attachLayerHandlers(e.layer, item)
@@ -361,7 +388,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       keyMap.clear()
       if (!readOnly) map.pm.removeControls()
     }
-  }, [map, readOnly, emit, addLayerFor, attachLayerHandlers])
+  }, [map, readOnly, addLayerFor, attachLayerHandlers])
 
   // External value changes (undo, collaborative edits): redraw everything.
   // Local emissions keep sig equal, so this is a no-op for our own patches.
@@ -402,7 +429,9 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
   // features aren't rewritten. Bookkeeping updates the refs so the redraw
   // effect treats it as our own emission (no-op), like emit does.
   const setLabel = (key: string, label: string) => {
-    const next = valueRef.current.map((i) => (i._key === key ? {...i, label: label || undefined} : i))
+    const next = valueRef.current.map((i) =>
+      i._key === key ? {...i, label: label || undefined} : i,
+    )
     valueRef.current = next
     lastEmittedRef.current = sig(next)
     docOnChange(
@@ -479,8 +508,8 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
         </Stack>
       ) : (
         <Text size={1} muted>
-          Click the map or search to set the pin — drag the pin to move it. Draw a polygon or
-          circle to add a clickable region.
+          Click the map or search to set the pin — drag the pin to move it. Draw a polygon or circle
+          to add a clickable region.
         </Text>
       )}
       {items.length === 0 ? (

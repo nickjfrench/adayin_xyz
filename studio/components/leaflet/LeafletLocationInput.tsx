@@ -54,6 +54,9 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
     },
     [onChange, schemaType, typePatch],
   )
+  // Event closures (marker dragend) read the ref so they never go stale.
+  const handlePinRef = useRef(handlePin)
+  handlePinRef.current = handlePin
 
   // Place search: store the Place's formattedAddress + googleMapsURI.
   const handlePlace = useCallback(
@@ -85,7 +88,9 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
 
   // Keep the marker in sync with the value: create on first value, reposition
   // on external changes (undo/paste). Dragend already matches the new value,
-  // so the position comparison skips panning while the user drags.
+  // so the position comparison skips panning while the user drags. The marker
+  // is rebuilt when it isn't on the current map instance (the portal toggle
+  // below rebuilds the map) or when readOnly flipped since creation.
   useEffect(() => {
     if (!map) return
     if (lat == null || lng == null) {
@@ -95,12 +100,19 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
       }
       return
     }
+    if (
+      markerRef.current &&
+      (!map.hasLayer(markerRef.current) || markerRef.current.options.draggable === readOnly)
+    ) {
+      map.removeLayer(markerRef.current)
+      markerRef.current = null
+    }
     const marker = markerRef.current
     if (!marker) {
       const m = L.marker([lat, lng], {icon: createDotIcon(16), draggable: !readOnly}).addTo(map)
       m.on('dragend', () => {
         const p = m.getLatLng()
-        handlePin({lat: p.lat, lng: p.lng})
+        handlePinRef.current({lat: p.lat, lng: p.lng})
       })
       markerRef.current = m
     } else if (marker.getLatLng().lat !== lat || marker.getLatLng().lng !== lng) {
@@ -134,7 +146,7 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
   // The fullscreen overlay portals to document.body: fixed positioning inside
   // the studio form can be hijacked by transformed/contained ancestors and
   // loses the stacking war with studio chrome. Portalling remounts the map
-  // node (useLeafletMap rebuilds the instance; the pin refits from the value).
+  // node (useLeafletMap rebuilds the instance; the sync effect rebuilds the pin).
   const mapNode = (
     <div
       ref={setContainer}
