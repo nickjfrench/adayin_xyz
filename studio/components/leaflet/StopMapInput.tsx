@@ -469,7 +469,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       ref={setContainer}
       className={expanded ? 'leaflet-input-map leaflet-input-expanded' : 'leaflet-input-map'}
     >
-      {apiKey && map && <PlacesSearch apiKey={apiKey} actions={searchActions} />}
+      {apiKey && map && <PlacesSearch apiKey={apiKey} map={map} actions={searchActions} />}
       <Button
         aria-label={expanded ? 'Collapse map' : 'Expand map'}
         icon={expanded ? CollapseIcon : ExpandIcon}

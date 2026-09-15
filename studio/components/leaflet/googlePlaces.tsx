@@ -29,15 +29,40 @@ export interface SelectedPlace {
   mapsUri: string | null
 }
 
+// Places caps a bias circle at 50 km; viewports below ~100 m are documented as
+// too tight to be a useful hint, so the floor is a walkable kilometre.
+const MIN_BIAS_RADIUS_M = 1000
+const MAX_BIAS_RADIUS_M = 50_000
+
 /**
- * Places autocomplete overlay for the map. Renders nothing on load failure —
- * the map is unaffected. Wired like @sanity/google-maps-input's SearchInput.
+ * Soft bias for the map's current view: predictions near its centre rank
+ * first, matches further out still come back (locationBias, not
+ * locationRestriction). The radius follows the viewport, so the hint tightens
+ * as the editor zooms in.
+ */
+function viewportBias(map: L.Map): google.maps.CircleLiteral {
+  const center = map.getCenter()
+  const radius = map.distance(center, map.getBounds().getNorthEast())
+  return {
+    center: {lat: center.lat, lng: center.lng},
+    radius: Math.min(MAX_BIAS_RADIUS_M, Math.max(MIN_BIAS_RADIUS_M, radius)),
+  }
+}
+
+/**
+ * Places autocomplete overlay for the map. Predictions are biased to whatever
+ * the map currently shows — nearest first, nothing excluded. Renders nothing
+ * on load failure — the map is unaffected. Wired like
+ * @sanity/google-maps-input's SearchInput.
  */
 export function PlacesSearch({
   apiKey,
+  map,
   actions,
 }: {
   apiKey: string
+  /** Map the search overlays: its live centre and scale anchor predictions. */
+  map: L.Map
   actions: Array<{label: string; onPick: (place: SelectedPlace) => void}>
 }) {
   const [ready, setReady] = useState(false)
@@ -86,6 +111,27 @@ export function PlacesSearch({
     return () => window.removeEventListener('keydown', onKey)
   }, [pending])
 
+  // The bias must be assigned through the DOM node: gmp-* tags are upgraded by
+  // the places library, which loads asynchronously, and a JSX prop set before
+  // the upgrade would stick as an own property shadowing the element's setter.
+  const autocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null)
+  useEffect(() => {
+    if (!ready) return
+    const el = autocompleteRef.current
+    if (!el) return
+    let live = true
+    const applyBias = () => {
+      if (live && 'locationBias' in el) el.locationBias = viewportBias(map)
+    }
+    customElements.whenDefined('gmp-place-autocomplete').then(applyBias)
+    // Re-anchor on every settled view, so a pan or zoom before typing counts.
+    map.on('moveend', applyBias)
+    return () => {
+      live = false
+      map.off('moveend', applyBias)
+    }
+  }, [ready, map])
+
   if (!ready) return <div className="leaflet-input-search" />
 
   const choosing = pending != null && actions.length > 1
@@ -94,6 +140,7 @@ export function PlacesSearch({
     <>
       <div ref={searchRef} className="leaflet-input-search">
         <gmp-place-autocomplete
+          ref={autocompleteRef}
           ongmp-select={async ({placePrediction}: google.maps.places.PlacePredictionSelectEvent) => {
             try {
               const place = placePrediction.toPlace()

@@ -155,6 +155,7 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
       {apiKey && map && (
         <PlacesSearch
           apiKey={apiKey}
+          map={map}
           actions={[
             {
               label: 'Set as location',
