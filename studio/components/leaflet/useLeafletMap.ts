@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import L from 'leaflet'
-import {addTileLayer} from '@adayin/map-core'
+import {addTileLayer} from '@adayin/map-core/tiles'
 
 /**
  * Creates a Leaflet map on the container once it mounts; returns null until then.

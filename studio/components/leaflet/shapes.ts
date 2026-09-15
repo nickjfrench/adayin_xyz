@@ -1,12 +1,6 @@
 import L from 'leaflet'
-import {
-  SHAPE_NAMES,
-  circleLayer,
-  pointLayer,
-  polygonLayer,
-  type MapFeature,
-  type ShapeName,
-} from '@adayin/map-core'
+import {SHAPE_NAMES, type MapFeature, type ShapeName} from '@adayin/map-core/core'
+import {circleLayer, pointLayer, polygonLayer} from '@adayin/map-core/render'
 import {FEATURE_STYLE, POINT_COLOR} from './leafletConfig'
 
 /** The studio's name for the shared feature type — editor vocabulary. Stored

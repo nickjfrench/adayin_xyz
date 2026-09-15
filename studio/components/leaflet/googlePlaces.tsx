@@ -214,9 +214,9 @@ export function PlacesSearch({
             role="dialog"
             aria-label={`Choose what to do with ${placeName}`}
           >
-            <Stack space={3}>
+            <Stack gap={3}>
               <Flex align="flex-start" gap={2}>
-                <Stack space={2} style={{flex: 1, minWidth: 0}}>
+                <Stack gap={2} style={{flex: 1, minWidth: 0}}>
                   <Text size={2} weight="semibold">
                     {placeName}
                   </Text>
@@ -233,7 +233,7 @@ export function PlacesSearch({
                   onClick={() => setPending(null)}
                 />
               </Flex>
-              <Stack space={2}>
+              <Stack gap={2}>
                 {actions.map((action) => (
                   <Button
                     key={action.label}

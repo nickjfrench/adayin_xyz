@@ -42,7 +42,9 @@ export function mapsQueryUrl(lat: number, lng: number): string {
 
 /**
  * Per-shape geometry test matching the render primitive of the same name
- * (render.ts) — true when the feature actually draws something.
+ * (render.ts) — true when the feature actually draws something. An unknown
+ * shape draws nothing (featureLayer returns null for it), so it is not
+ * drawable however complete its geometry looks.
  */
 export function featureIsDrawable(
   f: Pick<MapFeature, 'shape' | 'position' | 'radius' | 'points' | 'label'>,
@@ -54,8 +56,10 @@ export function featureIsDrawable(
       return (f.points?.length ?? 0) >= 3;
     case 'text':
       return Boolean(f.label && f.position);
-    default: // point
+    case 'point':
       return Boolean(f.position);
+    default:
+      return false;
   }
 }
 

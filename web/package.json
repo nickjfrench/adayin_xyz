@@ -35,7 +35,9 @@
     "vite": "^7.3.2"
   },
   "devDependencies": {
+    "@sanity/client": "^7.26.0",
     "@types/leaflet": "^1.9.20",
-    "@types/node": "^25.9.3"
+    "@types/node": "^25.9.3",
+    "typescript": "^5.8"
   }
 }

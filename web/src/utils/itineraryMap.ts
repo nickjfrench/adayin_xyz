@@ -1,15 +1,15 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // the package owns its CSS
+import { arcPoints, type MapFeature } from '@adayin/map-core/core';
 import {
-  addTileLayer,
-  arcPoints,
   featureBounds,
   featureLayer,
   flashPin,
+  tooltipText,
   type FeatureStyle,
-  type MapFeature,
   type PinFlashOptions,
-} from '@adayin/map-core';
+} from '@adayin/map-core/render';
+import { addTileLayer } from '@adayin/map-core/tiles';
 import { STOP_OPEN_EVENT } from './mapEvents';
 import { stopGlyph } from './stopGlyph';
 import { stopNumbers } from './stops';
@@ -109,7 +109,7 @@ function openStop(index: number) {
 function labelMarker(marker: L.Marker, label: string | null) {
   const text = label?.trim();
   if (!text) return;
-  marker.bindTooltip(text, {
+  marker.bindTooltip(tooltipText(text), {
     direction: 'top',
     offset: [0, -16],
     opacity: 1,

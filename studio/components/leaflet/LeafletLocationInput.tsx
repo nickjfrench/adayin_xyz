@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {createPortal} from 'react-dom'
 import {FormPatch, ObjectInputProps, set, setIfMissing, unset} from 'sanity'
 import {Button, Flex, Stack, Text} from '@sanity/ui'
@@ -8,7 +8,7 @@ import {TrashIcon} from '@sanity/icons/Trash'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
-import {dotIcon, flashPin} from '@adayin/map-core'
+import {dotIcon, flashPin} from '@adayin/map-core/render'
 import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
 import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, VALUE_ZOOM} from './leafletConfig'
@@ -123,10 +123,13 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
 
   // A place search lands the pin the editor didn't aim at, and the map jump is
   // instant — blink it (PIN_FLASH) so the result is impossible to miss. Runs
-  // after the sync effect above, so the marker element is there to blink.
+  // after the sync effect above, so the marker element is there to blink. The
+  // lat/lng deps re-run this on a drag or an external edit, which must not.
   const [flashSeq, setFlashSeq] = useState(0)
+  const flashedRef = useRef(0)
   useEffect(() => {
-    if (flashSeq === 0) return
+    if (flashSeq === flashedRef.current) return
+    flashedRef.current = flashSeq
     flashPin(markerRef.current?.getElement(), PIN_FLASH)
   }, [flashSeq, lat, lng])
 
@@ -152,6 +155,33 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
     }
   }, [map, expanded])
 
+  // Place search: one action, and none at all when the field is read-only —
+  // PlacesSearch discards a picked place that has no action to run.
+  const searchActions = useMemo(
+    () =>
+      apiKey && map && !readOnly
+        ? [
+            {
+              label: 'Set as location',
+              onPick: (place: SelectedPlace) => {
+                handlePlace(place)
+                map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+                setFlashSeq((n) => n + 1)
+              },
+            },
+          ]
+        : [],
+    [apiKey, map, readOnly, handlePlace],
+  )
+
+  // The expand control is a child of the Leaflet container, and React's
+  // listener sits above it, so its click would reach Leaflet's own click
+  // handler first and drop a pin under the button. Stable ref callback: React
+  // re-runs it only when the portal toggle remounts the node.
+  const shieldExpand = useCallback((el: HTMLDivElement | null) => {
+    if (el) L.DomEvent.disableClickPropagation(el)
+  }, [])
+
   // The fullscreen overlay portals to document.body: fixed positioning inside
   // the studio form can be hijacked by transformed/contained ancestors and
   // loses the stacking war with studio chrome. Portalling remounts the map
@@ -161,39 +191,27 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
       ref={setContainer}
       className={expanded ? 'leaflet-input-map leaflet-input-expanded' : 'leaflet-input-map'}
     >
-      {apiKey && map && (
-        <PlacesSearch
-          apiKey={apiKey}
-          map={map}
-          actions={[
-            {
-              label: 'Set as location',
-              onPick: (place) => {
-                handlePlace(place)
-                map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
-                setFlashSeq((n) => n + 1)
-              },
-            },
-          ]}
-        />
+      {apiKey && map && searchActions.length > 0 && (
+        <PlacesSearch apiKey={apiKey} map={map} actions={searchActions} />
       )}
-      <Button
-        aria-label={expanded ? 'Collapse map' : 'Expand map'}
-        icon={expanded ? CollapseIcon : ExpandIcon}
-        mode="bleed"
-        className="leaflet-input-expand"
-        onClick={() => setExpanded(!expanded)}
-      />
+      <div ref={shieldExpand} className="leaflet-input-expand">
+        <Button
+          aria-label={expanded ? 'Collapse map' : 'Expand map'}
+          icon={expanded ? CollapseIcon : ExpandIcon}
+          mode="bleed"
+          onClick={() => setExpanded(!expanded)}
+        />
+      </div>
     </div>
   )
 
   return (
-    <Stack space={2}>
+    <Stack gap={2}>
       <div className="leaflet-input-map-slot">
         {expanded ? createPortal(mapNode, document.body) : mapNode}
       </div>
       {hasValue ? (
-        <Stack space={2}>
+        <Stack gap={2}>
           <Flex align="center" gap={2}>
             <Text size={1} muted style={{flex: 1}}>
               {/* Primary line mirrors what the site renders as the Maps link text. */}

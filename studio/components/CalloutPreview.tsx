@@ -31,7 +31,7 @@ export function CalloutPreview(props: {kind?: {_ref?: string}; body?: unknown}) 
       : ''
 
   return (
-    <Stack space={2}>
+    <Stack gap={2}>
       <Text size={1} weight="semibold">
         {label ?? ref ?? 'Callout'}
       </Text>

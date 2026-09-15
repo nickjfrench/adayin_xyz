@@ -18,10 +18,18 @@ export function mapsLinkFor(
   return null;
 }
 
-/** Link text for the Maps link — the multipart formattedAddress, else the legacy address. */
+/**
+ * Link text for the Maps link — the multipart formattedAddress, else the legacy
+ * address, else the pin coords (a manually placed pin carries no address; the
+ * link must still have a label). Mirrors the studio's "Primary POI" line.
+ */
 export function mapsLinkText(
   location: LocationValue | null | undefined,
   address?: string | null,
 ): string | null {
-  return location?.formattedAddress ?? address ?? null;
+  const formatted = location?.formattedAddress ?? address;
+  if (formatted) return formatted;
+  const { lat, lng } = location ?? {};
+  if (lat != null && lng != null) return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  return null;
 }

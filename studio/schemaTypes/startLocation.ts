@@ -1,5 +1,5 @@
 import {defineType, defineField} from 'sanity'
-import {locationField} from './locationField'
+import {legacyAddressField, locationField} from './locationField'
 
 export const startLocation = defineType({
   name: 'startLocation',
@@ -13,6 +13,7 @@ export const startLocation = defineType({
       validation: (rule) => rule.required(),
     }),
     locationField,
+    legacyAddressField,
     defineField({
       name: 'time',
       title: 'Time',

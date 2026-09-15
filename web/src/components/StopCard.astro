@@ -47,11 +47,24 @@ const isTravel = stop._type === "travel";
 const isStart = stop._type === "startLocation";
 const isEnd = stop._type === "endLocation";
 
-const CONFIG: Record<string, { accent: string; dot: string; label: string; dim: boolean }> = {
-  stop:          { accent: "border-sea-400",   dot: "bg-sea-500",   label: "",      dim: false },
-  startLocation: { accent: "border-green-400", dot: "bg-green-500", label: "Start", dim: false },
-  endLocation:   { accent: "border-sand-400",  dot: "bg-sand-500",  label: "End",   dim: false },
-  travel:        { accent: "",                  dot: "bg-sea-300",   label: "",      dim: true  },
+const CONFIG: Record<
+  string,
+  { accent: string; dot: string; label: string; dim: boolean }
+> = {
+  stop: { accent: "border-sea-400", dot: "bg-sea-500", label: "", dim: false },
+  startLocation: {
+    accent: "border-green-400",
+    dot: "bg-green-500",
+    label: "Start",
+    dim: false,
+  },
+  endLocation: {
+    accent: "border-sand-400",
+    dot: "bg-sand-500",
+    label: "End",
+    dim: false,
+  },
+  travel: { accent: "", dot: "bg-sea-300", label: "", dim: true },
 };
 
 const config = CONFIG[stop._type] ?? CONFIG.stop;
@@ -59,13 +72,19 @@ const config = CONFIG[stop._type] ?? CONFIG.stop;
 // Letter dots (S/E) drop the white ring and carry the label instead.
 const labelled = isStart || isEnd;
 // Same glyph builder as the map pins — icon, letter and box all match.
-const glyph = stopGlyph({ type: stop._type, icon: stop.travelType?.icon?.svg }, "h-3 w-3");
+const glyph = stopGlyph(
+  { type: stop._type, icon: stop.travelType?.icon?.svg },
+  "h-3 w-3",
+);
 
 const mapsLink = mapsLinkFor(stop.location, stop.address);
 const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
 ---
 
-<li class:list={["relative pb-8 last:pb-0", config.dim && "opacity-60"]} data-travel={isTravel || undefined}>
+<li
+  class:list={["relative pb-8 last:pb-0", config.dim && "opacity-60"]}
+  data-travel={isTravel || undefined}
+>
   {/* Continuous rail line — styled via <style> below */}
   {/* Dot — centered on the rail line */}
   <div class="absolute left-[10px] top-2 z-10 -translate-x-1/2">
@@ -81,135 +100,180 @@ const mapsText = mapsLinkText(stop.location, stop.address) ?? "";
 
   {/* ── Content column ── */}
   <div class="min-w-0 flex-1 pl-8">
-    {isTravel ? (
-      /* ── Travel connector: lightweight inline row ── */
-      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5">
-        <span class="text-xs font-medium text-sea-500">
-          {stop.travelType?.label ?? "Travel"}
-          {stop.duration && <span class="text-sea-300"> · {stop.duration}</span>}
-        </span>
-        {stop.title && (
-          <>
-            <span class="text-sea-300">·</span>
-            <button type="button" class="stop-title cursor-pointer text-xs text-sea-600 hover:text-sea-800 hover:underline" data-stop-index={index}>{stop.title}</button>
-          </>
-        )}
-        {stop.cost != null && stop.cost > 0 && (
-          <>
-            <span class="text-sea-300">·</span>
-            <CostPill cost={stop.cost} currency={stop.currency} />
-          </>
-        )}
-        {mapsLink && (
-          <>
-            <span class="text-sea-300">·</span>
-            <MapLink href={mapsLink} text={mapsText} class="text-sea-400 hover:text-sea-600" />
-          </>
-        )}
-      </div>
-    ) : (
-      /* ── Stop / Location: white card with accent stripe ── */
-      <div class:list={[
-        "rounded-l-[3px] rounded-r-lg bg-white shadow-sm",
-        "border-l-[3px]",
-        config.accent,
-      ]}>
-        <div class="px-4 py-3">
-          {/* Title + Cost inline */}
-          <div class="mt-0.5 flex flex-wrap items-center gap-2">
-            <h3 class="font-display text-lg font-semibold leading-snug">
-              <button type="button" class="stop-title cursor-pointer text-sea-800 hover:text-sea-600 hover:underline" data-stop-index={index}>
-                {stop.title}
-              </button>
-            </h3>
-            {stop.cost != null && stop.cost > 0 && (
-              <CostPill cost={stop.cost} currency={stop.currency} />
+    {
+      isTravel ? (
+        /* ── Travel connector: lightweight inline row ── */
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5">
+          <span class="text-xs font-medium text-sea-500">
+            {stop.travelType?.label ?? "Travel"}
+            {stop.duration && (
+              <span class="text-sea-300"> · {stop.duration}</span>
             )}
-            {mapTarget && (
+          </span>
+          {stop.title && (
+            <>
+              <span class="text-sea-300">·</span>
               <button
                 type="button"
-                data-show-on-map={index}
-                aria-label="Show on Map"
-                class="group ml-auto inline-flex shrink-0 cursor-pointer items-center rounded-full border border-sea-200 bg-white px-1.5 py-1 text-sea-500 shadow-sm transition-colors hover:border-sea-300 hover:text-sea-600"
+                class="stop-title cursor-pointer text-xs text-sea-600 hover:text-sea-800 hover:underline"
+                data-stop-index={index}
               >
-                <svg
-                  class="h-3.5 w-3.5 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <line x1="12" y1="2" x2="12" y2="6" />
-                  <line x1="12" y1="18" x2="12" y2="22" />
-                  <line x1="2" y1="12" x2="6" y2="12" />
-                  <line x1="18" y1="12" x2="22" y2="12" />
-                </svg>
-                <span
-                  aria-hidden="true"
-                  class="max-w-0 overflow-hidden font-display text-xs font-medium whitespace-nowrap opacity-0 transition-all duration-200 group-hover:ml-1 group-hover:max-w-[7rem] group-hover:opacity-100"
-                  >Show on Map</span
-                >
+                {stop.title}
               </button>
-            )}
-          </div>
-          
-          {/* Sub-label */}
-          {(stop.time || isStart || isEnd) && (
-            <p class:list={[
-              "mt-1 font-display text-xs font-semibold uppercase tracking-widest",
-              isStart ? "text-green-600" : isEnd ? "text-sand-500" : "text-sand-500",
-            ]}>
-              {isStart ? "Start" : isEnd ? "End" : stop.time}
-            </p>
+            </>
           )}
-
-          {/* Callouts */}
-          {stop.callouts && stop.callouts.length > 0 && (
-            <div class="mt-2.5 flex flex-col gap-1.5">
-              {stop.callouts.map((callout) => (
-                <div class="flex items-start gap-2 text-sm text-sea-700 pt-inline">
-                  {callout.kind?.icon?.svg ? (
-                    <span
-                      class:list={["inline-block h-3.5 w-3.5 shrink-0 mt-0.5 [&>svg]:h-full [&>svg]:w-full", callout.kind?.labelColor ?? "text-sand-500"]}
-                      set:html={callout.kind.icon.svg}
-                    />
-                  ) : (
-                    <span class:list={["mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", callout.kind?.labelColor ?? "bg-sand-400"]} />
-                  )}
-                  <PortableText value={callout.body} components={ptComponents} />
-                </div>
-              ))}
-            </div>
+          {stop.cost != null && stop.cost > 0 && (
+            <>
+              <span class="text-sea-300">·</span>
+              <CostPill cost={stop.cost} currency={stop.currency} />
+            </>
           )}
-
-          {/* Description */}
-          {stop.description && (
-            <div class="pt-inline mt-2.5 text-sm leading-relaxed text-deep/60">
-              <PortableText value={stop.description} components={ptComponents} />
-            </div>
-          )}
-
-          {/* Address */}
           {mapsLink && (
-            <div class="mt-2.5">
-              <MapLink href={mapsLink} text={mapsText} class="text-sea-400 hover:text-sea-600" />
-            </div>
+            <>
+              <span class="text-sea-300">·</span>
+              <MapLink
+                href={mapsLink}
+                text={mapsText}
+                class="text-sea-400 hover:text-sea-600"
+              />
+            </>
           )}
         </div>
-      </div>
-    )}
+      ) : (
+        /* ── Stop / Location: white card with accent stripe ── */
+        <div
+          class:list={[
+            "rounded-l-[3px] rounded-r-lg bg-white shadow-sm",
+            "border-l-[3px]",
+            config.accent,
+          ]}
+        >
+          <div class="px-4 py-3">
+            {/* Title + Cost inline */}
+            <div class="mt-0.5 flex flex-wrap items-center gap-2">
+              <h3 class="font-display text-lg font-semibold leading-snug">
+                <button
+                  type="button"
+                  class="stop-title cursor-pointer text-sea-800 hover:text-sea-600 hover:underline"
+                  data-stop-index={index}
+                >
+                  {stop.title}
+                </button>
+              </h3>
+              {stop.cost != null && stop.cost > 0 && (
+                <CostPill cost={stop.cost} currency={stop.currency} />
+              )}
+              {mapTarget && (
+                <button
+                  type="button"
+                  data-show-on-map={index}
+                  aria-label="Show on Map"
+                  class="group ml-auto inline-flex shrink-0 cursor-pointer items-center rounded-full border border-sea-200 bg-white px-1.5 py-1 text-sea-500 shadow-sm transition-colors hover:border-sea-300 hover:text-sea-600"
+                >
+                  <svg
+                    class="h-3.5 w-3.5 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <line x1="12" y1="2" x2="12" y2="6" />
+                    <line x1="12" y1="18" x2="12" y2="22" />
+                    <line x1="2" y1="12" x2="6" y2="12" />
+                    <line x1="18" y1="12" x2="22" y2="12" />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                    class="max-w-0 overflow-hidden font-display text-xs font-medium whitespace-nowrap opacity-0 transition-all duration-200 group-hover:ml-1 group-hover:max-w-[7rem] group-hover:opacity-100"
+                  >
+                    Show on Map
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* Sub-label */}
+            {(stop.time || isStart || isEnd) && (
+              <p
+                class:list={[
+                  "mt-1 font-display text-xs font-semibold uppercase tracking-widest",
+                  isStart
+                    ? "text-green-600"
+                    : isEnd
+                      ? "text-sand-500"
+                      : "text-sand-500",
+                ]}
+              >
+                {isStart ? "Start" : isEnd ? "End" : stop.time}
+              </p>
+            )}
+
+            {/* Callouts */}
+            {stop.callouts && stop.callouts.length > 0 && (
+              <div class="mt-2.5 flex flex-col gap-1.5">
+                {stop.callouts.map((callout) => (
+                  <div class="flex items-start gap-2 text-sm text-sea-700 pt-inline">
+                    {callout.kind?.icon?.svg ? (
+                      <span
+                        class:list={[
+                          "inline-block h-3.5 w-3.5 shrink-0 mt-0.5 [&>svg]:h-full [&>svg]:w-full",
+                          callout.kind?.labelColor ?? "text-sand-500",
+                        ]}
+                        set:html={callout.kind.icon.svg}
+                      />
+                    ) : (
+                      <span
+                        class:list={[
+                          "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                          callout.kind?.labelColor ?? "bg-sand-400",
+                        ]}
+                      />
+                    )}
+                    <PortableText
+                      value={callout.body}
+                      components={ptComponents}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Description */}
+            {stop.description && (
+              <div class="pt-inline mt-2.5 text-sm leading-relaxed text-deep/60">
+                <PortableText
+                  value={stop.description}
+                  components={ptComponents}
+                />
+              </div>
+            )}
+
+            {/* Address */}
+            {mapsLink && (
+              <div class="mt-2.5">
+                <MapLink
+                  href={mapsLink}
+                  text={mapsText}
+                  class="text-sea-400 hover:text-sea-600"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
   </div>
 </li>
 
 <style>
   /* Continuous timeline rail — runs dot-to-dot, hidden after last item */
   li::before {
-    content: '';
+    content: "";
     position: absolute;
-    left: 9px;        /* 10px dot center minus 1px (half of 2px line) */
+    left: 9px; /* 10px dot center minus 1px (half of 2px line) */
     top: 0;
     bottom: 0;
     width: 0;

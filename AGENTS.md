@@ -25,7 +25,7 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 
 ## Map kit (`packages/map-core`)
 
-- Shared by `studio` and `web` as plain TS source — no build step. Import `@adayin/map-core` in browser code, `@adayin/map-core/core` from build-time/SSR code.
+- Shared by `studio` and `web` as plain TS source — no build step. `@adayin/map-core` (alias of `@adayin/map-core/core`) is Leaflet-free and safe to import from build-time/SSR code; the Leaflet half is split behind `@adayin/map-core/render` (primitives, DOM effects) and `@adayin/map-core/tiles`, which are browser-only.
 - `core.ts` — Leaflet-free and DOM-free logic: types, geometry, URL helpers. `web`'s mapFocus imports it during the Astro build and the vitest suite runs in plain Node, so nothing browser-only belongs here.
 - `render.ts` — the browser half: Leaflet primitives (`dotIcon`, `featureLayer`, `featureBounds`) and DOM effects (`flashPin`); `tiles.ts` — the shared tile layer.
 - Share the mechanism, own the policy: a helper belongs in the kit when both apps need the same behaviour, but values, options and triggers stay at the call site in each app (e.g. `PIN_FLASH` in `web/src/utils/itineraryMap.ts` and `studio/components/leaflet/leafletConfig.ts`).
@@ -33,6 +33,6 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 
 ## UI Styling
 
-- For anything in `web/` match the styling outlined in `web/STLYING.md`.
+- For anything in `web/` match the styling outlined in `web/STYLING.md`.
 - Prefer Tailwind CSS and Astro Components over custom CSS classes.
 - Use Svelte Components when state and interactivity needs to be managed outside what can be achieved with simple in JS and Astro.

@@ -36,9 +36,15 @@ function searchPlace(address: string): Promise<PlaceMatch | null> {
         body: JSON.stringify({textQuery: address}),
       })
       if (!res.ok) {
-        console.warn(
-          `[places] HTTP ${res.status} for "${address}": ${(await res.text()).slice(0, 300)}`,
-        )
+        const detail = (await res.text()).slice(0, 300)
+        // 400 = Places rejected the address itself → a genuine MISS. Everything
+        // else (bad key, quota, outage) aborts the run: storing fallback data
+        // for a failed lookup would drop the document out of the filter with no
+        // real match in it, and no rerun could repair it.
+        if (res.status !== 400) {
+          throw new Error(`Places HTTP ${res.status} for "${address}": ${detail}`)
+        }
+        console.warn(`[places] HTTP 400 for "${address}": ${detail}`)
         return null
       }
       const hit = ((await res.json()) as {places?: unknown[]}).places?.[0] as
@@ -65,10 +71,11 @@ function searchPlace(address: string): Promise<PlaceMatch | null> {
         mapsUri: hit.googleMapsUri ?? mapsQueryUrl(lat, lng),
       }
     } catch (err) {
-      // DNS failures, connection resets and non-JSON bodies degrade to a MISS
-      // instead of aborting the whole backfill run.
+      // Every request-level failure (HTTP error above, DNS, connection reset,
+      // non-JSON body) aborts the run: a MISS must only ever mean "Places
+      // answered, with nothing usable in it".
       console.warn(`[places] search failed for "${address}"`, err)
-      return null
+      throw err
     }
   }
   const next = queue.then(run, run)
@@ -89,18 +96,22 @@ export default defineMigration({
       const raw = doc as Record<string, unknown>
       const address = String(raw.address ?? '')
       if (!address.trim()) return [] // empty address → pointless 400 from Places
-      const existing = raw.location as {lat?: number; lng?: number} | undefined
-      const pinLat = existing?.lat != null ? existing.lat : null
-      const pinLng = existing?.lng != null ? existing.lng : null
+      // Existing editor data wins: a complete manual pin keeps its coords, and
+      // the match only fills the fields the location doesn't already carry.
+      // Half-set coords (API/import writes only) are not a pin.
+      const existing = raw.location as
+        {lat?: number; lng?: number; formattedAddress?: string; mapsUri?: string} | undefined
+      const pin =
+        existing?.lat != null && existing?.lng != null
+          ? {lat: existing.lat, lng: existing.lng}
+          : null
 
       const match = await searchPlace(address)
       if (match) {
-        // A manually placed pin (map click / earlier run) keeps its coords —
-        // the Place match only fills the multipart fields.
-        const lat = pinLat ?? match.lat
-        const lng = pinLng ?? match.lng
+        const lat = pin?.lat ?? match.lat
+        const lng = pin?.lng ?? match.lng
         console.log(
-          `[places] ${lat.toFixed(5)},${lng.toFixed(5)} ← "${address}"${pinLat != null ? ' (pin kept)' : ''} (${match.formattedAddress})`,
+          `[places] ${lat.toFixed(5)},${lng.toFixed(5)} ← "${address}"${pin ? ' (pin kept)' : ''} (${match.formattedAddress})`,
         )
         return [
           at(
@@ -109,13 +120,13 @@ export default defineMigration({
               _type: 'location',
               lat,
               lng,
-              formattedAddress: match.formattedAddress,
-              mapsUri: match.mapsUri,
+              formattedAddress: existing?.formattedAddress ?? match.formattedAddress,
+              mapsUri: existing?.mapsUri ?? match.mapsUri,
             }),
           ),
         ]
       }
-      if (pinLat != null && pinLng != null) {
+      if (pin) {
         // No Place match, but the pin exists: write the manual-pin shape the
         // studio input produces — raw address label + lat,lng query URL.
         console.warn(
@@ -126,10 +137,10 @@ export default defineMigration({
             'location',
             set({
               _type: 'location',
-              lat: pinLat,
-              lng: pinLng,
-              formattedAddress: address,
-              mapsUri: mapsQueryUrl(pinLat, pinLng),
+              lat: pin.lat,
+              lng: pin.lng,
+              formattedAddress: existing?.formattedAddress ?? address,
+              mapsUri: existing?.mapsUri ?? mapsQueryUrl(pin.lat, pin.lng),
             }),
           ),
         ]

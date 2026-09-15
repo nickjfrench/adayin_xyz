@@ -1,6 +1,6 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
 import {CalloutPreview} from '../components/CalloutPreview'
-import {locationField} from './locationField'
+import {legacyAddressField, locationField} from './locationField'
 
 export const stop = defineType({
   name: 'stop',
@@ -65,6 +65,7 @@ export const stop = defineType({
       // hosts this field on stops.
       description: 'Pin the stop on the itinerary route map, or draw a clickable region instead.',
     },
+    legacyAddressField,
     defineField({
       name: 'mapFeatures',
       title: 'Map features',

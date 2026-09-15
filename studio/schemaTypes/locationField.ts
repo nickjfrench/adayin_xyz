@@ -45,3 +45,20 @@ export const locationField = defineField({
   type: 'location',
   description: 'Map pin — plots this stop on the itinerary route map.',
 })
+
+/**
+ * Legacy single-string address, read-only while the location backfill runs: the
+ * migration reads it, and editors still need to see the value it produced —
+ * including for documents no Place match was found for. Remove this field (and
+ * its uses) once every document carries a location.
+ */
+export const legacyAddressField = defineField({
+  name: 'address',
+  title: 'Address (legacy)',
+  type: 'string',
+  description: 'Superseded by Location — kept until the location backfill has run.',
+  deprecated: {reason: 'Use the Location field; this string is migrated into it.'},
+  readOnly: true,
+  hidden: ({value}) => value === undefined,
+  initialValue: undefined,
+})

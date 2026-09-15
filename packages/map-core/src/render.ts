@@ -59,6 +59,17 @@ export function textLabelIcon(label: string): L.DivIcon {
   });
 }
 
+/**
+ * Tooltip content for a user-authored label. Leaflet writes **string** tooltip
+ * content with `innerHTML`, so a label containing markup would render (and
+ * execute) as HTML; an element carrying a text node stays text.
+ */
+export function tooltipText(text: string): HTMLElement {
+  const el = document.createElement('div');
+  el.textContent = text;
+  return el;
+}
+
 /** Dot marker for a point feature; null without a position. */
 export function pointLayer(f: MapFeature, opts: FeatureLayerOpts): L.Layer | null {
   return f.position
@@ -105,7 +116,7 @@ export function featureLayer(f: MapFeature, opts: FeatureLayerOpts): L.Layer | n
             : null;
   // Text labels render their content in the marker itself; only the other
   // shapes carry a Leaflet tooltip.
-  if (layer && f.label && f.shape !== 'text') layer.bindTooltip(f.label);
+  if (layer && f.label && f.shape !== 'text') layer.bindTooltip(tooltipText(f.label));
   return layer;
 }
 

@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPE_NAMES, arcPoints, featureIsDrawable, mapsQueryUrl } from './core';
-
-// Runs in plain Node (no DOM): importing './core' here fails the moment the
-// module graph starts touching Leaflet, which is what keeps [slug].astro's
-// build-time imports working.
+// Runs in plain Node (no DOM). The bare specifier is the SSR-safe entry, so
+// importing it here fails the moment the kit starts re-exporting Leaflet —
+// which is what keeps [slug].astro's build-time imports working.
+import {
+  SHAPE_NAMES,
+  arcPoints,
+  featureIsDrawable,
+  mapsQueryUrl,
+  type ShapeName,
+} from '@adayin/map-core';
 
 describe('SHAPE_NAMES', () => {
   it('matches the stored schema list byte for byte', () => {
@@ -33,6 +38,9 @@ describe('featureIsDrawable', () => {
     ['circle with position and radius', { shape: 'circle', position: p, radius: 500 }, true],
     ['circle without radius', { shape: 'circle', position: p }, false],
     ['circle with zero radius', { shape: 'circle', position: p, radius: 0 }, false],
+    // An unknown shape (removed kind, bad import) renders nothing, so it must
+    // not report drawable however complete its geometry looks.
+    ['unknown shape with position', { shape: 'hexagon' as ShapeName, position: p }, false],
   ];
 
   it.each(cases)('%s → %s', (_name, feature, expected) => {

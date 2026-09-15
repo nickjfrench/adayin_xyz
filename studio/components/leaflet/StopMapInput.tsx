@@ -11,7 +11,7 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
 import {SHAPE_DEFS, shapeFromLayer, type MapFeatureItem} from './shapes'
-import {dotIcon, featureBounds, flashPin} from '@adayin/map-core'
+import {dotIcon, featureBounds, flashPin, tooltipText} from '@adayin/map-core/render'
 import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
 import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
@@ -182,7 +182,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       if (!def) return
       const layer = def.layerFromFeature(item)
       if (!layer) return
-      if (item.label && item.shape !== 'text') layer.bindTooltip(item.label)
+      if (item.label && item.shape !== 'text') layer.bindTooltip(tooltipText(item.label))
       keyMapRef.current.set(item._key, layer)
       layer.addTo(map)
       attachLayerHandlers(layer, item)
@@ -324,7 +324,14 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     }
     const marker = markerRef.current
     if (!marker) {
-      const m = L.marker([lat, lng], {icon: dotIcon(16, PIN_COLOR), draggable: !readOnly}).addTo(map)
+      // pmIgnore keeps Geoman's edit/removal tools off the pin: a Geoman
+      // removal would delete the layer while location keeps its coords, and
+      // the !hasValue guard above then blocks re-pinning by click.
+      const m = L.marker([lat, lng], {
+        icon: dotIcon(16, PIN_COLOR),
+        draggable: !readOnly,
+        pmIgnore: true,
+      }).addTo(map)
       m.on('dragend', () => {
         const p = m.getLatLng()
         handlePinRef.current({lat: p.lat, lng: p.lng})
@@ -338,10 +345,13 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
 
   // A place search lands the pin the editor didn't aim at, and the map jump is
   // instant — blink it (PIN_FLASH) so the result is impossible to miss. Runs
-  // after the sync effect above, so the marker element is there to blink.
+  // after the sync effect above, so the marker element is there to blink. The
+  // lat/lng deps re-run this on a drag or an external edit, which must not.
   const [flashSeq, setFlashSeq] = useState(0)
+  const flashedRef = useRef(0)
   useEffect(() => {
-    if (flashSeq === 0) return
+    if (flashSeq === flashedRef.current) return
+    flashedRef.current = flashSeq
     flashPin(markerRef.current?.getElement(), PIN_FLASH)
   }, [flashSeq, lat, lng])
 
@@ -471,10 +481,18 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       }
     } else if (layer) {
       // Area shapes carry a Leaflet tooltip; text markers render their label.
-      if (label) layer.bindTooltip(label)
+      if (label) layer.bindTooltip(tooltipText(label))
       else layer.unbindTooltip()
     }
   }
+
+  // The expand control is a child of the Leaflet container, and React's
+  // listener sits above it, so its click would reach Leaflet's own click
+  // handler first and drop a pin under the button. Stable ref callback: React
+  // re-runs it only when the portal toggle remounts the node.
+  const shieldExpand = useCallback((el: HTMLDivElement | null) => {
+    if (el) L.DomEvent.disableClickPropagation(el)
+  }, [])
 
   // The fullscreen overlay portals to document.body: fixed positioning inside
   // the studio form can be hijacked by transformed/contained ancestors and
@@ -485,24 +503,27 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       ref={setContainer}
       className={expanded ? 'leaflet-input-map leaflet-input-expanded' : 'leaflet-input-map'}
     >
-      {apiKey && map && <PlacesSearch apiKey={apiKey} map={map} actions={searchActions} />}
-      <Button
-        aria-label={expanded ? 'Collapse map' : 'Expand map'}
-        icon={expanded ? CollapseIcon : ExpandIcon}
-        mode="bleed"
-        className="leaflet-input-expand"
-        onClick={() => setExpanded(!expanded)}
-      />
+      {apiKey && map && searchActions.length > 0 && (
+        <PlacesSearch apiKey={apiKey} map={map} actions={searchActions} />
+      )}
+      <div ref={shieldExpand} className="leaflet-input-expand">
+        <Button
+          aria-label={expanded ? 'Collapse map' : 'Expand map'}
+          icon={expanded ? CollapseIcon : ExpandIcon}
+          mode="bleed"
+          onClick={() => setExpanded(!expanded)}
+        />
+      </div>
     </div>
   )
 
   return (
-    <Stack space={2}>
+    <Stack gap={2}>
       <div className="leaflet-input-map-slot">
         {expanded ? createPortal(mapNode, document.body) : mapNode}
       </div>
       {hasValue ? (
-        <Stack space={2}>
+        <Stack gap={2}>
           <Flex align="center" gap={2}>
             <Text size={1} muted style={{flex: 1}}>
               {/* Primary line mirrors what the site renders as the Maps link text. */}
@@ -534,9 +555,9 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
           Draw a polygon or circle to define a clickable region — label it to list it as an option.
         </Text>
       ) : (
-        <Stack space={2} padding={1}>
+        <Stack gap={2} padding={1}>
           {items.map((item) => (
-            <Grid key={item._key} columns={3} gap={2}>
+            <Grid key={item._key} gridTemplateColumns={3} gap={2}>
               <Text size={2} style={{textAlign: 'center'}} title={item.shape}>
                 {SHAPE_DEFS[item.shape]?.glyph ?? '•'}
               </Text>

@@ -1,4 +1,4 @@
-import type {FeatureStyle, PinFlashOptions} from '@adayin/map-core'
+import type {FeatureStyle, PinFlashOptions} from '@adayin/map-core/render'
 
 export const DEFAULT_CENTER: [number, number] = [20, 0]
 export const DEFAULT_ZOOM = 2
@@ -16,7 +16,7 @@ export const POINT_COLOR = '#b45309'
 // jumps instantly, so the editor needs telling where it went.
 export const PIN_FLASH: PinFlashOptions = {
   enabled: true,
-  blinks: 5,
+  blinks: 3,
   halfPeriodMs: 180,
   minOpacity: 0.1,
   startDelay: 250,

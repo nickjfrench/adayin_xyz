@@ -35,11 +35,6 @@
 
   function toggleEnlarge() {
     enlarged = !enlarged;
-    // Leaflet doesn't observe container resizes; recalculate after the class flip.
-    requestAnimationFrame(() => map?.invalidateSize());
-    // Inline map keeps wheel zoom off so page scroll passes over it; the
-    // fullscreen overlay locks page scroll, so wheel = zoom there.
-    map?.scrollWheelZoom[enlarged ? 'enable' : 'disable']();
   }
 
   // While enlarged (fixed overlay): lock page scroll behind it, close on
@@ -47,6 +42,12 @@
   // rather than the backdrop div, which keeps the div free of click
   // semantics in markup (a11y) — keyboard users close via Escape.
   $effect(() => {
+    // Leaflet neither sees the class flip nor observes the container resize,
+    // and the overlay also closes on Escape / backdrop click — so sync here,
+    // where every close path lands, rather than in the toggle alone. A stale
+    // size would crop the view and land focus flights off screen.
+    map?.scrollWheelZoom[enlarged ? 'enable' : 'disable']();
+    requestAnimationFrame(() => map?.invalidateSize());
     if (!enlarged) return;
     document.body.style.overflow = 'hidden';
     const onKey = (e) => {

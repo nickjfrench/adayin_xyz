@@ -1,5 +1,5 @@
 import {defineType, defineField} from 'sanity'
-import {locationField} from './locationField'
+import {legacyAddressField, locationField} from './locationField'
 
 export const travel = defineType({
   name: 'travel',
@@ -39,6 +39,7 @@ export const travel = defineType({
       options: {hotspot: true},
     }),
     locationField,
+    legacyAddressField,
     defineField({
       name: 'cost',
       title: 'Cost',
