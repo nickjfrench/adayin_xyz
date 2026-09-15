@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react'
 import L from 'leaflet'
-import {Button} from '@sanity/ui'
+import {Button, Card, Flex, Stack, Text} from '@sanity/ui'
+import {CloseIcon} from '@sanity/icons/Close'
 
 let loader: Promise<void> | null = null
 
@@ -101,6 +102,8 @@ export function PlacesSearch({
     setPending(place)
   }
 
+  const choosing = pending != null && actions.length > 1
+
   // Escape dismisses the pending choice wherever focus sits.
   useEffect(() => {
     if (pending == null) return
@@ -110,6 +113,31 @@ export function PlacesSearch({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [pending])
+
+  // Clicking off the map dismisses too — the prompt must never be a trap.
+  // Clicks inside the map are left to the layer below, so the map's own chrome
+  // (search, expand, zoom, draw tools) stays usable while a choice is pending.
+  useEffect(() => {
+    if (pending == null) return
+    const container = map.getContainer()
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.target instanceof Node && container.contains(e.target)) return
+      setPending(null)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [pending, map])
+
+  // The prompt sits inside the Leaflet container: without this shield, pointer
+  // events bubble into the map's click/drag handlers, so cancelling would drop
+  // a pin or draw a shape under the prompt.
+  const layerRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = layerRef.current
+    if (!el) return
+    L.DomEvent.disableClickPropagation(el)
+    L.DomEvent.disableScrollPropagation(el)
+  }, [choosing])
 
   // The bias must be assigned through the DOM node: gmp-* tags are upgraded by
   // the places library, which loads asynchronously, and a JSX prop set before
@@ -134,7 +162,7 @@ export function PlacesSearch({
 
   if (!ready) return <div className="leaflet-input-search" />
 
-  const choosing = pending != null && actions.length > 1
+  const placeName = pending?.displayName ?? pending?.formattedAddress ?? 'Selected place'
 
   return (
     <>
@@ -164,29 +192,68 @@ export function PlacesSearch({
             }
           }}
         />
-        {choosing && (
-          <div className="leaflet-input-choices">
-            {actions.map((action) => (
-              <Button
-                key={action.label}
-                text={action.label}
-                mode="ghost"
-                justify="flex-start"
-                onClick={() => {
-                  const place = pending!
-                  setPending(null)
-                  action.onPick(place)
-                }}
-              />
-            ))}
-          </div>
-        )}
       </div>
       {choosing && (
-        /* Click-away shield: eats map interactions until a choice or dismissal.
+        /* Choice prompt: centred in the map (and so in the viewport when the
+           map is expanded). The layer covers the map, blocking Leaflet
+           interactions until the place is placed or the prompt is dismissed;
            z-index 999 sits above Leaflet panes (<=700) and below controls
-           (>=1000), so toolbars/search stay usable while a choice is pending. */
-        <div className="leaflet-input-shield" onClick={() => setPending(null)} />
+           (>=1000), so the search, zoom and draw toolbars stay usable. */
+        <div
+          ref={layerRef}
+          className="leaflet-input-choice-layer"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPending(null)
+          }}
+        >
+          <Card
+            className="leaflet-input-choice"
+            padding={3}
+            radius={3}
+            shadow={3}
+            role="dialog"
+            aria-label={`Choose what to do with ${placeName}`}
+          >
+            <Stack space={3}>
+              <Flex align="flex-start" gap={2}>
+                <Stack space={2} style={{flex: 1, minWidth: 0}}>
+                  <Text size={2} weight="semibold">
+                    {placeName}
+                  </Text>
+                  {pending?.formattedAddress != null && pending.formattedAddress !== placeName && (
+                    <Text size={1} muted>
+                      {pending.formattedAddress}
+                    </Text>
+                  )}
+                </Stack>
+                <Button
+                  icon={CloseIcon}
+                  mode="bleed"
+                  aria-label="Cancel"
+                  onClick={() => setPending(null)}
+                />
+              </Flex>
+              <Stack space={2}>
+                {actions.map((action) => (
+                  <Button
+                    key={action.label}
+                    text={action.label}
+                    mode="default"
+                    justify="flex-start"
+                    onClick={() => {
+                      const place = pending!
+                      setPending(null)
+                      action.onPick(place)
+                    }}
+                  />
+                ))}
+              </Stack>
+              <Text size={0} muted>
+                Press Esc or click the map to cancel.
+              </Text>
+            </Stack>
+          </Card>
+        </div>
       )}
     </>
   )

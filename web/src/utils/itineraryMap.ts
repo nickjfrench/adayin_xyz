@@ -5,13 +5,14 @@ import {
   arcPoints,
   featureBounds,
   featureLayer,
+  flashPin,
   type FeatureStyle,
   type MapFeature,
+  type PinFlashOptions,
 } from '@adayin/map-core';
 import { STOP_OPEN_EVENT } from './mapEvents';
 import { stopGlyph } from './stopGlyph';
 import { stopNumbers } from './stops';
-import { flashPin } from './pinFlash';
 
 export interface MapStopItem {
   _type: string;
@@ -55,6 +56,16 @@ const WEB_FEATURE_STYLE: FeatureStyle = {
 // Zoom ceiling for framing the whole route and for a "Show on Map" flight:
 // street-level readable, neighbourhood still in frame.
 const VIEW_MAX_ZOOM = 16;
+
+// The focused pin's blink (flashPin): web's own tuning for the "Show on Map"
+// flight, kept here so it reads next to focus() rather than in the shared kit.
+const PIN_FLASH: PinFlashOptions = {
+  enabled: true,
+  blinks: 5,
+  halfPeriodMs: 180,
+  minOpacity: 0.1,
+  startDelay: 250,
+};
 
 // Per-stop palette — the `--color-stop-*` hues from global.css, ordered so
 // consecutive stops are far apart on the wheel (adjacent stops ≥0.18 ΔE, any
@@ -345,7 +356,7 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     });
     const guard = new Promise<void>((resolve) => setTimeout(resolve, 3500));
     Promise.race([Promise.all([landed, framed]), guard]).then(() => {
-      if (seq === focusSeq) flashPin(pin);
+      if (seq === focusSeq) flashPin(pin, PIN_FLASH);
     });
     map.flyToBounds(bounds, { padding: [40, 40], maxZoom: VIEW_MAX_ZOOM });
   }

@@ -11,10 +11,10 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
 import {SHAPE_DEFS, shapeFromLayer, type MapFeatureItem} from './shapes'
-import {dotIcon, featureBounds} from '@adayin/map-core'
+import {dotIcon, featureBounds, flashPin} from '@adayin/map-core'
 import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
 import {LeafletLocationInput} from './LeafletLocationInput'
 import './mapInput.css'
 
@@ -257,6 +257,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
               onPick: (place: SelectedPlace) => {
                 handlePlace(place)
                 map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+                setFlashSeq((n) => n + 1)
               },
             },
             {
@@ -272,6 +273,12 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
                 emit([...valueRef.current, item])
                 addLayerFor(item)
                 map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+                // The new dot is a marker added above, so its element is ready
+                // to blink — same "where did it land" cue as the pin.
+                flashPin(
+                  (keyMapRef.current.get(item._key) as L.Marker | undefined)?.getElement(),
+                  PIN_FLASH,
+                )
               },
             },
           ]
@@ -328,6 +335,15 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       map.setView([lat, lng], map.getZoom())
     }
   }, [map, lat, lng, readOnly, handlePin])
+
+  // A place search lands the pin the editor didn't aim at, and the map jump is
+  // instant — blink it (PIN_FLASH) so the result is impossible to miss. Runs
+  // after the sync effect above, so the marker element is there to blink.
+  const [flashSeq, setFlashSeq] = useState(0)
+  useEffect(() => {
+    if (flashSeq === 0) return
+    flashPin(markerRef.current?.getElement(), PIN_FLASH)
+  }, [flashSeq, lat, lng])
 
   // One-time setup: geoman controls, draw dispatch, initial view and layers.
   useEffect(() => {

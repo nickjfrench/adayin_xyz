@@ -8,10 +8,10 @@ import {TrashIcon} from '@sanity/icons/Trash'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
-import {dotIcon} from '@adayin/map-core'
+import {dotIcon, flashPin} from '@adayin/map-core'
 import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, VALUE_ZOOM} from './leafletConfig'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, VALUE_ZOOM} from './leafletConfig'
 import './mapInput.css'
 
 /**
@@ -121,6 +121,15 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
     }
   }, [map, lat, lng, readOnly, handlePin])
 
+  // A place search lands the pin the editor didn't aim at, and the map jump is
+  // instant — blink it (PIN_FLASH) so the result is impossible to miss. Runs
+  // after the sync effect above, so the marker element is there to blink.
+  const [flashSeq, setFlashSeq] = useState(0)
+  useEffect(() => {
+    if (flashSeq === 0) return
+    flashPin(markerRef.current?.getElement(), PIN_FLASH)
+  }, [flashSeq, lat, lng])
+
   // Near-fullscreen expand. Fixed positioning keeps the same Leaflet instance
   // alive (no remount); useLeafletMap's ResizeObserver re-sizes the map.
   const [expanded, setExpanded] = useState(false)
@@ -162,6 +171,7 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
               onPick: (place) => {
                 handlePlace(place)
                 map.setView([place.lat, place.lng], Math.max(map.getZoom(), 15))
+                setFlashSeq((n) => n + 1)
               },
             },
           ]}

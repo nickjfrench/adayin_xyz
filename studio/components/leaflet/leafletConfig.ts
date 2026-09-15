@@ -1,4 +1,4 @@
-import type {FeatureStyle} from '@adayin/map-core'
+import type {FeatureStyle, PinFlashOptions} from '@adayin/map-core'
 
 export const DEFAULT_CENTER: [number, number] = [20, 0]
 export const DEFAULT_ZOOM = 2
@@ -12,3 +12,12 @@ export const FEATURE_STYLE: FeatureStyle = {
 }
 // Feature points (dots) use amber so they aren't confused with the stop pin.
 export const POINT_COLOR = '#b45309'
+// The blink (flashPin) for a pin or dot a place search just landed — the map
+// jumps instantly, so the editor needs telling where it went.
+export const PIN_FLASH: PinFlashOptions = {
+  enabled: true,
+  blinks: 5,
+  halfPeriodMs: 180,
+  minOpacity: 0.1,
+  startDelay: 250,
+}

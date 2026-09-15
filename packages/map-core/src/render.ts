@@ -130,3 +130,38 @@ export function featureBounds(f: MapFeature): L.LatLngBounds | null {
   }
   return null;
 }
+
+/**
+ * Blink tuning, owned by each caller so retuning stays next to the call
+ * (web's itineraryMap focus(), the studio's place search).
+ */
+export interface PinFlashOptions {
+  /** false → the caller still focuses/zooms and centres; it just skips the blink. */
+  enabled: boolean;
+  /** Blinks per flash. */
+  blinks: number;
+  /** Milliseconds per half blink (fade out, back). */
+  halfPeriodMs: number;
+  /** Opacity at the darkest point of a blink. */
+  minOpacity: number;
+  /** Start delay in ms. */
+  startDelay: number;
+}
+
+/**
+ * The "look here" blink for a pin that was just placed or focused. The caller
+ * owns the element it hands over, the values and the trigger; this owns the
+ * mechanism: fade there and back, restarted on a repeat rather than stacked,
+ * and skipped for a user who prefers reduced motion.
+ */
+export function flashPin(el: HTMLElement | null | undefined, opts: PinFlashOptions): void {
+  if (!opts.enabled || !el) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  el.getAnimations().forEach((a) => a.cancel());
+  el.animate([{ opacity: 1 }, { opacity: opts.minOpacity }, { opacity: 1 }], {
+    duration: opts.halfPeriodMs * 2,
+    iterations: opts.blinks,
+    easing: 'ease-in-out',
+    delay: opts.startDelay,
+  });
+}
