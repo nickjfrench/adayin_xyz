@@ -3,7 +3,6 @@
 /** Any itinerary item as stored in `post.stops` — only `_type` classifies it. */
 export interface StopLike {
   _type?: string;
-  [key: string]: unknown;
 }
 
 /** True for a real itinerary stop: excludes start/end locations and travel legs. */

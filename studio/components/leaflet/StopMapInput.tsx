@@ -10,10 +10,11 @@ import '@geoman-io/leaflet-geoman-free'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
-import {SHAPE_DEFS, createDotIcon, shapeFromLayer, type MapFeatureItem} from './shapes'
+import {SHAPE_DEFS, shapeFromLayer, type MapFeatureItem} from './shapes'
+import {dotIcon, featureBounds} from '@adayin/map-core'
+import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
-import {mapsQueryUrl} from './mapsUrl'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, POINT_COLOR, VALUE_ZOOM} from './leafletConfig'
 import {LeafletLocationInput} from './LeafletLocationInput'
 import './mapInput.css'
 
@@ -316,7 +317,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     }
     const marker = markerRef.current
     if (!marker) {
-      const m = L.marker([lat, lng], {icon: createDotIcon(16), draggable: !readOnly}).addTo(map)
+      const m = L.marker([lat, lng], {icon: dotIcon(16, PIN_COLOR), draggable: !readOnly}).addTo(map)
       m.on('dragend', () => {
         const p = m.getLatLng()
         handlePinRef.current({lat: p.lat, lng: p.lng})
@@ -356,7 +357,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
       if (!item) return
       // Geoman drops a default blue pin for markers — restyle points to the
       // amber feature dot.
-      if (item.shape === 'point') (e.layer as L.Marker).setIcon(createDotIcon(12, POINT_COLOR))
+      if (item.shape === 'point') (e.layer as L.Marker).setIcon(dotIcon(12, POINT_COLOR))
       keyMap.set(item._key, e.layer)
       emitRef.current([...valueRef.current, item])
       // Geoman already put the layer on the map; wiring handlers here makes
@@ -371,7 +372,7 @@ export function StopMapFieldInput(props: ObjectInputProps & {apiKey?: string}) {
     const pin = pinRef.current
     if (pin) corners.push([pin.lat, pin.lng])
     valueRef.current.forEach((f) => {
-      const b = SHAPE_DEFS[f.shape]?.boundsOf(f)
+      const b = featureBounds(f)
       if (b) corners.push(b.getSouthWest(), b.getNorthEast())
     })
     if (corners.length > 1) map.fitBounds(L.latLngBounds(corners), {padding: [20, 20], maxZoom: 16})

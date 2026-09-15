@@ -19,7 +19,7 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 ## Rules
 
 - Don't commit, stash, or push anything unless explicitly asked.
-- Use Bun always, never use NPM.
+- Use pnpm always, never use NPM. The repo is a pnpm workspace: `studio`, `web`, and `packages/map-core` — the shared map kit (Leaflet render + Leaflet-free logic) consumed by both apps. `pnpm --filter` selects by package name (`adayin-xyz-studio`, `adayin-xyz-web`, `@adayin/map-core`), not by directory.
 - Don't try to run the server, check if the ports are running (4321 for web) and (3333 for sanity) and connect via that.
 - Don't try to connect to Sanity via the browser, it requires auth. Ask the user to troubleshoot.
 

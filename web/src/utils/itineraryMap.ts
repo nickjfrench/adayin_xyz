@@ -1,6 +1,13 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // the package owns its CSS
-import { featureLayer, featureBounds, type MapFeatureSlim } from './mapFeatures';
+import {
+  addTileLayer,
+  arcPoints,
+  featureBounds,
+  featureLayer,
+  type FeatureStyle,
+  type MapFeature,
+} from '@adayin/map-core';
 import { STOP_OPEN_EVENT } from './mapEvents';
 import { stopGlyph } from './stopGlyph';
 import { stopNumbers } from './stops';
@@ -12,7 +19,7 @@ export interface MapStopItem {
   location: { lat: number; lng: number } | null;
   /** Travel-leg icon (`travelType.icon.svg`); null for every other item. */
   icon: string | null;
-  features: MapFeatureSlim[] | null;
+  features: MapFeature[] | null;
 }
 
 // Full literal class strings (Tailwind v4 scans this file's text). `palette`
@@ -34,6 +41,16 @@ const TRAVEL_GLYPH_CLASSES = 'h-3 w-3';
 // these mirror the ramps in global.css (grep the token names on change).
 const SEA_500 = 'oklch(0.53 0.085 185)'; // --color-sea-500
 const SEA_300 = 'oklch(0.74 0.065 185)'; // --color-sea-300
+
+// Shared base style for stop features; `color` is overridden per stop by the
+// caller so overlapping regions stay attributable.
+const WEB_FEATURE_STYLE: FeatureStyle = {
+  color: SEA_500,
+  weight: 3,
+  opacity: 0.8,
+  fillOpacity: 0.12,
+  lineCap: 'round',
+};
 
 // Zoom ceiling for framing the whole route and for a "Show on Map" flight:
 // street-level readable, neighbourhood still in frame.
@@ -110,36 +127,6 @@ function addStopMarker(map: L.Map, item: MapStopItem, index: number, latlng: [nu
   return marker;
 }
 
-// Quadratic bezier a→b bulged perpendicular; offsetIndex 0 → straight line.
-// Both branches return 25 samples so the t=0.5 apex sample (pts[12]) always exists.
-function arcPoints(a: [number, number], b: [number, number], offsetIndex: number): [number, number][] {
-  if (offsetIndex === 0) {
-    const pts: [number, number][] = [];
-    for (let s = 0; s <= 24; s++) {
-      const t = s / 24, u = 1 - t;
-      pts.push([u * a[0] + t * b[0], u * a[1] + t * b[1]]);
-    }
-    return pts;
-  }
-  const [lat1, lng1] = a, [lat2, lng2] = b;
-  const midLat = (lat1 + lat2) / 2;
-  const cosLat = Math.cos((midLat * Math.PI) / 180);
-  const dLat = lat2 - lat1;
-  const dLng = (lng2 - lng1) * cosLat;
-  const len = Math.hypot(dLat, dLng) || 1e-9;
-  const pLat = -dLng / len;           // unit perpendicular (lat component)
-  const pLng = dLat / len / cosLat;   // unit perpendicular (lng component, un-corrected)
-  const bulge = Math.min(0.03, Math.max(0.0008, len * 0.18)) * offsetIndex;
-  const cLat = midLat + pLat * bulge;
-  const cLng = (lng1 + lng2) / 2 + pLng * bulge;
-  const pts: [number, number][] = [];
-  for (let s = 0; s <= 24; s++) {
-    const t = s / 24, u = 1 - t;
-    pts.push([u * u * lat1 + 2 * u * t * cLat + t * t * lat2, u * u * lng1 + 2 * u * t * cLng + t * t * lng2]);
-  }
-  return pts;
-}
-
 /** Draws the travel legs between two located stops in `from`'s colour.
  * Returns each step's layers (arc and apex icon) tagged with the travel
  * item's index, for hover wiring. */
@@ -187,7 +174,7 @@ function drawSegment(
  * Returns the layers so the caller can wire them into hover emphasis. */
 function addStopFeatures(map: L.Map, item: MapStopItem, index: number, color: string): L.Layer[] {
   return (item.features ?? []).flatMap((f): L.Layer[] => {
-    const layer = featureLayer(f, color);
+    const layer = featureLayer(f, { style: { ...WEB_FEATURE_STYLE, color }, pointColor: color, pointSize: 12 });
     if (!layer) return [];
     layer.addTo(map);
     layer.on('click', () => openStop(index));
@@ -274,16 +261,7 @@ export function createItineraryMap(container: HTMLElement, stops: MapStopItem[])
     scrollWheelZoom: false,                    // page scroll passes over the map
     renderer: L.canvas({ tolerance: 20 }),     // ~20px click tolerance around thin arcs
   });
-  // Mirrors studio/components/leaflet/leafletConfig.ts TILE_URL/TILE_OPTIONS —
-  // keep both in sync when changing tiles, zoom or attribution.
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    // OSMF rejects tile requests that carry no Referer with 403 "Access
-    // blocked"; the per-tile attribute overrides any stricter document referrer
-    // policy the embedding page may set (which the tile usage policy forbids).
-    referrerPolicy: 'strict-origin-when-cross-origin',
-  }).addTo(map);
+  addTileLayer(map);
 
   // Walk the ordered array: located items become markers and close segments;
   // travel items accumulate into the segment between their neighbors. Features

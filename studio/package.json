@@ -1,5 +1,5 @@
 {
-  "name": "adayinxyz",
+  "name": "adayin-xyz-studio",
   "private": true,
   "version": "1.0.0",
   "main": "package.json",
@@ -13,6 +13,7 @@
   },
   "keywords": ["sanity"],
   "dependencies": {
+    "@adayin/map-core": "workspace:*",
     "@geoman-io/leaflet-geoman-free": "^2.20.0",
     "@sanity/color-input": "^6.1.0",
     "@sanity/vision": "^6.13.2",

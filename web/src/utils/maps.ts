@@ -1,9 +1,6 @@
-export interface LocationValue {
-  lat?: number | null;
-  lng?: number | null;
-  formattedAddress?: string | null;
-  mapsUri?: string | null;
-}
+import { mapsQueryUrl, type LocationValue } from '@adayin/map-core/core';
+
+export type { LocationValue };
 
 /**
  * Maps URL for a stop: the stored multipart mapsUri (Place URI from search,
@@ -16,7 +13,7 @@ export function mapsLinkFor(
 ): string | null {
   const { mapsUri, lat, lng } = location ?? {};
   if (mapsUri) return mapsUri;
-  if (lat != null && lng != null) return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  if (lat != null && lng != null) return mapsQueryUrl(lat, lng);
   if (address) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
   return null;
 }

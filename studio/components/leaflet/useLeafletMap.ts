@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react'
 import L from 'leaflet'
-import {TILE_OPTIONS, TILE_URL} from './leafletConfig'
+import {addTileLayer} from '@adayin/map-core'
 
 /**
  * Creates a Leaflet map on the container once it mounts; returns null until then.
@@ -22,7 +22,7 @@ export function useLeafletMap(
     if (!container) return
     const instance = L.map(container, {center, zoom, scrollWheelZoom: false, zoomControl: false})
     L.control.zoom({position: 'topright'}).addTo(instance)
-    L.tileLayer(TILE_URL, TILE_OPTIONS).addTo(instance)
+    addTileLayer(instance)
     // Leaflet's trackResize only covers window resizes; studio panes resize
     // the container without a window event.
     const resizeObserver = new ResizeObserver(() => instance.invalidateSize())

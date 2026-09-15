@@ -8,10 +8,10 @@ import {TrashIcon} from '@sanity/icons/Trash'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import {useLeafletMap} from './useLeafletMap'
-import {createDotIcon} from './shapes'
+import {dotIcon} from '@adayin/map-core'
+import {mapsQueryUrl} from '@adayin/map-core/core'
 import {PlacesSearch, type SelectedPlace} from './googlePlaces'
-import {mapsQueryUrl} from './mapsUrl'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, VALUE_ZOOM} from './leafletConfig'
+import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, VALUE_ZOOM} from './leafletConfig'
 import './mapInput.css'
 
 /**
@@ -109,7 +109,7 @@ export function LeafletLocationInput(props: ObjectInputProps & {apiKey?: string}
     }
     const marker = markerRef.current
     if (!marker) {
-      const m = L.marker([lat, lng], {icon: createDotIcon(16), draggable: !readOnly}).addTo(map)
+      const m = L.marker([lat, lng], {icon: dotIcon(16, PIN_COLOR), draggable: !readOnly}).addTo(map)
       m.on('dragend', () => {
         const p = m.getLatLng()
         handlePinRef.current({lat: p.lat, lng: p.lng})

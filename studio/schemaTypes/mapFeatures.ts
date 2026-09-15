@@ -1,5 +1,5 @@
 import {defineType, defineField} from 'sanity'
-import {SHAPE_NAMES} from '../components/leaflet/shapes'
+import {SHAPE_NAMES} from '@adayin/map-core/core'
 
 export const mapFeature = defineType({
   name: 'mapFeature',

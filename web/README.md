@@ -1,16 +1,12 @@
 # Astro with Tailwind
 
-```sh
-bun create astro@latest -- --template with-tailwindcss
-```
-
-This project uses [Bun](https://bun.sh) as its package manager and runner:
+This repo is a pnpm workspace; run commands from the repo root:
 
 ```sh
-bun install      # install dependencies
-bun run dev      # start the dev server
-bun run build    # build for production
-bun run preview  # preview the production build
+pnpm install                          # install all workspace dependencies
+pnpm --filter adayin-xyz-web dev      # start the dev server
+pnpm --filter adayin-xyz-web build    # build for production
+pnpm --filter adayin-xyz-web preview  # preview the production build
 ```
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)

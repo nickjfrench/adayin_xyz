@@ -1,5 +1,5 @@
 import {defineMigration, at, set, type NodePatch} from 'sanity/migrate'
-import {mapsQueryUrl} from '../components/leaflet/mapsUrl'
+import {mapsQueryUrl} from '@adayin/map-core/core'
 
 /**
  * Places (New) Text Search — the REST twin of the studio map search

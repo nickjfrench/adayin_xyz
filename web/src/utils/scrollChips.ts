@@ -12,10 +12,15 @@
  * hidden when the track has no horizontal overflow. Idempotent.
  */
 export function initScrollChips(container: HTMLElement): () => void {
-  const track = container.querySelector<HTMLElement>('[data-sc-track]');
-  const prev = container.querySelector<HTMLElement>('[data-sc-prev]');
-  const next = container.querySelector<HTMLElement>('[data-sc-next]');
-  if (!track || !prev || !next) return () => {};
+  const trackEl = container.querySelector<HTMLElement>('[data-sc-track]');
+  const prevEl = container.querySelector<HTMLElement>('[data-sc-prev]');
+  const nextEl = container.querySelector<HTMLElement>('[data-sc-next]');
+  if (!trackEl || !prevEl || !nextEl) return () => {};
+
+  // Bound after the guard: the closures below don't inherit its narrowing.
+  const track = trackEl;
+  const prev = prevEl;
+  const next = nextEl;
 
   const step = () => Math.max(track.clientWidth * 0.8, 80);
 
