@@ -1,5 +1,6 @@
 <script>
   import Modal from './Modal.svelte';
+  import { priceText } from '../utils/cost';
   import { mapsLinkFor, mapsLinkText } from '../utils/maps';
   import { PortableText } from '@portabletext/svelte';
   import PortableLink from './PortableLink.svelte';
