@@ -27,7 +27,7 @@
     "canvas-confetti": "^1.9.4",
     "eslint": "^10.9.1",
     "groq": "^6.0.0",
-    "leaflet": "^1.9.4",
+    "maplibre-gl": "^6.10.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "svelte": "^5.56.4",
@@ -36,8 +36,13 @@
   },
   "devDependencies": {
     "@sanity/client": "^7.26.0",
-    "@types/leaflet": "^1.9.20",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^25.9.3",
     "typescript": "^5.8"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": true,
+    "printWidth": 100
   }
 }

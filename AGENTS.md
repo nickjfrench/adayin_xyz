@@ -19,17 +19,19 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 ## Rules
 
 - Don't commit, stash, or push anything unless explicitly asked.
-- Use pnpm always, never use NPM. The repo is a pnpm workspace: `studio`, `web`, and `packages/map-core` — the shared map kit (Leaflet render + Leaflet-free logic) consumed by both apps. `pnpm --filter` selects by package name (`adayin-xyz-studio`, `adayin-xyz-web`, `@adayin/map-core`), not by directory.
+- Use pnpm always, never use NPM. The repo is a pnpm workspace: `studio`, `web`, and `packages/map-core` — the shared map kit (MapLibre rendering + renderer-free stored-contract logic) consumed by both apps. `pnpm --filter` selects by package name (`adayin-xyz-studio`, `adayin-xyz-web`, `@adayin/map-core`), not by directory.
 - Don't try to run the server, check if the ports are running (4321 for web) and (3333 for sanity) and connect via that.
 - Don't try to connect to Sanity via the browser, it requires auth. Ask the user to troubleshoot.
 
 ## Map kit (`packages/map-core`)
 
-- Shared by `studio` and `web` as plain TS source — no build step. `@adayin/map-core` (alias of `@adayin/map-core/core`) is Leaflet-free and safe to import from build-time/SSR code; the Leaflet half is split behind `@adayin/map-core/render` (primitives, DOM effects) and `@adayin/map-core/tiles`, which are browser-only.
-- `core.ts` — Leaflet-free and DOM-free logic: types, geometry, URL helpers. `web`'s mapFocus imports it during the Astro build and the vitest suite runs in plain Node, so nothing browser-only belongs here.
-- `render.ts` — the browser half: Leaflet primitives (`dotIcon`, `featureLayer`, `featureBounds`) and DOM effects (`flashPin`); `tiles.ts` — the shared tile layer.
-- Share the mechanism, own the policy: a helper belongs in the kit when both apps need the same behaviour, but values, options and triggers stay at the call site in each app (e.g. `PIN_FLASH` in `web/src/utils/itineraryMap.ts` and `studio/components/leaflet/leafletConfig.ts`).
-- Studio-only (geoman, Sanity inputs) and web-only (Astro/Svelte glue) code stays in its app.
+- Shared by `studio` and `web` as plain TS source — no build step. Subpaths: `@adayin/map-core` (alias of `/core`) — types, the stored member contract, geometry; `/geojson` — stored↔GeoJSON conversion and circle maths; `/dom` — DOM-only effects; `/basemap` — MapLibre bootstrap. `core` and `geojson` are renderer-free, so build-time/SSR code may import them (`web`'s mapFocus does); `dom` and `basemap` are browser-only.
+- `core.ts` — renderer-free and DOM-free logic: types, the stored contract (`serializeMapFeature`, `mapFeatureBounds`, `mapFeaturesSignature`), geometry. The vitest suite runs in plain Node, so nothing browser-only belongs here.
+- `geojson.ts` — pure conversion between stored items and GeoJSON features, plus `circleRing`/`distanceMeters` on the sphere stored radii were measured on (Leaflet's R = 6371000).
+- `dom.ts` — DOM-only helpers (`tooltipText`, `textLabelElement`, `dotElement`, `flashPin`); `basemap.ts` — client-only: the MapLibre worker URL and the one basemap style (OpenFreeMap Bright).
+- The studio draws and edits regions with `@geoman-io/maplibre-geoman-free` under `studio/components/map/`: `StopMapInput.tsx` is the combined pin+region editor, `LocationInput.tsx` the plain pin editor, `shapes.ts` the stored↔Geoman bridge, `googlePlaces.tsx` the renderer-agnostic Places search, `mapConfig.ts` the studio's values. Stored items are always merged, never rebuilt: untouched fields (labels, keys) stay verbatim.
+- Share the mechanism, own the policy: a helper belongs in the kit when both apps need the same behaviour, but values, options and triggers stay at the call site in each app (e.g. `PIN_FLASH` in `web/src/utils/itineraryMap.ts` and `studio/components/map/mapConfig.ts`).
+- Studio-only (Geoman, Sanity inputs) and web-only (Astro/Svelte glue) code stays in its app.
 
 ## UI Styling
 

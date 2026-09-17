@@ -3,7 +3,7 @@ import {mapsQueryUrl} from '@adayin/map-core/core'
 
 /**
  * Places (New) Text Search — the REST twin of the studio map search
- * (components/leaflet/googlePlaces.tsx fetches `location`, `formattedAddress`
+ * (components/map/googlePlaces.tsx fetches `location`, `formattedAddress`
  * and `googleMapsURI` for a selected place). The migration runs in Node, so it
  * calls places.googleapis.com directly instead of loading the browser SDK.
  * Requests run serially to keep logs and retries predictable; Text Search has

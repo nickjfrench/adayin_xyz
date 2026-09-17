@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-  import { createItineraryMap } from '../utils/itineraryMap';
 
   /**
    * Ordered slim itinerary items; array index === index in the modal island's
@@ -11,25 +10,83 @@
 
   let container;
   let backdrop;
-  /** @type {import('leaflet').Map | null} */
-  let map = null;
+  /** @type {import('maplibre-gl').Map | null} */
+  let map = $state(null);
   let enlarged = $state(false);
 
-  onMount(() => {
-    const built = createItineraryMap(container, stops);
-    if (!built) return;
-    map = built.map;
+  // MapLibre is a client-only bundle, and most page views never reach this
+  // section — so the renderer loads when the placeholder gets close (see the
+  // IntersectionObserver below). One promise serves every caller: the observer,
+  // "Show on Map" clicks, and unmount cleanup all await the same build.
+  let loaded = null;
+  let destroyed = false;
+  let retryTimer = null;
+  const RETRY_DELAY_MS = 3000;
+  function loadMap() {
+    loaded ??= import('../utils/itineraryMap')
+      .then(({ createItineraryMap }) => {
+        if (destroyed) return null;
+        const built = createItineraryMap(container, stops);
+        if (!built) return null;
+        map = built.map;
+        // The page may already be enlarged by the time the bundle lands.
+        if (enlarged) map.scrollZoom.enable();
+        return built;
+      })
+      .catch((error) => {
+        // A failed chunk request must not poison the memo — one delayed retry
+        // re-runs the build (dev-server re-optimization, flaky network), and a
+        // "Show on Map" click calls loadMap again whatever happened. The map is
+        // progressive enhancement; the page reads fine without it.
+        loaded = null;
+        console.error('Itinerary map failed to load', error);
+        if (!destroyed && retryTimer === null) {
+          retryTimer = setTimeout(() => {
+            retryTimer = null;
+            loadMap();
+          }, RETRY_DELAY_MS);
+        }
+        return null;
+      });
+    return loaded;
+  }
 
+  onMount(() => {
     // "Show on Map" buttons in the stop list (StopCard.astro) hand their click to
     // the map. They are server-rendered and this island mounts after them, hence
-    // the query rather than a prop.
+    // the query rather than a prop. A click before the map has loaded waits on
+    // the same build and then flies.
     const buttons = document.querySelectorAll('[data-show-on-map]');
-    const onShowOnMap = (e) => built.focus(Number(e.currentTarget.dataset.showOnMap));
+    const onShowOnMap = async (e) => {
+      const index = Number(e.currentTarget.dataset.showOnMap);
+      const built = await loadMap();
+      built?.focus(index);
+    };
     buttons.forEach((el) => el.addEventListener('click', onShowOnMap));
 
+    // One viewport of scroll ahead, so the map is built before it is looked at.
+    // The placeholder wrapper already reserves the height, so a late build
+    // cannot shift the page (no CLS).
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        // Keep observing until the build actually succeeded: a failed chunk load
+        // resets the memo (see loadMap), so a later re-entry can rebuild.
+        loadMap().then((built) => {
+          if (built || destroyed) observer.disconnect();
+        });
+      },
+      { rootMargin: '800px' },
+    );
+    observer.observe(container);
+
     return () => {
+      destroyed = true;
+      clearTimeout(retryTimer);
+      retryTimer = null;
+      observer.disconnect();
       buttons.forEach((el) => el.removeEventListener('click', onShowOnMap));
-      built.destroy();
+      loaded?.then((built) => built?.destroy());
     };
   });
 
@@ -42,12 +99,11 @@
   // rather than the backdrop div, which keeps the div free of click
   // semantics in markup (a11y) — keyboard users close via Escape.
   $effect(() => {
-    // Leaflet neither sees the class flip nor observes the container resize,
-    // and the overlay also closes on Escape / backdrop click — so sync here,
-    // where every close path lands, rather than in the toggle alone. A stale
-    // size would crop the view and land focus flights off screen.
-    map?.scrollWheelZoom[enlarged ? 'enable' : 'disable']();
-    requestAnimationFrame(() => map?.invalidateSize());
+    // The overlay also closes on Escape / backdrop click, so sync in one
+    // place, where every open and close path lands, rather than in the toggle
+    // alone. A stale size would crop the view and land focus flights off screen.
+    map?.scrollZoom[enlarged ? 'enable' : 'disable']();
+    requestAnimationFrame(() => map?.resize());
     if (!enlarged) return;
     document.body.style.overflow = 'hidden';
     const onKey = (e) => {
@@ -74,24 +130,23 @@
 </script>
 
 <!--
-  The map div gets `relative z-0`: leaflet's panes/controls use z-index 400–1000
-  but .leaflet-container has no z-index of its own, so without a stacking
-  context they'd paint over the overlay button. That stacking context makes
-  leaflet's own .leaflet-container background (#ddd) the blend backdrop for
-  tiles (mix-blend-mode: plus-lighter = additive), blowing them out to white —
-  the <style> below keeps it transparent so tile colors stay correct.
-  Its class string stays STATIC: Svelte rewrites `class` on updates, which
-  would wipe leaflet's runtime-added `leaflet-container` class and break tile
-  sizing/overflow — all reactive sizing lives on the wrapper instead.
+   The map div gets `relative z-0`: MapLibre's controls use z-index 2 and its
+   popups 3, and the overlay button is z-10, so without a stacking context the
+   map chrome would paint over it. Its class string stays STATIC: Svelte
+   rewrites `class` on updates, which would wipe the `maplibregl-map` class
+   MapLibre adds at runtime and break canvas sizing — all reactive sizing lives
+   on the wrapper instead.
 -->
 <!-- Escape + click-outside handling are programmatic (window keydown,
-     document click); the div is purely the modal backdrop. -->
+      document click); the div is purely the modal backdrop. -->
 <div
   bind:this={backdrop}
   class={enlarged
     ? 'fixed inset-0 z-50 flex items-center justify-center bg-sea-900/25 backdrop-blur-2xs'
     : ''}
 >
+  <!-- The wrapper keeps its fixed height until the renderer lands, so lazy
+        loading can never shift the page. -->
   <div class="relative {enlarged ? 'h-[70vh] w-[70vw] shadow-lg shadow-sea-900/10' : 'h-80'}">
     <div
       bind:this={container}
@@ -141,18 +196,17 @@
 </div>
 
 <style>
-  :global(.leaflet-container) {
-    background: transparent;
+  /* Hover labels bound in itineraryMap.ts: MapLibre's default white popup,
+      retinted to the site's display font and sea palette. Three classes beat
+      maplibre-gl.css's own `.maplibregl-popup-content` rules whatever the
+      stylesheet order; the tip keeps its default white, so the box reads white. */
+  :global(.maplibregl-popup.itinerary-tooltip) {
+    max-width: 16rem;
   }
 
-  /* Hover labels bound in itineraryMap.ts (labelMarker): leaflet's default
-     white tooltip, retinted to the site's display font and sea palette. Two
-     classes beat leaflet.css's own `.leaflet-tooltip` rules whatever the
-     stylesheet order; the arrow keeps its default white, so the box is white. */
-  :global(.leaflet-tooltip.itinerary-tooltip) {
+  :global(.maplibregl-popup.itinerary-tooltip .maplibregl-popup-content) {
     max-width: 16rem;
     padding: 3px 8px;
-    border: none;
     border-radius: 6px;
     background: #fff;
     color: var(--color-sea-800);

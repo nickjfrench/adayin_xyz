@@ -17,7 +17,7 @@ export const mapFeature = defineType({
       title: 'Shape',
       type: 'string',
       // SHAPE_NAMES is the single source of truth (registry in
-      // components/leaflet/shapes.ts) — no duplicated shape list here.
+      // components/map/shapes.ts) — no duplicated shape list here.
       options: {list: [...SHAPE_NAMES]},
       validation: (rule) => rule.required(),
     }),

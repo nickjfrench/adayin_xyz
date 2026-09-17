@@ -1,13 +1,13 @@
 import {definePlugin} from 'sanity'
 import type {InputProps, ObjectInputProps, SchemaType} from 'sanity'
-import {LocationInput, StopMapDocumentInput} from './StopMapInput'
+import {LocationFieldInput, StopMapDocumentInput} from './StopMapInput'
 
-export interface LeafletInputConfig {
+export interface MapInputConfig {
   googlePlacesApiKey?: string
 }
 
-export const leafletMapInput = definePlugin<LeafletInputConfig>((config) => ({
-  name: 'leaflet-map-input',
+export const mapInput = definePlugin<MapInputConfig>((config) => ({
+  name: 'map-input',
   form: {
     components: {
       input: (props: InputProps) => {
@@ -19,7 +19,12 @@ export const leafletMapInput = definePlugin<LeafletInputConfig>((config) => ({
         if (isType('location', props.schemaType)) {
           // Inside a stop the location field hosts the combined map; elsewhere
           // (travel, start/end location) the plain pin editor.
-          return <LocationInput {...(props as ObjectInputProps)} apiKey={config.googlePlacesApiKey} />
+          return (
+            <LocationFieldInput
+              {...(props as ObjectInputProps)}
+              apiKey={config.googlePlacesApiKey}
+            />
+          )
         }
         return props.renderDefault(props)
       },

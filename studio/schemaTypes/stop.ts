@@ -61,7 +61,7 @@ export const stop = defineType({
     }),
     {
       ...locationField,
-      // The combined pin+region map (StopMapFieldInput via leafletMapInput)
+      // The combined pin+region map (StopMapFieldInput via mapInput)
       // hosts this field on stops.
       description: 'Pin the stop on the itinerary route map, or draw a clickable region instead.',
     },

@@ -1,0 +1,88 @@
+/* Wrapper keeps the form's height while the map leaves the flow — the
+   fullscreen toggle portals the map to document.body. */
+.map-input-map-slot {
+  position: relative;
+  height: 400px;
+}
+
+.map-input-map {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--card-border-color);
+}
+
+/* Near-fullscreen overlay (the container is portalled to document.body, so
+   nothing inside the studio layout can clip or stack above it). */
+.map-input-map.map-input-expanded {
+  position: fixed;
+  inset: 24px;
+  z-index: 100000;
+}
+
+/* Bottom-left, 10px inset — symmetric with the search strip. Sanity's own
+   button styles are injected later and win ties against a single class, so
+   anchor via the map container to keep the absolute placement. Sits above the
+   MapLibre canvas and its controls (z-index 2) so the toggle stays clickable. */
+.map-input-map .map-input-expand {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.map-input-search {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 55px;
+  z-index: 3;
+}
+
+/* Feature hover tooltip (places search and Geoman share the map): retinted
+   to the studio's card surface — MapLibre's popup ships a hardcoded white
+   background, which leaves its inherited text unreadable in the studio's
+   dark surface contexts. */
+.map-input-map .maplibregl-popup.map-input-tooltip .maplibregl-popup-content {
+  max-width: 14rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--card-fg-color);
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--card-border-color);
+}
+
+/* Read-only (published documents): the toolbar is constructed once per map and
+   hidden here — Geoman freezes `useControlsUi` at construction, so instead of
+   rebuilding the editor instance (which would drop the drawn features on
+   every publish) the visibility is a pure container attribute. */
+.map-input-map[data-readonly] .gm-control-container {
+  display: none;
+}
+
+/* Choice prompt: the layer covers the map — blocking map interactions until
+   the place is placed or the prompt dismissed — and centres the card, so it
+   lands mid-map collapsed and mid-viewport expanded. z-index 1 sits above the
+   canvas (0) and below the controls (2), so search, zoom and draw toolbars
+   stay usable. Clicks that miss the card cancel. */
+.map-input-choice-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.map-input-choice {
+  width: 280px;
+  max-width: 100%;
+}

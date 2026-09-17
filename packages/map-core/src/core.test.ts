@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // Runs in plain Node (no DOM). The bare specifier is the SSR-safe entry, so
-// importing it here fails the moment the kit starts re-exporting Leaflet —
-// which is what keeps [slug].astro's build-time imports working.
+// importing it here fails the moment the kit starts re-exporting a map library
+// — which is what keeps [slug].astro's build-time imports working.
 import {
   SHAPE_NAMES,
   arcPoints,

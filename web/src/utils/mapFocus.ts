@@ -13,10 +13,10 @@ export interface MapFocusItem {
  * update both when a shape is added). Travel legs anchor no marker of their
  * own, so they never qualify.
  *
- * Leaflet-free on purpose: [slug].astro calls this at build time. Only the
- * Leaflet-free entry of the kit (map-core/core) may be imported here — a value
- * import from the kit root or from map-core/render would drag Leaflet into
- * SSR and crash the build.
+ * Renderer-free on purpose: [slug].astro calls this at build time. Only the
+ * renderer-free entries of the kit (map-core/core and map-core/geojson) may be
+ * imported here — map-core/dom and map-core/basemap are browser-only (DOM and
+ * MapLibre), and importing either during SSR would crash the build.
  */
 export function isMapFocusable(item?: MapFocusItem | null): boolean {
   if (!item || item._type === 'travel') return false;
