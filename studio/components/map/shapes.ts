@@ -8,7 +8,7 @@ import type {FeatureData, Geoman} from '@geoman-io/maplibre-geoman-free'
 
 /** Glyph shown beside a feature in the studio's list. */
 export const SHAPE_GLYPHS: Record<ShapeName, string> = {
-  point: '●',
+  point: '📍',
   text: 'T',
   polygon: '⬟',
   circle: '◯',
@@ -56,7 +56,7 @@ export function importFeatures(geoman: Geoman, items: MapFeatureItem[]): Promise
   // Geoman's d.ts narrows `shape` to its own name union; the conversion emits
   // exactly those names (marker, text_marker, polygon, circle). The stored
   // `_key` rides on each feature's top-level `id`, so no idPropertyName.
-  return geoman.features.importGeoJson(collection as unknown as GeomanImport, { overwrite: true })
+  return geoman.features.importGeoJson(collection as unknown as GeomanImport, {overwrite: true})
 }
 
 /** Stored shape name for a Geoman feature, or null for shapes we have no name for. */
