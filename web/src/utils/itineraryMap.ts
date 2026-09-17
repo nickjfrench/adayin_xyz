@@ -53,9 +53,14 @@ const MARKER_CONFIG: Record<string, { classes: string; palette: boolean }> = {
   },
 };
 // Glyph boxes, same 20px dot as the rail: travel legs get the rail's 12px box
-// so the icon draws at one scale on both surfaces.
+// so the icon draws at one scale on both surfaces. `pointer-events-none` hands
+// every pointer hit on the icon to the map, where the leg's own hit layer
+// answers (see LAYER_LEG_ICON_HIT): a DOM marker's box says nothing about what
+// is painted over it, so the icon would otherwise lose its hover to whatever
+// overlaps it. Focus and keyboard activation are unaffected — pointer-events
+// only governs pointer hit testing.
 const TRAVEL_ICON_CLASSES =
-  'flex h-5 w-5 items-center justify-center rounded-full bg-sea-400 text-white ring-2 ring-white shadow';
+  'pointer-events-none flex h-5 w-5 items-center justify-center rounded-full bg-sea-400 text-white ring-2 ring-white shadow';
 const PIN_GLYPH_CLASSES = 'h-3.5 w-3.5';
 const TRAVEL_GLYPH_CLASSES = 'h-3 w-3';
 
@@ -155,11 +160,19 @@ const DIM_FACTOR = 0.35;
 
 const FEATURE_SOURCE = 'itinerary-features';
 const LEG_SOURCE = 'itinerary-legs';
+const LEG_ICON_HIT_SOURCE = 'itinerary-leg-icon-hits';
 const LAYER_LEG = 'itinerary-leg';
 const LAYER_GAP = 'itinerary-gap';
 const LAYER_REGION = 'itinerary-region';
 const LAYER_REGION_EDGE = 'itinerary-region-edge';
 const LAYER_POINT = 'itinerary-point';
+const LAYER_LEG_ICON_HIT = 'itinerary-leg-icon-hit';
+
+// Hit radius of a travel icon: its 20px dot plus the 2px ring painted outside
+// it, so the area that answers the pointer is the area the user sees. The
+// icons are DOM markers sized in CSS pixels, so this fixed radius matches them
+// at every zoom.
+const LEG_ICON_HIT_RADIUS = 12;
 
 const POINT_FILTER: FilterSpecification = ['==', ['get', 'shape'], 'marker'];
 const REGION_FILTER: FilterSpecification = [
@@ -333,15 +346,27 @@ export function createItineraryMap(
       features: [] as Feature[],
     };
 
-    /** Registers a DOM marker: hover emphasis, its label, and its activation action. */
+    // Never drawn — only queried, one point per travel icon (LAYER_LEG_ICON_HIT).
+    const legIconHits: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [] as Feature[],
+    };
+
+    /**
+     * Registers a DOM marker: hover emphasis, its label, and its activation
+     * action. `pointer` false keeps only the keyboard half — click and hover
+     * listeners are dead weight on an element whose `pointer-events` is none, so
+     * the map's own hit layer answers the pointer instead (travel icons, whose
+     * hover belongs to their leg: see LAYER_LEG_ICON_HIT).
+     */
     const addMarker = (
       element: HTMLElement,
       latLng: LatLng,
       step: number,
       label: string | null,
       onClick: () => void,
+      pointer = true,
     ) => {
-      element.addEventListener('click', onClick);
       // The pin is a span carrying role="button", so Enter and Space are the keys
       // the role promises — neither fires a click on a span, unlike a real button.
       element.addEventListener('keydown', (e) => {
@@ -349,14 +374,17 @@ export function createItineraryMap(
         e.preventDefault();
         onClick();
       });
-      element.addEventListener('mouseenter', () => {
-        setHovered(step);
-        showTooltip(label, [latLng[1], latLng[0]]);
-      });
-      element.addEventListener('mouseleave', () => {
-        setHovered(null);
-        tooltip.remove();
-      });
+      if (pointer) {
+        element.addEventListener('click', onClick);
+        element.addEventListener('mouseenter', () => {
+          setHovered(step);
+          showTooltip(label, [latLng[1], latLng[0]]);
+        });
+        element.addEventListener('mouseleave', () => {
+          setHovered(null);
+          tooltip.remove();
+        });
+      }
       const marker = new Marker({ element, anchor: 'center' })
         .setLngLat([latLng[1], latLng[0]])
         .addTo(map);
@@ -402,16 +430,23 @@ export function createItineraryMap(
         layers.legIds.push(id);
         // Hovering a leg keeps its endpoints lit: from (lastLocated) and to (i).
         layers.keep.push(from.index, to.index);
-        // Apex icon (t = 0.5 sample) — secondary click target + leg identity.
+        // Apex icon (t = 0.5 sample) — the leg's identity, and the same hit
+        // target as its line: an invisible circle over the icon's painted disc,
+        // so the pointer there answers with this leg (LAYER_LEG_ICON_HIT).
         const apex = samples[12];
+        legIconHits.features.push({
+          type: 'Feature',
+          properties: { step: travel.index, label: travel.item.title ?? 'Travel' },
+          geometry: { type: 'Point', coordinates: flip(apex) },
+        });
         const element = markerElement(
           TRAVEL_ICON_CLASSES,
           stopGlyph({ type: 'travel', icon: travel.item.icon }, TRAVEL_GLYPH_CLASSES),
           travel.item.title ?? 'Travel',
         );
-        addMarker(element, apex, travel.index, travel.item.title ?? 'Travel', () =>
-          openStop(travel.index),
-        );
+        // The map answers the pointer over the icon; the element stays the leg's
+        // keyboard control (the class list above disables its own hit testing).
+        addMarker(element, apex, travel.index, null, () => openStop(travel.index), false);
       });
     };
 
@@ -493,6 +528,7 @@ export function createItineraryMap(
     const addFeatureLayers = () => {
       map.addSource(FEATURE_SOURCE, { type: 'geojson', data: featureCollection });
       map.addSource(LEG_SOURCE, { type: 'geojson', data: legCollection });
+      map.addSource(LEG_ICON_HIT_SOURCE, { type: 'geojson', data: legIconHits });
       featureSourcesReady = true;
       map.addLayer({
         id: LAYER_GAP,
@@ -563,6 +599,19 @@ export function createItineraryMap(
         },
       });
 
+      // Last, so the travel icons' hit areas sit at the icons' own depth: they are
+      // DOM markers, painted above every map layer, and the icons themselves are
+      // pointer-transparent (see TRAVEL_ICON_CLASSES). One circle per icon, matching
+      // the disc it paints, so the pointer over an icon answers with that leg rather
+      // than with whatever map feature happens to lie beneath it. Invisible paint
+      // does not affect queryRenderedFeatures — it matches on geometry.
+      map.addLayer({
+        id: LAYER_LEG_ICON_HIT,
+        type: 'circle',
+        source: LEG_ICON_HIT_SOURCE,
+        paint: { 'circle-radius': LEG_ICON_HIT_RADIUS, 'circle-opacity': 0 },
+      });
+
       // One hover owner for every interactive layer. MapLibre fires each layer's
       // delegated mouseenter/mouseleave on that layer's own transitions, so crossing
       // a dot or a leg inside a region leaves the region's hover dead until the
@@ -571,7 +620,7 @@ export function createItineraryMap(
       // the topmost feature on every mousemove instead: the feature drawn last owns
       // the hover, a marker's own handlers own the pointer while it is hovered, and
       // nothing dead-ends.
-      const INTERACTIVE_LAYERS = [LAYER_LEG, LAYER_REGION, LAYER_POINT];
+      const INTERACTIVE_LAYERS = [LAYER_LEG, LAYER_REGION, LAYER_POINT, LAYER_LEG_ICON_HIT];
       const legsHoverState = { id: null as number | null };
       const clearHover = () => {
         setHovered(null);

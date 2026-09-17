@@ -17,6 +17,13 @@ const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
     '',
 );
 
+// The Studio is its own app (studio/), never embedded here, so @sanity/astro's
+// "module dedupe" dev plugin has nothing to dedupe. Left enabled it injects the
+// Studio's React deps into Vite's optimizeDeps.include, which this workspace has
+// no node_modules entry for — six "Failed to resolve dependency" warnings per
+// `astro dev`. The plugin checks this flag when it registers itself.
+process.env.SANITY_ASTRO_DISABLE_MODULE_DEDUPE ??= '1';
+
 // https://astro.build/config
 export default defineConfig({
 site: 'https://adayin.xyz',
