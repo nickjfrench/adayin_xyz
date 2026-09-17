@@ -1,0 +1,19 @@
+name: Test
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          runtime: node@24
+          install: false
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test

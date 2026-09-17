@@ -8,6 +8,7 @@
     "build:web": "pnpm --filter adayin-xyz-web build",
     "build:studio": "pnpm --filter adayin-xyz-studio build",
     "deploy:studio": "pnpm --filter adayin-xyz-studio deploy",
+    "test": "pnpm -r test",
     "typecheck": "pnpm -r --no-bail exec tsc --noEmit"
   }
 }
