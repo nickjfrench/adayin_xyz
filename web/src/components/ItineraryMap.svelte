@@ -107,7 +107,12 @@
     // place, where every open and close path lands, rather than in the toggle
     // alone. A stale size would crop the view and land focus flights off screen.
     map?.scrollZoom[enlarged ? 'enable' : 'disable']();
-    requestAnimationFrame(() => map?.resize());
+    // The frame can outlive the island: a callback queued just before teardown
+    // still runs, and MapLibre forbids any call on a removed map. `destroyed` is
+    // set before destroy() runs, so it covers the whole teardown window.
+    requestAnimationFrame(() => {
+      if (!destroyed) map?.resize();
+    });
     if (!enlarged) return;
     document.body.style.overflow = 'hidden';
     const onKey = (e) => {

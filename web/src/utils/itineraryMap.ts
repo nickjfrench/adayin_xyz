@@ -249,434 +249,470 @@ export function createItineraryMap(
     clickTolerance: 20, // ~20px hit slop around thin arcs
     maxZoom: 20,
   });
-  map.addControl(new NavigationControl({ showCompass: false, showZoom: true }), 'top-right');
+  try {
+    map.addControl(new NavigationControl({ showCompass: false, showZoom: true }), 'top-right');
 
-  // One popup, moved and re-filled as the pointer travels: the hover label for
-  // a marker or a rendered feature (see the layer handlers below).
-  const tooltip = new Popup({
-    anchor: 'bottom',
-    offset: 16, // clears the pin
-    maxWidth: '16rem', // the tooltip box's authored width
-    closeButton: false,
-    closeOnClick: false,
-    className: 'itinerary-tooltip',
-  });
-  const showTooltip = (label: string | null | undefined, lngLat: [number, number]) => {
-    const text = label?.trim();
-    if (!text) return;
-    tooltip.setLngLat(lngLat).setDOMContent(tooltipText(text)).addTo(map);
-  };
-
-  // Per-step hover bookkeeping: every marker and rendered feature a step owns
-  // dims together, and `keep` names further steps that stay lit (a leg's
-  // endpoints while the leg itself is hovered).
-  type StepLayers = {
-    markers: HTMLElement[];
-    featureIds: number[];
-    legIds: number[];
-    keep: number[];
-  };
-  const steps = new Map<number, StepLayers>();
-  const stepLayers = (step: number): StepLayers => {
-    let entry = steps.get(step);
-    if (!entry) {
-      entry = { markers: [], featureIds: [], legIds: [], keep: [] };
-      steps.set(step, entry);
-    }
-    return entry;
-  };
-  // Feature-state writes need the sources addFeatureLayers creates, but hover
-  // can reach here while the basemap style is still loading (the island
-  // prefetches 800px ahead), where setFeatureState throws. Skip the GL state
-  // and let the next enter/leave cycle apply it; the DOM marker dimming above
-  // is unaffected.
-  let featureSourcesReady = false;
-  const setDimmed = (source: string, ids: number[], dimmedFlag: boolean) => {
-    if (!featureSourcesReady) return;
-    ids.forEach((id) => map.setFeatureState({ source, id }, { dimmed: dimmedFlag }));
-  };
-  let hovered: number | null = null;
-  const setHovered = (next: number | null) => {
-    if (next === hovered) return;
-    hovered = next;
-    const keep = next === null ? [] : (steps.get(next)?.keep ?? []);
-    steps.forEach((entry, step) => {
-      const dim = next !== null && step !== next && !keep.includes(step);
-      entry.markers.forEach((el) => {
-        el.style.opacity = dim ? String(DIM_FACTOR) : '';
-      });
-      setDimmed(FEATURE_SOURCE, entry.featureIds, dim);
-      setDimmed(LEG_SOURCE, entry.legIds, dim);
+    // One popup, moved and re-filled as the pointer travels: the hover label for
+    // a marker or a rendered feature (see the layer handlers below).
+    const tooltip = new Popup({
+      anchor: 'bottom',
+      offset: 16, // clears the pin
+      maxWidth: '16rem', // the tooltip box's authored width
+      closeButton: false,
+      closeOnClick: false,
+      className: 'itinerary-tooltip',
     });
-  };
-
-  // Feature ids are integers: MapLibre resolves feature-state through the tile's
-  // numeric id, so the authored "3:1"-style strings never matched the state.
-  let nextId = 1;
-
-  const featureCollection: FeatureCollection = {
-    type: 'FeatureCollection',
-    features: [] as Feature[],
-  };
-  const legCollection: FeatureCollection = {
-    type: 'FeatureCollection',
-    features: [] as Feature[],
-  };
-
-  /** Registers a DOM marker: hover emphasis, its label, and its activation action. */
-  const addMarker = (
-    element: HTMLElement,
-    latLng: LatLng,
-    step: number,
-    label: string | null,
-    onClick: () => void,
-  ) => {
-    element.addEventListener('click', onClick);
-    // The pin is a span carrying role="button", so Enter and Space are the keys
-    // the role promises — neither fires a click on a span, unlike a real button.
-    element.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      onClick();
-    });
-    element.addEventListener('mouseenter', () => {
-      setHovered(step);
-      showTooltip(label, [latLng[1], latLng[0]]);
-    });
-    element.addEventListener('mouseleave', () => {
-      setHovered(null);
-      tooltip.remove();
-    });
-    const marker = new Marker({ element, anchor: 'center' })
-      .setLngLat([latLng[1], latLng[0]])
-      .addTo(map);
-    stepLayers(step).markers.push(element);
-    return marker;
-  };
-
-  /** Draws the travel legs between two located stops in `from`'s colour. */
-  const drawSegment = (
-    from: Located,
-    to: Located,
-    travels: { item: MapStopItem; index: number }[],
-  ) => {
-    if (travels.length === 0) {
-      // Adjacent located stops with no travel doc — subtle non-clickable connector.
-      legCollection.features.push({
-        type: 'Feature',
-        id: nextId++,
-        properties: { dashed: true },
-        geometry: {
-          type: 'LineString',
-          coordinates: [flip(from.latLng), flip(to.latLng)],
-        },
-      });
-      return;
-    }
-    const n = travels.length;
-    travels.forEach((travel, k) => {
-      const offsetIndex = k + 1 - (n + 1) / 2; // 0 for single leg; ±0.5, ±1, ±1.5 … fan out
-      const samples = arcPoints(from.latLng, to.latLng, offsetIndex);
-      const id = nextId++;
-      legCollection.features.push({
-        type: 'Feature',
-        id,
-        properties: {
-          step: travel.index,
-          color: from.color,
-          label: travel.item.title ?? 'Travel',
-        },
-        geometry: { type: 'LineString', coordinates: samples.map(flip) },
-      });
-      const layers = stepLayers(travel.index);
-      layers.legIds.push(id);
-      // Hovering a leg keeps its endpoints lit: from (lastLocated) and to (i).
-      layers.keep.push(from.index, to.index);
-      // Apex icon (t = 0.5 sample) — secondary click target + leg identity.
-      const apex = samples[12];
-      const element = markerElement(
-        TRAVEL_ICON_CLASSES,
-        stopGlyph({ type: 'travel', icon: travel.item.icon }, TRAVEL_GLYPH_CLASSES),
-        travel.item.title ?? 'Travel',
-      );
-      addMarker(element, apex, travel.index, travel.item.title ?? 'Travel', () =>
-        openStop(travel.index),
-      );
-    });
-  };
-
-  /** Renders every feature of a stop; shapes/dots and labels open that stop. */
-  const addStopFeatures = (item: MapStopItem, step: number, color: string) => {
-    (item.features ?? []).forEach((feature) => {
-      // Text labels stay a white pill — DOM, so the site's typography applies, and
-      // the pill already shows the text: no hover tooltip.
-      if (feature.shape === 'text' && feature.label && feature.position) {
-        const element = textLabelElement(feature.label);
-        element.setAttribute('role', 'button');
-        element.setAttribute('tabindex', '0');
-        element.setAttribute('aria-label', feature.label);
-        addMarker(element, [feature.position.lat, feature.position.lng], step, null, () =>
-          openStop(step),
-        );
+    // Rebuilt only when the label changes: mousemove fires per frame, and
+    // setDOMContent + addTo would detach and re-append the popup every time. The
+    // isOpen() check keeps the fast path off a popup that something else removed.
+    let tooltipLabel: string | null = null;
+    const showTooltip = (label: string | null | undefined, lngLat: [number, number]) => {
+      const text = label?.trim();
+      if (!text) return;
+      if (text === tooltipLabel && tooltip.isOpen()) {
+        tooltip.setLngLat(lngLat);
         return;
       }
-      const id = nextId++;
-      const rendered = mapFeatureToGeoJSON(feature, id, color);
-      if (!rendered) return;
-      featureCollection.features.push({
-        ...rendered,
-        properties: { ...rendered.properties, step },
-      });
-      stepLayers(step).featureIds.push(id);
-    });
-  };
-
-  // Walk the ordered array: located items become markers and close segments;
-  // travel items accumulate into the segment between their neighbors. Features
-  // render before the unpinned-stop skip, so shape-only stops still draw.
-  let lastLocated: Located | null = null;
-  let pendingTravels: { item: MapStopItem; index: number }[] = [];
-  // Palette slot per stop (travel legs don't consume one), assigned in the
-  // alternating-contrast order of STOP_CLASSES.
-  const palette = stopPalette();
-  // Stop number per array slot — the metabar/cards' count (see stops.ts).
-  const numbers = stopNumbers(stops);
-  // Marker per array index, for the stop list's "Show on Map" flight (blink target).
-  const pins = new Map<number, Marker>();
-  let stopOrdinal = 0;
-  stops.forEach((s, i) => {
-    if (s?._type === 'travel') {
-      pendingTravels.push({ item: s, index: i });
-      return;
-    }
-    const slot = stopOrdinal++ % STOP_CLASSES.length;
-    const color = palette[slot];
-    addStopFeatures(s, i, color);
-    if (!(s?.location && Number.isFinite(s.location.lat) && Number.isFinite(s.location.lng)))
-      return; // unpinned stop: no marker/segment, does not break the chain
-    const latLng: LatLng = [s.location.lat, s.location.lng];
-    if (lastLocated) drawSegment(lastLocated, { latLng, index: i, color }, pendingTravels);
-    pendingTravels = [];
-    const config = MARKER_CONFIG[s._type] ?? MARKER_CONFIG.stop;
-    // S/E pins carry their own theme bg; stop pins prepend the palette class.
-    const classes = config.palette ? `${STOP_CLASSES[slot]} ${config.classes}` : config.classes;
-    // Real stops show their 1..n number — the same count the metabar and index
-    // cards show (see stops.ts); S/E keep their letter and unknown types fall
-    // back to the pin glyph.
-    const content = numbers[i] ?? stopGlyph({ type: s._type, icon: s.icon }, PIN_GLYPH_CLASSES);
-    const marker = addMarker(
-      markerElement(classes, String(content), s.title),
-      latLng,
-      i,
-      s.title,
-      () => openStop(i),
-    );
-    pins.set(i, marker);
-    lastLocated = { latLng, index: i, color };
-  });
-  // Travels before the first located point or after the last: intentionally not drawn.
-
-  // Feature sources can't exist until the basemap style loads — addSource and
-  // setFeatureState throw "Style is not done loading" before that, and the
-  // OpenFreeMap style arrives over the network. Markers and the initial view
-  // don't wait on it.
-  const addFeatureLayers = () => {
-    map.addSource(FEATURE_SOURCE, { type: 'geojson', data: featureCollection });
-    map.addSource(LEG_SOURCE, { type: 'geojson', data: legCollection });
-    featureSourcesReady = true;
-    map.addLayer({
-      id: LAYER_GAP,
-      type: 'line',
-      source: LEG_SOURCE,
-      filter: ['==', ['get', 'dashed'], true],
-      layout: { 'line-cap': 'round' },
-      paint: {
-        'line-color': SEA_300,
-        'line-width': 2.5,
-        'line-dasharray': [5, 7],
-        'line-opacity': 0.8,
-      },
-    });
-    map.addLayer({
-      id: LAYER_LEG,
-      type: 'line',
-      source: LEG_SOURCE,
-      filter: ['!=', ['get', 'dashed'], true],
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': ['get', 'color'],
-        // Opacity belongs to the hover emphasis: the leg keeps its authored 0.85
-        // while its own step is hovered, so hover only thickens the stroke.
-        'line-opacity': dimmed(LEG_OPACITY, LEG_OPACITY * DIM_FACTOR),
-        'line-width': [
-          'case',
-          ['boolean', ['feature-state', 'hovered'], false],
-          LEG_HOVER_WIDTH,
-          LEG_WIDTH,
-        ],
-      },
-    });
-    map.addLayer({
-      id: LAYER_REGION,
-      type: 'fill',
-      source: FEATURE_SOURCE,
-      filter: REGION_FILTER,
-      paint: {
-        'fill-color': ['get', 'color'],
-        'fill-opacity': dimmed(FEATURE_FILL_OPACITY, FEATURE_FILL_OPACITY * DIM_FACTOR),
-      },
-    });
-    map.addLayer({
-      id: LAYER_REGION_EDGE,
-      type: 'line',
-      source: FEATURE_SOURCE,
-      filter: REGION_FILTER,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': ['get', 'color'],
-        'line-width': FEATURE_LINE_WIDTH,
-        'line-opacity': dimmed(FEATURE_LINE_OPACITY, FEATURE_LINE_OPACITY * DIM_FACTOR),
-      },
-    });
-    map.addLayer({
-      id: LAYER_POINT,
-      type: 'circle',
-      source: FEATURE_SOURCE,
-      filter: POINT_FILTER,
-      paint: {
-        'circle-radius': FEATURE_POINT_RADIUS,
-        'circle-color': ['get', 'color'],
-        'circle-stroke-color': '#fff',
-        'circle-stroke-width': FEATURE_POINT_RING,
-        'circle-opacity': dimmed(1, DIM_FACTOR),
-        'circle-stroke-opacity': dimmed(1, DIM_FACTOR),
-      },
-    });
-
-    // One hover owner for every interactive layer. MapLibre fires each layer's
-    // delegated mouseenter/mouseleave on that layer's own transitions, so crossing
-    // a dot or a leg inside a region leaves the region's hover dead until the
-    // pointer exits it entirely (its query never emptied, so it never re-enters)
-    // — and a marker under the pointer resolves the feature beneath it. Resolve
-    // the topmost feature on every mousemove instead: the feature drawn last owns
-    // the hover, a marker's own handlers own the pointer while it is hovered, and
-    // nothing dead-ends.
-    const INTERACTIVE_LAYERS = [LAYER_LEG, LAYER_REGION, LAYER_POINT];
-    const legsHoverState = { id: null as number | null };
-    const clearHover = () => {
-      setHovered(null);
-      tooltip.remove();
-      map.getCanvas().style.cursor = '';
-      if (legsHoverState.id != null) {
-        map.setFeatureState({ source: LEG_SOURCE, id: legsHoverState.id }, { hovered: false });
-        legsHoverState.id = null;
-      }
+      tooltipLabel = text;
+      tooltip.setLngLat(lngLat).setDOMContent(tooltipText(text)).addTo(map);
     };
-    map.on('mousemove', (e: MapMouseEvent) => {
-      // A DOM marker under the pointer owns hover (its own listeners set it); the
-      // GL query would resolve the feature beneath it and fight the marker.
-      if (
-        e.originalEvent.target instanceof Element &&
-        e.originalEvent.target.closest('.maplibregl-marker')
-      )
-        return;
-      const [hit] = map.queryRenderedFeatures(e.point, { layers: INTERACTIVE_LAYERS });
-      if (!hit) return clearHover();
-      map.getCanvas().style.cursor = 'pointer';
-      setHovered(Number(hit.properties?.step ?? 0));
-      const label = hit.properties?.label as string | undefined;
-      // The tooltip follows the pointer: a hit carrying no label clears the last
-      // one instead of leaving it stuck to the cursor.
-      if (label?.trim()) showTooltip(label, [e.lngLat.lng, e.lngLat.lat]);
-      else tooltip.remove();
-      // The leg keeps its authored stroke while hovered; moving onto anything else
-      // clears the previous leg's thickened state.
-      if (hit.layer.id === LAYER_LEG && typeof hit.id === 'number') {
-        if (legsHoverState.id !== hit.id) {
-          if (legsHoverState.id != null)
-            map.setFeatureState({ source: LEG_SOURCE, id: legsHoverState.id }, { hovered: false });
-          legsHoverState.id = hit.id;
-          map.setFeatureState({ source: LEG_SOURCE, id: hit.id }, { hovered: true });
-        }
-      } else if (legsHoverState.id != null) {
-        map.setFeatureState({ source: LEG_SOURCE, id: legsHoverState.id }, { hovered: false });
-        legsHoverState.id = null;
+
+    // Per-step hover bookkeeping: every marker and rendered feature a step owns
+    // dims together, and `keep` names further steps that stay lit (a leg's
+    // endpoints while the leg itself is hovered).
+    type StepLayers = {
+      markers: HTMLElement[];
+      featureIds: number[];
+      legIds: number[];
+      keep: number[];
+    };
+    const steps = new Map<number, StepLayers>();
+    const stepLayers = (step: number): StepLayers => {
+      let entry = steps.get(step);
+      if (!entry) {
+        entry = { markers: [], featureIds: [], legIds: [], keep: [] };
+        steps.set(step, entry);
       }
-    });
-    map.on('mouseout', clearHover); // the pointer left the canvas entirely
-    map.on('click', (e: MapMouseEvent) => {
-      if (
-        e.originalEvent.target instanceof Element &&
-        e.originalEvent.target.closest('.maplibregl-marker')
-      )
-        return;
-      const [hit] = map.queryRenderedFeatures(e.point, { layers: INTERACTIVE_LAYERS });
-      if (hit) openStop(Number(hit.properties?.step ?? 0));
-    });
-  };
-  if (map.isStyleLoaded()) addFeatureLayers();
-  else map.on('style.load', addFeatureLayers);
-
-  // Latest focus wins: only the most recent click may trigger the blink.
-  let focusSeq = 0;
-  /**
-   * Flies to one stop's drawn geometry (pin and/or features) and blinks its
-   * pin — the stop list's "Show on Map". Scrolls the map into view first (the
-   * list sits below it) and holds the blink until the flight has landed with
-   * the map in frame, so scrolling up from the bottom still catches it.
-   */
-  function focus(index: number) {
-    const item = stops[index];
-    if (!item) return;
-    const corners: [number, number][] = [];
-    const { lat, lng } = item.location ?? {};
-    if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng))
-      corners.push([lng, lat]);
-    (item.features ?? []).forEach((f) => {
-      const b = mapFeatureBounds(f);
-      if (b) corners.push([b.west, b.south], [b.east, b.north]);
-    });
-    if (corners.length === 0) return; // nothing drawn for this item
-    map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // The blink waits for the flight to land AND the map to be on screen —
-    // from deep in the stop list the smooth scroll is still running when
-    // moveend fires, and a blink nobody sees is wasted. Same UX wherever the
-    // click came from. Guard timeout so a missed event can't suppress it.
-    const seq = ++focusSeq;
-    const pin = pins.get(index)?.getElement() ?? null;
-    const landed = new Promise<void>((resolve) => map.once('moveend', () => resolve()));
-    // Only created when the map is still off screen, and torn down by whichever
-    // path ends the race: the 3500 ms guard can win with the map never framing,
-    // and an observer left watching a page-lifetime container accumulates one
-    // callback registration per "Show on Map" click.
-    let watcher: IntersectionObserver | null = null;
-    const framed = new Promise<void>((resolve) => {
-      const rect = map.getContainer().getBoundingClientRect();
-      if (rect.top >= 0 && rect.bottom <= window.innerHeight) return resolve();
-      watcher = new IntersectionObserver(
-        (entries) => {
-          if (!entries.some((e) => e.intersectionRatio >= 0.9)) return;
-          resolve();
-        },
-        { threshold: 0.9 },
-      );
-      watcher.observe(map.getContainer());
-    });
-    const guard = new Promise<void>((resolve) => setTimeout(resolve, 3500));
-    Promise.race([Promise.all([landed, framed]), guard]).then(() => {
-      watcher?.disconnect();
-      if (seq === focusSeq) flashPin(pin, PIN_FLASH);
-    });
-    if (corners.length > 1)
-      map.fitBounds(boundAround(corners), {
-        padding: 40,
-        maxZoom: VIEW_MAX_ZOOM,
-        linear: false,
+      return entry;
+    };
+    // Feature-state writes need the sources addFeatureLayers creates, but hover
+    // can reach here while the basemap style is still loading (the island
+    // prefetches 800px ahead), where setFeatureState throws. Skip the GL state
+    // and let the next enter/leave cycle apply it; the DOM marker dimming above
+    // is unaffected.
+    let featureSourcesReady = false;
+    const setDimmed = (source: string, ids: number[], dimmedFlag: boolean) => {
+      if (!featureSourcesReady) return;
+      ids.forEach((id) => map.setFeatureState({ source, id }, { dimmed: dimmedFlag }));
+    };
+    let hovered: number | null = null;
+    const setHovered = (next: number | null) => {
+      if (next === hovered) return;
+      hovered = next;
+      const keep = next === null ? [] : (steps.get(next)?.keep ?? []);
+      steps.forEach((entry, step) => {
+        const dim = next !== null && step !== next && !keep.includes(step);
+        entry.markers.forEach((el) => {
+          el.style.opacity = dim ? String(DIM_FACTOR) : '';
+        });
+        setDimmed(FEATURE_SOURCE, entry.featureIds, dim);
+        setDimmed(LEG_SOURCE, entry.legIds, dim);
       });
-    else map.flyTo({ center: corners[0], zoom: VIEW_MAX_ZOOM });
-  }
+    };
 
-  return { map, destroy: () => map.remove(), focus };
+    // Feature ids are integers: MapLibre resolves feature-state through the tile's
+    // numeric id, so the authored "3:1"-style strings never matched the state.
+    let nextId = 1;
+
+    const featureCollection: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [] as Feature[],
+    };
+    const legCollection: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [] as Feature[],
+    };
+
+    /** Registers a DOM marker: hover emphasis, its label, and its activation action. */
+    const addMarker = (
+      element: HTMLElement,
+      latLng: LatLng,
+      step: number,
+      label: string | null,
+      onClick: () => void,
+    ) => {
+      element.addEventListener('click', onClick);
+      // The pin is a span carrying role="button", so Enter and Space are the keys
+      // the role promises — neither fires a click on a span, unlike a real button.
+      element.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        onClick();
+      });
+      element.addEventListener('mouseenter', () => {
+        setHovered(step);
+        showTooltip(label, [latLng[1], latLng[0]]);
+      });
+      element.addEventListener('mouseleave', () => {
+        setHovered(null);
+        tooltip.remove();
+      });
+      const marker = new Marker({ element, anchor: 'center' })
+        .setLngLat([latLng[1], latLng[0]])
+        .addTo(map);
+      stepLayers(step).markers.push(element);
+      return marker;
+    };
+
+    /** Draws the travel legs between two located stops in `from`'s colour. */
+    const drawSegment = (
+      from: Located,
+      to: Located,
+      travels: { item: MapStopItem; index: number }[],
+    ) => {
+      if (travels.length === 0) {
+        // Adjacent located stops with no travel doc — subtle non-clickable connector.
+        legCollection.features.push({
+          type: 'Feature',
+          id: nextId++,
+          properties: { dashed: true },
+          geometry: {
+            type: 'LineString',
+            coordinates: [flip(from.latLng), flip(to.latLng)],
+          },
+        });
+        return;
+      }
+      const n = travels.length;
+      travels.forEach((travel, k) => {
+        const offsetIndex = k + 1 - (n + 1) / 2; // 0 for single leg; ±0.5, ±1, ±1.5 … fan out
+        const samples = arcPoints(from.latLng, to.latLng, offsetIndex);
+        const id = nextId++;
+        legCollection.features.push({
+          type: 'Feature',
+          id,
+          properties: {
+            step: travel.index,
+            color: from.color,
+            label: travel.item.title ?? 'Travel',
+          },
+          geometry: { type: 'LineString', coordinates: samples.map(flip) },
+        });
+        const layers = stepLayers(travel.index);
+        layers.legIds.push(id);
+        // Hovering a leg keeps its endpoints lit: from (lastLocated) and to (i).
+        layers.keep.push(from.index, to.index);
+        // Apex icon (t = 0.5 sample) — secondary click target + leg identity.
+        const apex = samples[12];
+        const element = markerElement(
+          TRAVEL_ICON_CLASSES,
+          stopGlyph({ type: 'travel', icon: travel.item.icon }, TRAVEL_GLYPH_CLASSES),
+          travel.item.title ?? 'Travel',
+        );
+        addMarker(element, apex, travel.index, travel.item.title ?? 'Travel', () =>
+          openStop(travel.index),
+        );
+      });
+    };
+
+    /** Renders every feature of a stop; shapes/dots and labels open that stop. */
+    const addStopFeatures = (item: MapStopItem, step: number, color: string) => {
+      (item.features ?? []).forEach((feature) => {
+        // Text labels stay a white pill — DOM, so the site's typography applies, and
+        // the pill already shows the text: no hover tooltip.
+        if (feature.shape === 'text' && feature.label && feature.position) {
+          const element = textLabelElement(feature.label);
+          element.setAttribute('role', 'button');
+          element.setAttribute('tabindex', '0');
+          element.setAttribute('aria-label', feature.label);
+          addMarker(element, [feature.position.lat, feature.position.lng], step, null, () =>
+            openStop(step),
+          );
+          return;
+        }
+        const id = nextId++;
+        const rendered = mapFeatureToGeoJSON(feature, id, color);
+        if (!rendered) return;
+        featureCollection.features.push({
+          ...rendered,
+          properties: { ...rendered.properties, step },
+        });
+        stepLayers(step).featureIds.push(id);
+      });
+    };
+
+    // Walk the ordered array: located items become markers and close segments;
+    // travel items accumulate into the segment between their neighbors. Features
+    // render before the unpinned-stop skip, so shape-only stops still draw.
+    let lastLocated: Located | null = null;
+    let pendingTravels: { item: MapStopItem; index: number }[] = [];
+    // Palette slot per stop (travel legs don't consume one), assigned in the
+    // alternating-contrast order of STOP_CLASSES.
+    const palette = stopPalette();
+    // Stop number per array slot — the metabar/cards' count (see stops.ts).
+    const numbers = stopNumbers(stops);
+    // Marker per array index, for the stop list's "Show on Map" flight (blink target).
+    const pins = new Map<number, Marker>();
+    let stopOrdinal = 0;
+    stops.forEach((s, i) => {
+      if (s?._type === 'travel') {
+        pendingTravels.push({ item: s, index: i });
+        return;
+      }
+      const slot = stopOrdinal++ % STOP_CLASSES.length;
+      const color = palette[slot];
+      addStopFeatures(s, i, color);
+      if (!(s?.location && Number.isFinite(s.location.lat) && Number.isFinite(s.location.lng)))
+        return; // unpinned stop: no marker/segment, does not break the chain
+      const latLng: LatLng = [s.location.lat, s.location.lng];
+      if (lastLocated) drawSegment(lastLocated, { latLng, index: i, color }, pendingTravels);
+      pendingTravels = [];
+      const config = MARKER_CONFIG[s._type] ?? MARKER_CONFIG.stop;
+      // S/E pins carry their own theme bg; stop pins prepend the palette class.
+      const classes = config.palette ? `${STOP_CLASSES[slot]} ${config.classes}` : config.classes;
+      // Real stops show their 1..n number — the same count the metabar and index
+      // cards show (see stops.ts); S/E keep their letter and unknown types fall
+      // back to the pin glyph.
+      const content = numbers[i] ?? stopGlyph({ type: s._type, icon: s.icon }, PIN_GLYPH_CLASSES);
+      const marker = addMarker(
+        markerElement(classes, String(content), s.title),
+        latLng,
+        i,
+        s.title,
+        () => openStop(i),
+      );
+      pins.set(i, marker);
+      lastLocated = { latLng, index: i, color };
+    });
+    // Travels before the first located point or after the last: intentionally not drawn.
+
+    // Feature sources can't exist until the basemap style loads — addSource and
+    // setFeatureState throw "Style is not done loading" before that, and the
+    // OpenFreeMap style arrives over the network. Markers and the initial view
+    // don't wait on it.
+    const addFeatureLayers = () => {
+      map.addSource(FEATURE_SOURCE, { type: 'geojson', data: featureCollection });
+      map.addSource(LEG_SOURCE, { type: 'geojson', data: legCollection });
+      featureSourcesReady = true;
+      map.addLayer({
+        id: LAYER_GAP,
+        type: 'line',
+        source: LEG_SOURCE,
+        filter: ['==', ['get', 'dashed'], true],
+        layout: { 'line-cap': 'round' },
+        paint: {
+          'line-color': SEA_300,
+          'line-width': 2.5,
+          'line-dasharray': [5, 7],
+          'line-opacity': 0.8,
+        },
+      });
+      map.addLayer({
+        id: LAYER_LEG,
+        type: 'line',
+        source: LEG_SOURCE,
+        filter: ['!=', ['get', 'dashed'], true],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['get', 'color'],
+          // Opacity belongs to the hover emphasis: the leg keeps its authored 0.85
+          // while its own step is hovered, so hover only thickens the stroke.
+          'line-opacity': dimmed(LEG_OPACITY, LEG_OPACITY * DIM_FACTOR),
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'hovered'], false],
+            LEG_HOVER_WIDTH,
+            LEG_WIDTH,
+          ],
+        },
+      });
+      map.addLayer({
+        id: LAYER_REGION,
+        type: 'fill',
+        source: FEATURE_SOURCE,
+        filter: REGION_FILTER,
+        paint: {
+          'fill-color': ['get', 'color'],
+          'fill-opacity': dimmed(FEATURE_FILL_OPACITY, FEATURE_FILL_OPACITY * DIM_FACTOR),
+        },
+      });
+      map.addLayer({
+        id: LAYER_REGION_EDGE,
+        type: 'line',
+        source: FEATURE_SOURCE,
+        filter: REGION_FILTER,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': FEATURE_LINE_WIDTH,
+          'line-opacity': dimmed(FEATURE_LINE_OPACITY, FEATURE_LINE_OPACITY * DIM_FACTOR),
+        },
+      });
+      map.addLayer({
+        id: LAYER_POINT,
+        type: 'circle',
+        source: FEATURE_SOURCE,
+        filter: POINT_FILTER,
+        paint: {
+          'circle-radius': FEATURE_POINT_RADIUS,
+          'circle-color': ['get', 'color'],
+          'circle-stroke-color': '#fff',
+          'circle-stroke-width': FEATURE_POINT_RING,
+          'circle-opacity': dimmed(1, DIM_FACTOR),
+          'circle-stroke-opacity': dimmed(1, DIM_FACTOR),
+        },
+      });
+
+      // One hover owner for every interactive layer. MapLibre fires each layer's
+      // delegated mouseenter/mouseleave on that layer's own transitions, so crossing
+      // a dot or a leg inside a region leaves the region's hover dead until the
+      // pointer exits it entirely (its query never emptied, so it never re-enters)
+      // — and a marker under the pointer resolves the feature beneath it. Resolve
+      // the topmost feature on every mousemove instead: the feature drawn last owns
+      // the hover, a marker's own handlers own the pointer while it is hovered, and
+      // nothing dead-ends.
+      const INTERACTIVE_LAYERS = [LAYER_LEG, LAYER_REGION, LAYER_POINT];
+      const legsHoverState = { id: null as number | null };
+      const clearHover = () => {
+        setHovered(null);
+        tooltip.remove();
+        map.getCanvas().style.cursor = '';
+        if (legsHoverState.id != null) {
+          map.setFeatureState({ source: LEG_SOURCE, id: legsHoverState.id }, { hovered: false });
+          legsHoverState.id = null;
+        }
+      };
+      map.on('mousemove', (e: MapMouseEvent) => {
+        // A DOM marker under the pointer owns hover (its own listeners set it); the
+        // GL query would resolve the feature beneath it and fight the marker.
+        if (
+          e.originalEvent.target instanceof Element &&
+          e.originalEvent.target.closest('.maplibregl-marker')
+        )
+          return;
+        const [hit] = map.queryRenderedFeatures(e.point, { layers: INTERACTIVE_LAYERS });
+        if (!hit) return clearHover();
+        map.getCanvas().style.cursor = 'pointer';
+        setHovered(Number(hit.properties?.step ?? 0));
+        const label = hit.properties?.label as string | undefined;
+        // The tooltip follows the pointer: a hit carrying no label clears the last
+        // one instead of leaving it stuck to the cursor.
+        if (label?.trim()) showTooltip(label, [e.lngLat.lng, e.lngLat.lat]);
+        else tooltip.remove();
+        // The leg keeps its authored stroke while hovered; moving onto anything else
+        // clears the previous leg's thickened state.
+        if (hit.layer.id === LAYER_LEG && typeof hit.id === 'number') {
+          if (legsHoverState.id !== hit.id) {
+            if (legsHoverState.id != null)
+              map.setFeatureState(
+                { source: LEG_SOURCE, id: legsHoverState.id },
+                { hovered: false },
+              );
+            legsHoverState.id = hit.id;
+            map.setFeatureState({ source: LEG_SOURCE, id: hit.id }, { hovered: true });
+          }
+        } else if (legsHoverState.id != null) {
+          map.setFeatureState({ source: LEG_SOURCE, id: legsHoverState.id }, { hovered: false });
+          legsHoverState.id = null;
+        }
+      });
+      map.on('mouseout', clearHover); // the pointer left the canvas entirely
+      map.on('click', (e: MapMouseEvent) => {
+        if (
+          e.originalEvent.target instanceof Element &&
+          e.originalEvent.target.closest('.maplibregl-marker')
+        )
+          return;
+        const [hit] = map.queryRenderedFeatures(e.point, { layers: INTERACTIVE_LAYERS });
+        if (hit) openStop(Number(hit.properties?.step ?? 0));
+      });
+    };
+    if (map.isStyleLoaded()) addFeatureLayers();
+    else map.on('style.load', addFeatureLayers);
+
+    // Latest focus wins: only the most recent click may trigger the blink.
+    let focusSeq = 0;
+    /**
+     * Flies to one stop's drawn geometry (pin and/or features) and blinks its
+     * pin — the stop list's "Show on Map". Scrolls the map into view first (the
+     * list sits below it) and holds the blink until the flight has landed with
+     * the map in frame, so scrolling up from the bottom still catches it.
+     */
+    function focus(index: number) {
+      const item = stops[index];
+      if (!item) return;
+      const corners: [number, number][] = [];
+      const { lat, lng } = item.location ?? {};
+      if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng))
+        corners.push([lng, lat]);
+      (item.features ?? []).forEach((f) => {
+        const b = mapFeatureBounds(f);
+        if (b) corners.push([b.west, b.south], [b.east, b.north]);
+      });
+      if (corners.length === 0) return; // nothing drawn for this item
+      map.getContainer().scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // The blink waits for the flight to land AND the map to be on screen —
+      // from deep in the stop list the smooth scroll is still running when
+      // moveend fires, and a blink nobody sees is wasted. Same UX wherever the
+      // click came from. Guard timeout so a missed event can't suppress it.
+      const seq = ++focusSeq;
+      const pin = pins.get(index)?.getElement() ?? null;
+      // A named handler rather than once(): the registration has to come off
+      // whichever way the race ends, and `once` self-removes only when moveend
+      // actually fires — a focus whose flight never lands would leave it behind.
+      let land: (() => void) | null = null;
+      const landed = new Promise<void>((resolve) => {
+        land = resolve;
+      });
+      const onMoveEnd = () => land?.();
+      map.on('moveend', onMoveEnd);
+      // Only created when the map is still off screen, and torn down by whichever
+      // path ends the race: the 3500 ms guard can win with the map never framing,
+      // and an observer left watching a page-lifetime container accumulates one
+      // callback registration per "Show on Map" click.
+      let watcher: IntersectionObserver | null = null;
+      const framed = new Promise<void>((resolve) => {
+        const rect = map.getContainer().getBoundingClientRect();
+        if (rect.top >= 0 && rect.bottom <= window.innerHeight) return resolve();
+        watcher = new IntersectionObserver(
+          (entries) => {
+            if (!entries.some((e) => e.intersectionRatio >= 0.9)) return;
+            resolve();
+          },
+          { threshold: 0.9 },
+        );
+        watcher.observe(map.getContainer());
+      });
+      let guardTimer: ReturnType<typeof setTimeout> | undefined;
+      const guard = new Promise<void>((resolve) => {
+        guardTimer = setTimeout(resolve, 3500);
+      });
+      Promise.race([Promise.all([landed, framed]), guard]).then(() => {
+        // Both outlive the race on the path that settles it first: the guard timer
+        // runs to 3500 ms either way, and the moveend listener has no other owner.
+        clearTimeout(guardTimer);
+        map.off('moveend', onMoveEnd);
+        watcher?.disconnect();
+        if (seq === focusSeq) flashPin(pin, PIN_FLASH);
+      });
+      if (corners.length > 1)
+        map.fitBounds(boundAround(corners), {
+          padding: 40,
+          maxZoom: VIEW_MAX_ZOOM,
+          linear: false,
+        });
+      else map.flyTo({ center: corners[0], zoom: VIEW_MAX_ZOOM });
+    }
+
+    return { map, destroy: () => map.remove(), focus };
+  } catch (error) {
+    // A half-built map must not outlive the throw. The island retries the
+    // build (next intersection, or a later "Show on Map"), which would draw a
+    // second map into the same container while this one still holds its
+    // canvas, its WebGL context and its marker DOM.
+    map.remove();
+    throw error;
+  }
 }
 
 /** Stored [lat, lng] order → GeoJSON [lng, lat] order. */
