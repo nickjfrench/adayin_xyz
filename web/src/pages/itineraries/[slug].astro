@@ -1,19 +1,14 @@
 ---
-import { PortableText, toPlainText } from "astro-portabletext";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getItinerary, getItinerarySlugs, urlFor } from "../../utils/sanity";
-import {
-  priceText,
-  sumCosts,
-  tripCurrencyFrom,
-  priceTier,
-} from "../../utils/cost";
-import { countStops } from "../../utils/stops";
-import { isMapFocusable } from "../../utils/mapFocus";
-import StopCard from "../../components/StopCard.astro";
-import PortableLink from "../../components/PortableLink.astro";
-import ItineraryStopModal from "../../components/ItineraryStopModal.svelte";
-import ItineraryMap from "../../components/ItineraryMap.svelte";
+import { PortableText, toPlainText } from 'astro-portabletext';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getItinerary, getItinerarySlugs, urlFor } from '../../utils/sanity';
+import { priceText, sumCosts, tripCurrencyFrom, priceTier } from '../../utils/cost';
+import { countStops } from '../../utils/stops';
+import { isMapFocusable } from '../../utils/mapFocus';
+import StopCard from '../../components/StopCard.astro';
+import PortableLink from '../../components/PortableLink.astro';
+import ItineraryStopModal from '../../components/ItineraryStopModal.svelte';
+import ItineraryMap from '../../components/ItineraryMap.svelte';
 
 export async function getStaticPaths() {
   // Queries used inside getStaticPaths must live here — module-scope consts
@@ -25,22 +20,22 @@ const { slug } = Astro.params;
 const post = await getItinerary(slug as string);
 
 if (!post) {
-  return Astro.redirect("/itineraries");
+  return Astro.redirect('/itineraries');
 }
 
 const dest = post.destination;
 const date = post._createdAt
-  ? new Date(post._createdAt).toLocaleDateString("en-AU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+  ? new Date(post._createdAt).toLocaleDateString('en-AU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     })
   : null;
 
 const testedOn = post.testedOn
-  ? new Date(post.testedOn).toLocaleDateString("en-AU", {
-      month: "long",
-      year: "numeric",
+  ? new Date(post.testedOn).toLocaleDateString('en-AU', {
+      month: 'long',
+      year: 'numeric',
     })
   : null;
 
@@ -61,7 +56,7 @@ const filtered = stops.filter(Boolean);
 const modalStops = filtered.map((s) => ({
   ...structuredClone(s),
   imageUrl: s.image
-    ? urlFor(s.image).width(1200).height(514).fit("crop").auto("format").url()
+    ? urlFor(s.image).width(1200).height(514).fit('crop').auto('format').url()
     : undefined,
   // StopModal only renders feature labels — geometry is already serialized
   // slim in mapStops, so vertices don't ship twice in island props.
@@ -75,7 +70,7 @@ const mapStops = filtered.map((s) => ({
   title: s.title ?? null,
   location: s.location ? { lat: s.location.lat, lng: s.location.lng } : null,
   // Travel legs carry their glyph; stop pins render their stop number.
-  icon: s._type === "travel" ? (s.travelType?.icon?.svg ?? null) : null,
+  icon: s._type === 'travel' ? (s.travelType?.icon?.svg ?? null) : null,
   features: (s.mapFeatures ?? []).map((f) => ({
     label: f.label ?? null,
     shape: f.shape,
@@ -86,51 +81,41 @@ const mapStops = filtered.map((s) => ({
 }));
 const hasMapPoints = mapStops.some((s) => s.location || s.features.length > 0);
 
+// Build-time feature flag: the route map renders unless this env var says
+// otherwise (PUBLIC_SHOW_ITINERARY_MAP=false | 0 | off). import.meta.env is inlined
+// by Vite at build, so with the flag off the map section — its client:only
+// island, JS chunk, and the "Show on Map" buttons — never reach the output.
+const showItineraryMap = !/^(false|0|off)$/i.test(import.meta.env.PUBLIC_SHOW_ITINERARY_MAP ?? '');
+
 // Stops the map island can fly to — index-aligned with mapStops/filtered; gates
-// the "Show on Map" button on each card.
-const mapFocusTargets = mapStops.map(isMapFocusable);
+// the "Show on Map" button on each card. With the map hidden, no buttons.
+const mapFocusTargets = showItineraryMap ? mapStops.map(isMapFocusable) : mapStops.map(() => false);
 
 const hero = post.mainImage
-  ? urlFor(post.mainImage)
-      .width(1600)
-      .height(900)
-      .fit("crop")
-      .auto("format")
-      .url()
+  ? urlFor(post.mainImage).width(1600).height(900).fit('crop').auto('format').url()
   : null;
 
-const modalRecommendations = (post.recommendations ?? [])
-  .filter(Boolean)
-  .map((item) => ({
-    ...structuredClone(item),
-    imageUrl: item.image
-      ? urlFor(item.image).width(1200).height(514).fit("crop").auto("format").url()
-      : undefined,
-  }));
+const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((item) => ({
+  ...structuredClone(item),
+  imageUrl: item.image
+    ? urlFor(item.image).width(1200).height(514).fit('crop').auto('format').url()
+    : undefined,
+}));
 ---
 
 <BaseLayout title={post.title} description={post.excerpt} headerVariant="light">
   <article>
     <!-- Hero -->
-    <header
-      id="hero-section"
-      class="relative isolate flex min-h-[50vh] items-end overflow-hidden"
-    >
+    <header id="hero-section" class="relative isolate flex min-h-[50vh] items-end overflow-hidden">
       <div class="absolute inset-0 -z-10">
         {
           hero ? (
-            <img
-              src={hero}
-              alt={post.title ?? ""}
-              class="h-full w-full object-cover"
-            />
+            <img src={hero} alt={post.title ?? ''} class="h-full w-full object-cover" />
           ) : (
             <div class="h-full w-full bg-gradient-to-br from-sea-300 to-sea-600" />
           )
         }
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-sea-900/80 via-sea-900/30 to-sea-900/10"
-        >
+        <div class="absolute inset-0 bg-gradient-to-t from-sea-900/80 via-sea-900/30 to-sea-900/10">
         </div>
       </div>
 
@@ -142,18 +127,13 @@ const modalRecommendations = (post.recommendations ?? [])
               class="inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-3 py-1 font-display text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/20 transition hover:bg-sea-500"
             >
               A day in {dest.city}
-              {dest.countryShort && (
-                <span class="text-sea-100">· {dest.countryShort}</span>
-              )}
+              {dest.countryShort && <span class="text-sea-100">· {dest.countryShort}</span>}
             </a>
           )
         }
         {
           post.audiences && post.audiences.length > 0 && (
-            <div
-              data-scroll-chips
-              class="relative mt-3 flex max-w-full items-center gap-2"
-            >
+            <div data-scroll-chips class="relative mt-3 flex max-w-full items-center gap-2">
               <button
                 type="button"
                 data-sc-prev
@@ -235,9 +215,7 @@ const modalRecommendations = (post.recommendations ?? [])
             (post.testedBy || testedOn) && (
               <div class="flex flex-wrap items-center gap-x-2 text-white/70">
                 {post.testedBy && <span>Tested by {post.testedBy}</span>}
-                {post.testedBy && testedOn && (
-                  <span class="text-white/50">·</span>
-                )}
+                {post.testedBy && testedOn && <span class="text-white/50">·</span>}
                 {testedOn && <span>{testedOn}</span>}
               </div>
             )
@@ -250,16 +228,8 @@ const modalRecommendations = (post.recommendations ?? [])
     <div
       class="relative z-10 mx-5 -mt-8 flex max-w-4xl flex-wrap items-center justify-center gap-x-10 gap-y-2 rounded-xl bg-white/90 px-5 py-3 text-sm text-sea-700 shadow-lg shadow-sea-900/10 backdrop-blur-sm sm:mx-auto sm:px-8"
     >
-      {
-        post.duration && (
-          <span class="whitespace-nowrap text-sea-600">{post.duration}</span>
-        )
-      }
-      {
-        stopCount > 0 && (
-          <span class="whitespace-nowrap text-sea-600">{stopCount} stops</span>
-        )
-      }
+      {post.duration && <span class="whitespace-nowrap text-sea-600">{post.duration}</span>}
+      {stopCount > 0 && <span class="whitespace-nowrap text-sea-600">{stopCount} stops</span>}
       {
         tripTotal > 0 ? (
           <span
@@ -270,7 +240,7 @@ const modalRecommendations = (post.recommendations ?? [])
               Array.from({ length: tier ?? 0 }).map(() => (
                 <span
                   class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sea-600"
-                  set:html={tripCurrency?.icon?.svg ?? ""}
+                  set:html={tripCurrency?.icon?.svg ?? ''}
                 />
               ))}
             {!showTier && (
@@ -295,14 +265,12 @@ const modalRecommendations = (post.recommendations ?? [])
     <div class="mx-auto max-w-4xl flex flex-col gap-10 px-5 pt-8 pb-16 sm:px-8">
       {
         post.excerpt && (
-          <p class="border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">
-            {post.excerpt}
-          </p>
+          <p class="border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>
         )
       }
 
       {
-        hasMapPoints && (
+        showItineraryMap && hasMapPoints && (
           <section class="border-t border-sea-100 pt-8">
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">The route</h2>
             <ItineraryMap client:only="svelte" stops={mapStops} />
@@ -317,9 +285,7 @@ const modalRecommendations = (post.recommendations ?? [])
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
               Our day, stop by stop
             </h2>
-            <p class="-mt-4 mb-6 italic text-xs text-sand-500">
-              All prices are per person
-            </p>
+            <p class="-mt-4 mb-6 italic text-xs text-sand-500">All prices are per person</p>
             <ol class="flex flex-col">
               {filtered.map((stop, i) => (
                 <StopCard stop={stop} index={i} mapTarget={mapFocusTargets[i]} />
@@ -332,9 +298,7 @@ const modalRecommendations = (post.recommendations ?? [])
       {
         post.closing && (
           <div class="border-t border-sea-100 pt-8">
-            <h2 class="font-display text-2xl font-semibold text-sea-800">
-              Closing notes
-            </h2>
+            <h2 class="font-display text-2xl font-semibold text-sea-800">Closing notes</h2>
             <div class="prose-sea">
               <PortableText value={post.closing} components={{ mark: { link: PortableLink } }} />
             </div>
@@ -343,79 +307,72 @@ const modalRecommendations = (post.recommendations ?? [])
       }
 
       {
-        post.recommendations &&
-          post.recommendations.filter(Boolean).length > 0 && (
-            <section class="border-t border-sea-100 pt-8">
-              <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
-                Extend your day
-              </h2>
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {post.recommendations.filter(Boolean).map((item, i) => (
-                  <button
-                    data-recommendation-index={i}
-                    class="group relative aspect-[16/10] cursor-pointer overflow-hidden rounded-xl shadow-sm shadow-sea-900/5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:shadow-sea-900/10"
-                  >
-                    {item.stopType?.label && (
-                      <span class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-2 py-0.5 text-xs font-medium text-white shadow-sm [&>svg]:h-3 [&>svg]:w-3">
-                        {item.stopType.icon?.svg && (
-                          <Fragment set:html={item.stopType.icon.svg} />
-                        )}
-                        {item.stopType.label}
-                      </span>
-                    )}
-                    <span class="absolute top-2 right-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-sea-600 shadow-sm">
-                      <svg
-                        class="h-3.5 w-3.5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <polyline points="15 3 21 3 21 9" />
-                        <polyline points="9 21 3 21 3 15" />
-                        <line x1="21" y1="3" x2="14" y2="10" />
-                        <line x1="3" y1="21" x2="10" y2="14" />
-                      </svg>
+        post.recommendations && post.recommendations.filter(Boolean).length > 0 && (
+          <section class="border-t border-sea-100 pt-8">
+            <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">Extend your day</h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {post.recommendations.filter(Boolean).map((item, i) => (
+                <button
+                  data-recommendation-index={i}
+                  class="group relative aspect-[16/10] cursor-pointer overflow-hidden rounded-xl shadow-sm shadow-sea-900/5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:shadow-sea-900/10"
+                >
+                  {item.stopType?.label && (
+                    <span class="absolute top-2 left-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-2 py-0.5 text-xs font-medium text-white shadow-sm [&>svg]:h-3 [&>svg]:w-3">
+                      {item.stopType.icon?.svg && <Fragment set:html={item.stopType.icon.svg} />}
+                      {item.stopType.label}
                     </span>
-                    {item.image ? (
-                      <img
-                        src={urlFor(item.image)
-                          .width(600)
-                          .height(375)
-                          .fit("crop")
-                          .auto("format")
-                          .url()}
-                        alt={item.title ?? ""}
-                        loading="lazy"
-                        class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div class="absolute inset-0 bg-gradient-to-br from-sea-100 to-sea-200" />
+                  )}
+                  <span class="absolute top-2 right-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-sea-600 shadow-sm">
+                    <svg
+                      class="h-3.5 w-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="15 3 21 3 21 9" />
+                      <polyline points="9 21 3 21 3 15" />
+                      <line x1="21" y1="3" x2="14" y2="10" />
+                      <line x1="3" y1="21" x2="10" y2="14" />
+                    </svg>
+                  </span>
+                  {item.image ? (
+                    <img
+                      src={urlFor(item.image)
+                        .width(600)
+                        .height(375)
+                        .fit('crop')
+                        .auto('format')
+                        .url()}
+                      alt={item.title ?? ''}
+                      loading="lazy"
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div class="absolute inset-0 bg-gradient-to-br from-sea-100 to-sea-200" />
+                  )}
+                  <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-sea-900/50 to-transparent p-3 pt-8">
+                    <h3 class="font-display text-sm font-semibold leading-snug text-white drop-shadow-sm group-hover:underline">
+                      {item.title}
+                    </h3>
+                    {item.description && (
+                      <p class="mt-0.5 line-clamp-1 text-xs text-white/80">
+                        {Array.isArray(item.description)
+                          ? toPlainText(item.description)
+                          : item.description}
+                      </p>
                     )}
-                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-sea-900/50 to-transparent p-3 pt-8">
-                      <h3 class="font-display text-sm font-semibold leading-snug text-white drop-shadow-sm group-hover:underline">
-                        {item.title}
-                      </h3>
-                      {item.description && (
-                        <p class="mt-0.5 line-clamp-1 text-xs text-white/80">
-                          {Array.isArray(item.description)
-                            ? toPlainText(item.description)
-                            : item.description}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )
       }
 
-      <div
-        class="flex items-center justify-between border-t border-sea-100 pt-8"
-      >
+      <div class="flex items-center justify-between border-t border-sea-100 pt-8">
         <a
           href="/itineraries"
           class="font-display text-sm font-medium text-sea-600 hover:text-sea-500"
@@ -436,17 +393,13 @@ const modalRecommendations = (post.recommendations ?? [])
 
     {
       (modalStops.length > 0 || modalRecommendations.length > 0) && (
-        <ItineraryStopModal
-          client:load
-          stops={modalStops}
-          recommendations={modalRecommendations}
-        />
+        <ItineraryStopModal client:load stops={modalStops} recommendations={modalRecommendations} />
       )
     }
   </article>
 
   <script>
-    import { initAllScrollChips } from "../../utils/scrollChips";
+    import { initAllScrollChips } from '../../utils/scrollChips';
     initAllScrollChips();
   </script>
 </BaseLayout>
