@@ -1,3 +1,5 @@
+import {mapFeatures, mapFeature} from './mapFeatures'
+import {location} from './locationField'
 import {article} from './article'
 import {destination} from './destination'
 import {post} from './post'
@@ -11,4 +13,4 @@ import {endLocation} from './endLocation'
 import {currency} from './currency'
 import {audience} from './audience'
 
-export const schemaTypes = [article, destination, post, calloutKind, travelType, stopType, stop, travel, startLocation, endLocation, currency, audience]
+export const schemaTypes = [article, destination, post, calloutKind, travelType, stopType, stop, travel, startLocation, endLocation, currency, audience, mapFeatures, mapFeature, location]

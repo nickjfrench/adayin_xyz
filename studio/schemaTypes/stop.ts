@@ -1,5 +1,6 @@
 import {defineType, defineField, defineArrayMember} from 'sanity'
 import {CalloutPreview} from '../components/CalloutPreview'
+import {legacyAddressField, locationField} from './locationField'
 
 export const stop = defineType({
   name: 'stop',
@@ -58,11 +59,20 @@ export const stop = defineType({
       to: [{type: 'currency'}],
       description: 'Currency for this stop’s cost.',
     }),
+    {
+      ...locationField,
+      // The combined pin+region map (StopMapFieldInput via mapInput)
+      // hosts this field on stops.
+      description: 'Pin the stop on the itinerary route map, or draw a clickable region instead.',
+    },
+    legacyAddressField,
     defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      description: 'Full address — renders as a Google Maps link.',
+      name: 'mapFeatures',
+      title: 'Map features',
+      type: 'mapFeatures',
+      // Hidden — regions are drawn on the location field's combined map.
+      hidden: true,
+      description: 'Optional clickable regions — drawn on the stop map. Label a region to list it as an option.',
     }),
     defineField({
       name: 'callouts',

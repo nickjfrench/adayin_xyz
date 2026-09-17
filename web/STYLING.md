@@ -42,6 +42,7 @@ Defined in `src/styles/global.css` via Tailwind v4's `@theme` block with OKLCH v
 | `sand-*` | 80° | Warm golden accents (50–500) |
 | `foam`  | 80° | Near-white background tint |
 | `deep`  | 185° | Near-black with teal cast |
+| `stop-*` | 48–346° | Categorical itinerary map colors — one of six hues per stop (pins, regions, arcs) |
 
 ## Component Conventions
 

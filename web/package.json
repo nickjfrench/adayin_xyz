@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "adayin-xyz-web",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@adayin/map-core": "workspace:*",
     "@astrojs/mdx": "7.0.2",
     "@astrojs/partytown": "^2.1.7",
     "@astrojs/sitemap": "^3.7.3",
@@ -26,6 +27,7 @@
     "canvas-confetti": "^1.9.4",
     "eslint": "^10.9.1",
     "groq": "^6.0.0",
+    "maplibre-gl": "^6.10.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "svelte": "^5.56.4",
@@ -33,6 +35,14 @@
     "vite": "^7.3.2"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3"
+    "@sanity/client": "^7.26.0",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^25.9.3",
+    "typescript": "^5.8"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": true,
+    "printWidth": 100
   }
 }

@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import StopModal from './StopModal.svelte';
+  import { STOP_OPEN_EVENT } from '../utils/mapEvents';
 
   /** @type {Array<import('../utils/sanity').Post['stops'][number] & {imageUrl?: string}>} */
   let { stops = [], recommendations = [] } = $props();
@@ -25,11 +26,21 @@
       }
     }
 
+    // Map island (ItineraryMap.svelte) dispatches this to open the same modal.
+    function handleOpenEvent(e) {
+      const idx = Number(e.detail);
+      if (Number.isInteger(idx) && idx >= 0 && idx < stops.length) {
+        selectedStop = stops[idx];
+      }
+    }
+    window.addEventListener(STOP_OPEN_EVENT, handleOpenEvent);
+
     stopEls.forEach(el => el.addEventListener('click', handleStopClick));
     recEls.forEach(el => el.addEventListener('click', handleRecClick));
     return () => {
       stopEls.forEach(el => el.removeEventListener('click', handleStopClick));
       recEls.forEach(el => el.removeEventListener('click', handleRecClick));
+      window.removeEventListener(STOP_OPEN_EVENT, handleOpenEvent);
     };
   });
 </script>

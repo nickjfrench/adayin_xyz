@@ -1,4 +1,5 @@
 import {defineType, defineField} from 'sanity'
+import {legacyAddressField, locationField} from './locationField'
 
 export const travel = defineType({
   name: 'travel',
@@ -37,12 +38,8 @@ export const travel = defineType({
       type: 'image',
       options: {hotspot: true},
     }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-      description: 'Full address — renders as a Google Maps link.',
-    }),
+    locationField,
+    legacyAddressField,
     defineField({
       name: 'cost',
       title: 'Cost',

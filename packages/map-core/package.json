@@ -1,0 +1,29 @@
+{
+  "name": "@adayin/map-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/core.ts",
+    "./core": "./src/core.ts",
+    "./dom": "./src/dom.ts",
+    "./geojson": "./src/geojson.ts",
+    "./basemap": "./src/basemap.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "maplibre-gl": "^6.10.0"
+  },
+  "devDependencies": {
+    "maplibre-gl": "^6.10.0",
+    "typescript": "^5.8",
+    "vitest": "^3"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": true,
+    "printWidth": 100
+  }
+}

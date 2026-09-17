@@ -25,6 +25,21 @@
     --color-sand-400: oklch(0.73 0.16 80);
     --color-sand-500: oklch(0.63 0.18 80);
 
+    /* Stop — categorical map colors, one per itinerary stop. Six hues spaced
+       around the wheel — one blue, one purple, one raspberry, one terracotta,
+       one olive green, plus the brand sea green — so no two stops sit in the
+       same colour family, and consecutive stops are far apart (nearest pairs
+       ≥0.14 ΔE, adjacent stops ≥0.18). Hues stay clear of the S/E pin colors
+       (sand 80°, green 149°). Every value is inside sRGB — identical on sRGB
+       and Display-P3 screens — and holds ≥4.8:1 contrast against white for
+       the pin glyphs. */
+    --color-stop-sea: oklch(0.530 0.085 185);
+    --color-stop-ocean: oklch(0.460 0.150 260);
+    --color-stop-violet: oklch(0.560 0.100 310);
+    --color-stop-berry: oklch(0.440 0.130 346);
+    --color-stop-amber: oklch(0.500 0.123 48);
+    --color-stop-kelp: oklch(0.420 0.087 116);
+
     --color-foam: oklch(0.985 0.005 80);
     --color-deep: oklch(0.2 0.03 185);
 
