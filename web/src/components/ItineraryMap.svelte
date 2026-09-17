@@ -162,7 +162,7 @@
       type="button"
       onclick={toggleEnlarge}
       aria-label={enlarged ? 'Shrink map' : 'Enlarge map'}
-      class="absolute top-2 right-2 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/80 text-sea-600 shadow-sm backdrop-blur-sm transition hover:bg-white"
+      class="absolute top-2 left-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/80 text-sea-600 shadow-sm backdrop-blur-sm transition hover:bg-white border-1 border-[oklch(0.2_0.03_185)]/30"
     >
       {#if enlarged}
         <svg
