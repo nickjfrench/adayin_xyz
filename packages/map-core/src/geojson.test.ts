@@ -5,6 +5,7 @@ import {
   distanceMeters,
   mapFeaturePatchFromGeoJSON,
   mapFeatureToGeoJSON,
+  type LngLat,
   type MapFeatureGeoJSON,
 } from '@adayin/map-core/geojson';
 import type { MapFeatureItem } from '@adayin/map-core';
@@ -311,7 +312,7 @@ describe('mapFeaturePatchFromGeoJSON', () => {
     ).toBe('circle');
   });
 
-  it('returns null for unknown shapes and empty polygon rings', () => {
+  it('returns null for unknown shapes and rings too short to be polygons', () => {
     const unknown: MapFeatureGeoJSON = {
       type: 'Feature',
       id: 'x',
@@ -319,15 +320,17 @@ describe('mapFeaturePatchFromGeoJSON', () => {
       geometry: { type: 'Polygon', coordinates: [circleRing(brisbane, 100)] },
     };
     expect(mapFeaturePatchFromGeoJSON(unknown, existing(), pointKeys())).toBeNull();
-    const emptyRing: MapFeatureGeoJSON = {
-      type: 'Feature',
-      id: 'x',
-      properties: { shape: 'polygon' },
-      geometry: { type: 'Polygon', coordinates: [[]] },
-    };
-    expect(
-      mapFeaturePatchFromGeoJSON(emptyRing, existing({ shape: 'polygon' }), pointKeys()),
-    ).toBeNull();
+    for (const ring of [[], [[153.01, -27.47]]] as LngLat[][]) {
+      const shortRing: MapFeatureGeoJSON = {
+        type: 'Feature',
+        id: 'x',
+        properties: { shape: 'polygon' },
+        geometry: { type: 'Polygon', coordinates: [ring] },
+      };
+      expect(
+        mapFeaturePatchFromGeoJSON(shortRing, existing({ shape: 'polygon' }), pointKeys()),
+      ).toBeNull();
+    }
   });
 
   it('never invents a label for the shapes whose geometry patch must not touch it', () => {

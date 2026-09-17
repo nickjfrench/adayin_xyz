@@ -323,7 +323,7 @@ export function createItineraryMap(
     features: [] as Feature[],
   };
 
-  /** Registers a DOM marker: hover emphasis, its label, and its click action. */
+  /** Registers a DOM marker: hover emphasis, its label, and its activation action. */
   const addMarker = (
     element: HTMLElement,
     latLng: LatLng,
@@ -332,6 +332,13 @@ export function createItineraryMap(
     onClick: () => void,
   ) => {
     element.addEventListener('click', onClick);
+    // The pin is a span carrying role="button", so Enter and Space are the keys
+    // the role promises — neither fires a click on a span, unlike a real button.
+    element.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      onClick();
+    });
     element.addEventListener('mouseenter', () => {
       setHovered(step);
       showTooltip(label, [latLng[1], latLng[0]]);
@@ -638,21 +645,26 @@ export function createItineraryMap(
     const seq = ++focusSeq;
     const pin = pins.get(index)?.getElement() ?? null;
     const landed = new Promise<void>((resolve) => map.once('moveend', () => resolve()));
+    // Only created when the map is still off screen, and torn down by whichever
+    // path ends the race: the 3500 ms guard can win with the map never framing,
+    // and an observer left watching a page-lifetime container accumulates one
+    // callback registration per "Show on Map" click.
+    let watcher: IntersectionObserver | null = null;
     const framed = new Promise<void>((resolve) => {
       const rect = map.getContainer().getBoundingClientRect();
       if (rect.top >= 0 && rect.bottom <= window.innerHeight) return resolve();
-      const io = new IntersectionObserver(
+      watcher = new IntersectionObserver(
         (entries) => {
           if (!entries.some((e) => e.intersectionRatio >= 0.9)) return;
-          io.disconnect();
           resolve();
         },
         { threshold: 0.9 },
       );
-      io.observe(map.getContainer());
+      watcher.observe(map.getContainer());
     });
     const guard = new Promise<void>((resolve) => setTimeout(resolve, 3500));
     Promise.race([Promise.all([landed, framed]), guard]).then(() => {
+      watcher?.disconnect();
       if (seq === focusSeq) flashPin(pin, PIN_FLASH);
     });
     if (corners.length > 1)

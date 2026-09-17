@@ -43,7 +43,7 @@ export const locationField = defineField({
   name: 'location',
   title: 'Location',
   type: 'location',
-  description: 'Map pin — plots this stop on the itinerary route map.',
+  description: 'Map pin — plots this location on the itinerary route map.',
 })
 
 /**

@@ -37,15 +37,14 @@ function searchPlace(address: string): Promise<PlaceMatch | null> {
       })
       if (!res.ok) {
         const detail = (await res.text()).slice(0, 300)
-        // 400 = Places rejected the address itself → a genuine MISS. Everything
-        // else (bad key, quota, outage) aborts the run: storing fallback data
-        // for a failed lookup would drop the document out of the filter with no
-        // real match in it, and no rerun could repair it.
-        if (res.status !== 400) {
-          throw new Error(`Places HTTP ${res.status} for "${address}": ${detail}`)
-        }
-        console.warn(`[places] HTTP 400 for "${address}": ${detail}`)
-        return null
+        // Every non-200 aborts the run — invalid or unentitled key (400
+        // INVALID_ARGUMENT on a key that is not enabled for Places), quota,
+        // outage alike. A MISS must only ever mean "Places answered, with
+        // nothing usable in it": the 200-with-no-places case below. Reading a
+        // rejected request as a miss writes fallback data that drops the
+        // document out of the filter with no real match in it, and no rerun
+        // could repair it.
+        throw new Error(`Places HTTP ${res.status} for "${address}": ${detail}`)
       }
       const hit = ((await res.json()) as {places?: unknown[]}).places?.[0] as
         | {
@@ -87,8 +86,10 @@ export default defineMigration({
   title:
     'Backfill stop/start/end/travel locations (coords + formattedAddress + mapsUri) from addresses',
   documentTypes: ['stop', 'startLocation', 'endLocation', 'travel'],
+  // Half-set locations belong here too: a label without coords is not a pin, and
+  // the document handler replaces those coords rather than keeping them.
   filter:
-    'defined(address) && (!defined(location) || !defined(location.formattedAddress) || !defined(location.mapsUri))',
+    'defined(address) && (!defined(location) || !defined(location.formattedAddress) || !defined(location.mapsUri) || !defined(location.lat) || !defined(location.lng))',
   migrate: {
     document: async (doc): Promise<NodePatch[]> => {
       // Migration reads pre-schema raw documents — dynamic keys the generated

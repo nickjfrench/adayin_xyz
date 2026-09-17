@@ -21,6 +21,7 @@
   let loaded = null;
   let destroyed = false;
   let retryTimer = null;
+  let autoRetryUsed = false;
   const RETRY_DELAY_MS = 3000;
   function loadMap() {
     loaded ??= import('../utils/itineraryMap')
@@ -37,10 +38,13 @@
         // A failed chunk request must not poison the memo — one delayed retry
         // re-runs the build (dev-server re-optimization, flaky network), and a
         // "Show on Map" click calls loadMap again whatever happened. The map is
-        // progressive enhancement; the page reads fine without it.
+        // progressive enhancement; the page reads fine without it. One automatic
+        // retry only: a chunk that is gone for good (stale deploy) must not
+        // re-fetch every RETRY_DELAY_MS for as long as the page stays open.
         loaded = null;
         console.error('Itinerary map failed to load', error);
-        if (!destroyed && retryTimer === null) {
+        if (!destroyed && retryTimer === null && !autoRetryUsed) {
+          autoRetryUsed = true;
           retryTimer = setTimeout(() => {
             retryTimer = null;
             loadMap();

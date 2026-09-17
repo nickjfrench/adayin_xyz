@@ -104,7 +104,7 @@ export function mergedItem(feature: FeatureData, existing: MapFeatureItem): MapF
 
 /** Label for a feature's tooltip: the text marker's text wins over the stored label. */
 export function featureLabel(feature: FeatureData): string | null {
-  const properties = feature.getGeoJson().properties
+  const properties = feature.getGeoJson().properties ?? {}
   const label = feature.shape === 'text_marker' ? (properties.__gm_text ?? properties.text) : null
   const text = label ?? properties.label
   return typeof text === 'string' && text.trim() ? text : null

@@ -220,7 +220,10 @@ export function mapFeaturePatchFromGeoJSON(
       lat,
       lng,
     }));
-    return points.length ? { shape: 'polygon', points } : null;
+    // Three vertices or it is not a ring: a shorter one never draws
+    // (mapFeatureToGeoJSON drops it), so storing it would only leave an item the
+    // map can neither show nor edit.
+    return points.length >= 3 ? { shape: 'polygon', points } : null;
   }
   const center =
     shapeProperty<LngLat>(feature.properties, 'center') ?? centerOfRing(feature.geometry);
