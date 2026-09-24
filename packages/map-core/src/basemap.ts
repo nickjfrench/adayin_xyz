@@ -3,13 +3,13 @@
  * MapLibre and a bundler-emitted worker asset, so it must stay out of any
  * SSR/build-time import graph.
  */
-import { setWorkerUrl } from 'maplibre-gl';
-import maplibreGlWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import { setWorkerUrl } from 'maplibre-gl'
+import maplibreGlWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 
 /** The one basemap both apps draw on; its attribution comes with the style. */
-export const OPENFREEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/bright';
+export const OPENFREEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/bright'
 
-let configured = false;
+let configured = false
 
 /**
  * Points MapLibre's web worker at the URL the bundler emitted for
@@ -20,7 +20,7 @@ let configured = false;
  * every later map reuses the same worker pool.
  */
 export function configureMapLibreWorkers(): void {
-  if (configured) return;
-  configured = true;
-  setWorkerUrl(maplibreGlWorkerUrl);
+  if (configured) return
+  configured = true
+  setWorkerUrl(maplibreGlWorkerUrl)
 }

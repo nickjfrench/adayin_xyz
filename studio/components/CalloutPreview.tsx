@@ -1,9 +1,12 @@
-import {useClient} from 'sanity'
-import {Stack, Text} from '@sanity/ui'
-import {useEffect, useState} from 'react'
+import { useClient } from 'sanity'
+import type { PreviewProps } from 'sanity'
+import { Stack, Text } from '@sanity/ui'
+import { useEffect, useState } from 'react'
 
-export function CalloutPreview(props: {kind?: {_ref?: string}; body?: unknown}) {
-  const client = useClient({apiVersion: '2025-03-01'})
+// Sanity hands every preview component its `PreviewProps` plus the values named in
+// the schema's `preview.select`, which is where `kind` and `body` come from.
+export function CalloutPreview(props: PreviewProps & { kind?: { _ref?: string }; body?: unknown }) {
+  const client = useClient({ apiVersion: '2025-03-01' })
   const [label, setLabel] = useState<string | null>(null)
   const ref = props.kind?._ref
 
@@ -13,7 +16,7 @@ export function CalloutPreview(props: {kind?: {_ref?: string}; body?: unknown}) 
       return
     }
     let cancelled = false
-    client.fetch<{label?: string} | null>('*[_id == $id][0]{label}', {id: ref}).then((doc) => {
+    client.fetch<{ label?: string } | null>('*[_id == $id][0]{label}', { id: ref }).then((doc) => {
       if (!cancelled) setLabel(doc?.label ?? null)
     })
     return () => {
@@ -22,7 +25,7 @@ export function CalloutPreview(props: {kind?: {_ref?: string}; body?: unknown}) 
   }, [ref, client])
   const bodyText = Array.isArray(props.body)
     ? props.body
-        .map((b: {children?: Array<{text?: string}>}) =>
+        .map((b: { children?: Array<{ text?: string }> }) =>
           (b.children ?? []).map((c) => c.text ?? '').join(''),
         )
         .join(' ')

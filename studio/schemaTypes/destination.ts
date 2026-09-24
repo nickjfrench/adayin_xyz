@@ -1,4 +1,4 @@
-import {defineType, defineField} from 'sanity'
+import { defineType, defineField } from 'sanity'
 
 export const destination = defineType({
   name: 'destination',
@@ -30,7 +30,7 @@ export const destination = defineType({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {source: 'city'},
+      options: { source: 'city' },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -38,7 +38,7 @@ export const destination = defineType({
       title: 'Hero image',
       type: 'image',
       description: 'Wide landscape shot used behind the hero for this destination.',
-      options: {hotspot: true},
+      options: { hotspot: true },
     }),
     defineField({
       name: 'blurb',
@@ -49,6 +49,6 @@ export const destination = defineType({
     }),
   ],
   preview: {
-    select: {title: 'city', subtitle: 'country', media: 'heroImage'},
+    select: { title: 'city', subtitle: 'country', media: 'heroImage' },
   },
 })

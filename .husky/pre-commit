@@ -1,0 +1,2 @@
+# Staged-file lint/format gate (see lint-staged.config.mjs).
+pnpm exec lint-staged

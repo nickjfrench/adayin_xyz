@@ -1,27 +1,27 @@
 export interface PriceRange {
-  value: number | null;
+  value: number | null
 }
 
 export interface Currency {
-  code?: string;
-  name?: string;
-  icon?: { provider: string; name: string; svg?: string };
-  ranges?: PriceRange[] | null;
+  code?: string
+  name?: string
+  icon?: { provider: string; name: string; svg?: string }
+  ranges?: PriceRange[] | null
 }
 
 interface StopCost {
-  cost?: number | null;
-  currency?: Currency | null;
+  cost?: number | null
+  currency?: Currency | null
 }
 
 /** Sum costs from a projected array of stop/travel cost objects. Missing values count as 0. */
 export function sumCosts(stops?: (StopCost | null)[] | null): number {
-  return (stops ?? []).reduce((sum, s) => sum + (s?.cost ?? 0), 0);
+  return (stops ?? []).reduce((sum, s) => sum + (s?.cost ?? 0), 0)
 }
 
 /** Find the first priced stop's currency for trip display. */
 export function tripCurrencyFrom(stops?: (StopCost | null)[] | null): Currency | null {
-  return (stops ?? []).find((s) => s?.cost != null && s.cost > 0 && s?.currency)?.currency ?? null;
+  return (stops ?? []).find((s) => s?.cost != null && s.cost > 0 && s?.currency)?.currency ?? null
 }
 
 /**
@@ -30,17 +30,14 @@ export function tripCurrencyFrom(stops?: (StopCost | null)[] | null): Currency |
  * ranges configured (caller falls back to numeric priceText).
  * Amount above every defined value → ranges.length + 1 (open-ended catch-all).
  */
-export function priceTier(
-  amount: number,
-  currency?: Currency | null,
-): number | null {
-  const ranges = currency?.ranges;
-  if (!ranges || ranges.length === 0) return null;
-  const values = ranges.map((r) => r.value ?? Infinity).sort((a, b) => a - b);
+export function priceTier(amount: number, currency?: Currency | null): number | null {
+  const ranges = currency?.ranges
+  if (!ranges || ranges.length === 0) return null
+  const values = ranges.map((r) => r.value ?? Infinity).sort((a, b) => a - b)
   for (let i = 0; i < values.length; i++) {
-    if (amount <= values[i]) return i + 1;
+    if (amount <= values[i]) return i + 1
   }
-  return values.length + 1;
+  return values.length + 1
 }
 
 /**
@@ -53,8 +50,8 @@ export function priceText(
   currency?: Currency | null,
   opts: { perPerson?: boolean } = {},
 ): string {
-  const pp = opts.perPerson !== false;
-  const code = currency?.code ? ` ${currency.code}` : '';
-  const formatted = amount.toFixed(2);
-  return `${formatted}${code}${pp ? ' PP' : ''}`;
+  const pp = opts.perPerson !== false
+  const code = currency?.code ? ` ${currency.code}` : ''
+  const formatted = amount.toFixed(2)
+  return `${formatted}${code}${pp ? ' PP' : ''}`
 }

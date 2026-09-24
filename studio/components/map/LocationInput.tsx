@@ -1,17 +1,17 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {createPortal} from 'react-dom'
-import {FormPatch, ObjectInputProps, set, setIfMissing, unset} from 'sanity'
-import {Button, Flex, Stack, Text} from '@sanity/ui'
-import {CollapseIcon} from '@sanity/icons/Collapse'
-import {ExpandIcon} from '@sanity/icons/Expand'
-import {TrashIcon} from '@sanity/icons/Trash'
-import {Map as MapLibreMap, Marker, type MapMouseEvent} from 'maplibre-gl'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { FormPatch, ObjectInputProps, set, setIfMissing, unset } from 'sanity'
+import { Button, Flex, Stack, Text } from '@sanity/ui'
+import { CollapseIcon } from '@sanity/icons/Collapse'
+import { ExpandIcon } from '@sanity/icons/Expand'
+import { TrashIcon } from '@sanity/icons/Trash'
+import { Map as MapLibreMap, Marker, type MapMouseEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import {dotElement, flashPin} from '@adayin/map-core/dom'
-import {mapsQueryUrl} from '@adayin/map-core/core'
-import {useMapLibreMap} from './useMapLibreMap'
-import {PlacesSearch, mapViewport, shieldMapElement, type SelectedPlace} from './googlePlaces'
-import {DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, VALUE_ZOOM} from './mapConfig'
+import { dotElement, flashPin } from '@adayin/map-core/dom'
+import { mapsQueryUrl } from '@adayin/map-core/core'
+import { useMapLibreMap } from './useMapLibreMap'
+import { PlacesSearch, mapViewport, shieldMapElement, type SelectedPlace } from './googlePlaces'
+import { DEFAULT_CENTER, DEFAULT_ZOOM, PIN_COLOR, PIN_FLASH, VALUE_ZOOM } from './mapConfig'
 import './mapInput.css'
 
 /**
@@ -20,15 +20,15 @@ import './mapInput.css'
  * own address and Maps URI; a manual pin (map click / marker drag) rewrites
  * mapsUri as a lat,lng query URL and keeps any previously known address.
  */
-export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
-  const {value, onChange, schemaType, readOnly, apiKey} = props
-  const markerRef = useRef<{marker: Marker; map: MapLibreMap} | null>(null)
+export function LocationInput(props: ObjectInputProps & { apiKey?: string }) {
+  const { value, onChange, schemaType, readOnly, apiKey } = props
+  const markerRef = useRef<{ marker: Marker; map: MapLibreMap } | null>(null)
   const lat = value?.lat
   const lng = value?.lng
   const formattedAddress = value?.formattedAddress
   const hasValue = lat != null && lng != null
 
-  const {setContainer, map} = useMapLibreMap(
+  const { setContainer, map } = useMapLibreMap(
     hasValue ? [lng, lat] : DEFAULT_CENTER,
     hasValue ? VALUE_ZOOM : DEFAULT_ZOOM,
   )
@@ -45,9 +45,9 @@ export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
 
   // Manual placement (map click, marker drag): mapsUri becomes a lat,lng query URL.
   const handlePin = useCallback(
-    (pin: {lat: number; lng: number}) => {
+    (pin: { lat: number; lng: number }) => {
       const patches: FormPatch[] = [
-        setIfMissing({_type: schemaType.name}),
+        setIfMissing({ _type: schemaType.name }),
         set(pin.lat, ['lat']),
         set(pin.lng, ['lng']),
       ]
@@ -63,7 +63,7 @@ export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
   const handlePlace = useCallback(
     (place: SelectedPlace) => {
       const patches: FormPatch[] = [
-        setIfMissing({_type: schemaType.name}),
+        setIfMissing({ _type: schemaType.name }),
         set(place.lat, ['lat']),
         set(place.lng, ['lng']),
       ]
@@ -79,7 +79,7 @@ export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
   useEffect(() => {
     if (!map) return
     const onClick = (event: MapMouseEvent) => {
-      if (!readOnly && !hasValue) handlePin({lat: event.lngLat.lat, lng: event.lngLat.lng})
+      if (!readOnly && !hasValue) handlePin({ lat: event.lngLat.lat, lng: event.lngLat.lng })
     }
     map.on('click', onClick)
     return () => {
@@ -119,14 +119,14 @@ export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
         .addTo(map)
       next.on('dragend', () => {
         const position = next.getLngLat()
-        handlePinRef.current({lat: position.lat, lng: position.lng})
+        handlePinRef.current({ lat: position.lat, lng: position.lng })
       })
-      markerRef.current = {marker: next, map}
+      markerRef.current = { marker: next, map }
     } else {
       marker.setDraggable(!readOnly)
       if (marker.getLngLat().lat !== lat || marker.getLngLat().lng !== lng) {
         marker.setLngLat([lng, lat])
-        map.jumpTo({center: [lng, lat], zoom: map.getZoom()})
+        map.jumpTo({ center: [lng, lat], zoom: map.getZoom() })
       }
     }
   }, [map, lat, lng, readOnly])
@@ -226,7 +226,7 @@ export function LocationInput(props: ObjectInputProps & {apiKey?: string}) {
       {hasValue ? (
         <Stack gap={2}>
           <Flex align="center" gap={2}>
-            <Text size={1} muted style={{flex: 1}}>
+            <Text size={1} muted style={{ flex: 1 }}>
               {/* Primary line mirrors what the site renders as the Maps link text. */}
               Primary POI: {formattedAddress || `${lat.toFixed(6)}, ${lng.toFixed(6)}`}
             </Text>

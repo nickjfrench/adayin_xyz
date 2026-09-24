@@ -1,31 +1,31 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ───────────────────────── Ocean palette ─────────────────────────
    Teal "sea" for brand + UI, warm "sand" for accents, soft "foam"
    backgrounds and a deep sea-green for text. Tuned to feel calm,
    coastal and modern. */
 @theme {
-    /* Sea — teal for brand + UI. OKLCH hue 185°, stepped by perceived lightness. */
-    --color-sea-50: oklch(0.97 0.015 185);
-    --color-sea-100: oklch(0.92 0.03 185);
-    --color-sea-200: oklch(0.84 0.05 185);
-    --color-sea-300: oklch(0.74 0.065 185);
-    --color-sea-400: oklch(0.63 0.08 185);
-    --color-sea-500: oklch(0.53 0.085 185);
-    --color-sea-600: oklch(0.44 0.08 185);
-    --color-sea-700: oklch(0.35 0.065 185);
-    --color-sea-800: oklch(0.28 0.053 185);
-    --color-sea-900: oklch(0.22 0.042 185);
+  /* Sea — teal for brand + UI. OKLCH hue 185°, stepped by perceived lightness. */
+  --color-sea-50: oklch(0.97 0.015 185);
+  --color-sea-100: oklch(0.92 0.03 185);
+  --color-sea-200: oklch(0.84 0.05 185);
+  --color-sea-300: oklch(0.74 0.065 185);
+  --color-sea-400: oklch(0.63 0.08 185);
+  --color-sea-500: oklch(0.53 0.085 185);
+  --color-sea-600: oklch(0.44 0.08 185);
+  --color-sea-700: oklch(0.35 0.065 185);
+  --color-sea-800: oklch(0.28 0.053 185);
+  --color-sea-900: oklch(0.22 0.042 185);
 
-    /* Sand — warm golden accents. OKLCH hue 80°, lighter ramp for beachy feel. */
-    --color-sand-50: oklch(0.97 0.015 80);
-    --color-sand-100: oklch(0.94 0.035 80);
-    --color-sand-200: oklch(0.89 0.07 80);
-    --color-sand-300: oklch(0.82 0.11 80);
-    --color-sand-400: oklch(0.73 0.16 80);
-    --color-sand-500: oklch(0.63 0.18 80);
+  /* Sand — warm golden accents. OKLCH hue 80°, lighter ramp for beachy feel. */
+  --color-sand-50: oklch(0.97 0.015 80);
+  --color-sand-100: oklch(0.94 0.035 80);
+  --color-sand-200: oklch(0.89 0.07 80);
+  --color-sand-300: oklch(0.82 0.11 80);
+  --color-sand-400: oklch(0.73 0.16 80);
+  --color-sand-500: oklch(0.63 0.18 80);
 
-    /* Stop — categorical map colors, one per itinerary stop. Six hues spaced
+  /* Stop — categorical map colors, one per itinerary stop. Six hues spaced
        around the wheel — one blue, one purple, one raspberry, one terracotta,
        one olive green, plus the brand sea green — so no two stops sit in the
        same colour family, and consecutive stops are far apart (nearest pairs
@@ -33,76 +33,75 @@
        (sand 80°, green 149°). Every value is inside sRGB — identical on sRGB
        and Display-P3 screens — and holds ≥4.8:1 contrast against white for
        the pin glyphs. */
-    --color-stop-sea: oklch(0.530 0.085 185);
-    --color-stop-ocean: oklch(0.460 0.150 260);
-    --color-stop-violet: oklch(0.560 0.100 310);
-    --color-stop-berry: oklch(0.440 0.130 346);
-    --color-stop-amber: oklch(0.500 0.123 48);
-    --color-stop-kelp: oklch(0.420 0.087 116);
+  --color-stop-sea: oklch(0.53 0.085 185);
+  --color-stop-ocean: oklch(0.46 0.15 260);
+  --color-stop-violet: oklch(0.56 0.1 310);
+  --color-stop-berry: oklch(0.44 0.13 346);
+  --color-stop-amber: oklch(0.5 0.123 48);
+  --color-stop-kelp: oklch(0.42 0.087 116);
 
-    --color-foam: oklch(0.985 0.005 80);
-    --color-deep: oklch(0.2 0.03 185);
+  --color-foam: oklch(0.985 0.005 80);
+  --color-deep: oklch(0.2 0.03 185);
 
-    --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
-    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-    --blur-2xs: 2px;
+  --blur-2xs: 2px;
 }
-
 
 /* Portable Text article styling (post detail body) */
 .prose-sea :where(p) {
-    margin-block: 1.1em;
-    line-height: 1.8;
-    color: color-mix(in srgb, var(--color-deep) 88%, transparent);
+  margin-block: 1.1em;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--color-deep) 88%, transparent);
 }
 .prose-sea :where(h2) {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.6rem;
-    margin-top: 1.8em;
-    margin-bottom: 0.4em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.6rem;
+  margin-top: 1.8em;
+  margin-bottom: 0.4em;
 }
 .prose-sea :where(h3) {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.25rem;
-    margin-top: 1.4em;
-    margin-bottom: 0.3em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-top: 1.4em;
+  margin-bottom: 0.3em;
 }
 .prose-sea :where(a) {
-    color: var(--color-sea-600);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  color: var(--color-sea-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .prose-sea :where(ul) {
-    list-style: disc;
-    padding-left: 1.4em;
-    margin-block: 1.1em;
+  list-style: disc;
+  padding-left: 1.4em;
+  margin-block: 1.1em;
 }
 .prose-sea :where(blockquote) {
-    border-left: 3px solid var(--color-sand-300);
-    padding-left: 1.2em;
-    font-style: italic;
-    color: var(--color-sea-700);
-    margin-block: 1.4em;
+  border-left: 3px solid var(--color-sand-300);
+  padding-left: 1.2em;
+  font-style: italic;
+  color: var(--color-sea-700);
+  margin-block: 1.4em;
 }
 .prose-sea :where(figure) {
-    margin-block: 2em;
+  margin-block: 2em;
 }
 .prose-sea :where(figcaption) {
-    margin-top: 0.5em;
-    font-size: 0.875rem;
-    font-style: italic;
-    color: color-mix(in srgb, var(--color-sea-700) 70%, transparent);
+  margin-top: 0.5em;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--color-sea-700) 70%, transparent);
 }
 
 /* Inline Portable Text styling (callouts, stop/travel descriptions) */
 .pt-inline :where(a) {
-    color: var(--color-sea-600);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  color: var(--color-sea-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .pt-inline :where(p) + :where(p) {
-    margin-top: 0.5em;
+  margin-top: 0.5em;
 }

@@ -4,7 +4,7 @@
 
 A Day In XYZ is a travel blog and itinerary listing for tailored and tested day trips with realistic expectations on what you can achieve in one day.
 
-This is a static site generated with Astro with content built from Sanity CMS. 
+This is a static site generated with Astro with content built from Sanity CMS.
 Sanity schema's and custom components are found in `studio` and Astro code is found in `web`.
 
 Sanity Studio and the Astro site are delivered via Cloudflare Pages.
@@ -22,6 +22,12 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 - Use pnpm always, never use NPM. The repo is a pnpm workspace: `studio`, `web`, and `packages/map-core` — the shared map kit (MapLibre rendering + renderer-free stored-contract logic) consumed by both apps. `pnpm --filter` selects by package name (`adayin-xyz-studio`, `adayin-xyz-web`, `@adayin/map-core`), not by directory.
 - Don't try to run the server, check if the ports are running (4321 for web) and (3333 for sanity) and connect via that.
 - Don't try to connect to Sanity via the browser, it requires auth. Ask the user to troubleshoot.
+
+## Lint, format & commits
+
+- `pnpm lint` / `pnpm lint:fix` and `pnpm format` / `pnpm format:check` run from the workspace root and cover all three packages. Prettier owns formatting, ESLint owns code quality; the configs are `prettier.config.mjs`, `eslint.config.mjs` and `eslint.base.mjs` at the root plus one `eslint.config.mjs` per package.
+- The `pre-commit` hook (husky + lint-staged, configured in `lint-staged.config.mjs`) runs `eslint --fix` and then `prettier --write` on staged files and re-stages the result, so committed content always matches the repo config rather than editor settings. ESLint errors abort the commit — fix them instead of reaching for `git commit --no-verify`.
+- CI runs both gates: `.github/workflows/lint.yml` (eslint + format check) and `.github/workflows/test.yml` (vitest).
 
 ## Map kit (`packages/map-core`)
 

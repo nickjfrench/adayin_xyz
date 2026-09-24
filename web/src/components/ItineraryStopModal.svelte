@@ -1,48 +1,48 @@
 <script>
-  import { onMount } from 'svelte';
-  import StopModal from './StopModal.svelte';
-  import { STOP_OPEN_EVENT } from '../utils/mapEvents';
+  import { onMount } from 'svelte'
+  import StopModal from './StopModal.svelte'
+  import { STOP_OPEN_EVENT } from '../utils/mapEvents'
 
   /** @type {Array<import('../utils/sanity').Post['stops'][number] & {imageUrl?: string}>} */
-  let { stops = [], recommendations = [] } = $props();
+  let { stops = [], recommendations = [] } = $props()
 
-  let selectedStop = $state(null);
+  let selectedStop = $state(null)
 
   onMount(() => {
-    const stopEls = document.querySelectorAll('.stop-title[data-stop-index]');
-    const recEls = document.querySelectorAll('[data-recommendation-index]');
+    const stopEls = document.querySelectorAll('.stop-title[data-stop-index]')
+    const recEls = document.querySelectorAll('[data-recommendation-index]')
 
     function handleStopClick(e) {
-      const idx = Number(e.currentTarget.dataset.stopIndex);
+      const idx = Number(e.currentTarget.dataset.stopIndex)
       if (idx >= 0 && idx < stops.length) {
-        selectedStop = stops[idx];
+        selectedStop = stops[idx]
       }
     }
 
     function handleRecClick(e) {
-      const idx = Number(e.currentTarget.dataset.recommendationIndex);
+      const idx = Number(e.currentTarget.dataset.recommendationIndex)
       if (idx >= 0 && idx < recommendations.length) {
-        selectedStop = recommendations[idx];
+        selectedStop = recommendations[idx]
       }
     }
 
     // Map island (ItineraryMap.svelte) dispatches this to open the same modal.
     function handleOpenEvent(e) {
-      const idx = Number(e.detail);
+      const idx = Number(e.detail)
       if (Number.isInteger(idx) && idx >= 0 && idx < stops.length) {
-        selectedStop = stops[idx];
+        selectedStop = stops[idx]
       }
     }
-    window.addEventListener(STOP_OPEN_EVENT, handleOpenEvent);
+    window.addEventListener(STOP_OPEN_EVENT, handleOpenEvent)
 
-    stopEls.forEach(el => el.addEventListener('click', handleStopClick));
-    recEls.forEach(el => el.addEventListener('click', handleRecClick));
+    stopEls.forEach((el) => el.addEventListener('click', handleStopClick))
+    recEls.forEach((el) => el.addEventListener('click', handleRecClick))
     return () => {
-      stopEls.forEach(el => el.removeEventListener('click', handleStopClick));
-      recEls.forEach(el => el.removeEventListener('click', handleRecClick));
-      window.removeEventListener(STOP_OPEN_EVENT, handleOpenEvent);
-    };
-  });
+      stopEls.forEach((el) => el.removeEventListener('click', handleStopClick))
+      recEls.forEach((el) => el.removeEventListener('click', handleRecClick))
+      window.removeEventListener(STOP_OPEN_EVENT, handleOpenEvent)
+    }
+  })
 </script>
 
-<StopModal bind:stop={selectedStop} onclose={() => selectedStop = null} />
+<StopModal bind:stop={selectedStop} onclose={() => (selectedStop = null)} />

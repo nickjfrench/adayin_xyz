@@ -1,13 +1,13 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
-import DestBar from "../components/DestBar.astro";
-import GlassCard from "../components/GlassCard.astro";
-import { getDestinations, getItineraries } from "../utils/sanity";
-import { sumCosts, tripCurrencyFrom } from "../utils/cost"
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import DestBar from '../components/DestBar.astro'
+import GlassCard from '../components/GlassCard.astro'
+import { getDestinations, getItineraries } from '../utils/sanity'
+import { sumCosts, tripCurrencyFrom } from '../utils/cost'
 
-const destinations = await getDestinations();
-const posts = await getItineraries();
+const destinations = await getDestinations()
+const posts = await getItineraries()
 ---
 
 <BaseLayout headerVariant="light">
@@ -19,7 +19,7 @@ const posts = await getItineraries();
   <section id="stories" class="mx-auto max-w-6xl scroll-mt-24 px-5 pt-8 pb-14 sm:px-8">
     <div class="mb-8 flex items-end justify-between gap-4">
       <div>
-        <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
+        <p class="font-display text-sm font-semibold tracking-widest text-sand-500 uppercase">
           From our most recent adventures
         </p>
         <h2 id="stories-heading" class="mt-1 font-display text-3xl font-semibold text-sea-800">
@@ -30,8 +30,9 @@ const posts = await getItineraries();
         id="view-all-link"
         href="/itineraries"
         class="hidden shrink-0 font-display text-sm font-medium text-sea-600 hover:text-sea-500 sm:inline"
-        >View all →</a
       >
+        View all →
+      </a>
     </div>
 
     {
@@ -43,7 +44,11 @@ const posts = await getItineraries();
         <>
           <div id="stories-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-              <GlassCard entry={post} totalCost={sumCosts(post.stopCosts)} tripCurrency={tripCurrencyFrom(post.stopCosts)} />
+              <GlassCard
+                entry={post}
+                totalCost={sumCosts(post.stopCosts)}
+                tripCurrency={tripCurrencyFrom(post.stopCosts)}
+              />
             ))}
           </div>
           <p
@@ -60,111 +65,112 @@ const posts = await getItineraries();
 </BaseLayout>
 
 <script>
-  import { initDestBar } from "../utils/destBarClient";
+  import { initDestBar } from '../utils/destBarClient'
 
   // ── Hero-specific elements ──
-  const trigger = document.getElementById("dest-trigger");
-  const label = document.getElementById("dest-label");
-  const menu = document.getElementById("dest-menu");
-  const bgLayers = Array.from(document.querySelectorAll<HTMLElement>(".hero-bg"));
-  const viewAllLink = document.getElementById("view-all-link") as HTMLAnchorElement | null;
+  const trigger = document.getElementById('dest-trigger')
+  const label = document.getElementById('dest-label')
+  const menu = document.getElementById('dest-menu')
+  const bgLayers = Array.from(document.querySelectorAll<HTMLElement>('.hero-bg'))
+  const viewAllLink = document.getElementById('view-all-link') as HTMLAnchorElement | null
 
-  const dests = Array.from(document.querySelectorAll<HTMLElement>(".dest-option"))
+  const dests = Array.from(document.querySelectorAll<HTMLElement>('.dest-option'))
     .filter((o) => o.dataset.index !== undefined)
     .map((o) => ({
       slug: o.dataset.dest!,
       city: o.dataset.city!,
       index: Number(o.dataset.index),
-    }));
+    }))
 
-  let current = 0;
-  let manual = false;
-  let menuOpen = false;
+  let current = 0
+  let manual = false
+  let menuOpen = false
 
   function setHero(index: number) {
-    if (!dests.length) return;
-    current = ((index % dests.length) + dests.length) % dests.length;
+    if (!dests.length) return
+    current = ((index % dests.length) + dests.length) % dests.length
     bgLayers.forEach((layer) => {
-      layer.style.opacity = Number(layer.dataset.index) === current ? "1" : "0";
-    });
-    if (label) label.textContent = dests[current].city;
+      layer.style.opacity = Number(layer.dataset.index) === current ? '1' : '0'
+    })
+    if (label) label.textContent = dests[current].city
   }
 
   // ── Update "View all" link to carry the current dest filter ──
   function syncViewAllLink(slug: string) {
-    if (!viewAllLink) return;
-    viewAllLink.href = slug === "all" ? "/itineraries" : `/itineraries?dest=${slug}`;
+    if (!viewAllLink) return
+    viewAllLink.href = slug === 'all' ? '/itineraries' : `/itineraries?dest=${slug}`
   }
 
   // ── Dropdown open/close ──
   function openMenu() {
-    if (!menu || !trigger) return;
+    if (!menu || !trigger) return
     // Cap dropdown height to the space between the trigger and the DestBar
-    const destBarEl = document.querySelector<HTMLElement>("[data-scroll-chips]");
+    const destBarEl = document.querySelector<HTMLElement>('[data-scroll-chips]')
     if (destBarEl) {
-      const gap = destBarEl.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom - 8;
-      menu.style.maxHeight = Math.max(gap, 120) + "px";
+      const gap = destBarEl.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom - 8
+      menu.style.maxHeight = Math.max(gap, 120) + 'px'
     }
-    menu.hidden = false;
-    trigger.setAttribute("aria-expanded", "true");
-    menuOpen = true;
+    menu.hidden = false
+    trigger.setAttribute('aria-expanded', 'true')
+    menuOpen = true
   }
   function closeMenu() {
-    if (!menu || !trigger) return;
-    menu.hidden = true;
-    trigger.setAttribute("aria-expanded", "false");
-    menuOpen = false;
+    if (!menu || !trigger) return
+    menu.hidden = true
+    trigger.setAttribute('aria-expanded', 'false')
+    menuOpen = false
   }
 
-  trigger?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    menuOpen ? closeMenu() : openMenu();
-  });
-  document.addEventListener("click", (e) => {
-    if (menuOpen && !menu?.contains(e.target as Node)) closeMenu();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
-  });
+  trigger?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    if (menuOpen) closeMenu()
+    else openMenu()
+  })
+  document.addEventListener('click', (e) => {
+    if (menuOpen && !menu?.contains(e.target as Node)) closeMenu()
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu()
+  })
 
   // ── Init dest bar (chips, filtering, deep-link) ──
   initDestBar((slug) => {
-    syncViewAllLink(slug);
-    if (slug === "all") {
-      manual = false;
+    syncViewAllLink(slug)
+    if (slug === 'all') {
+      manual = false
     } else {
-      const d = dests.find((x) => x.slug === slug);
+      const d = dests.find((x) => x.slug === slug)
       if (d) {
-        manual = true;
-        setHero(d.index);
+        manual = true
+        setHero(d.index)
       }
     }
-  });
+  })
 
   // ── Hero dropdown options also drive the bar ──
-  document.querySelectorAll<HTMLElement>(".dest-option").forEach((opt) => {
-    opt.addEventListener("click", () => {
-      const slug = opt.dataset.dest!;
-      (window as any).__destBarSelect?.(slug);
-      syncViewAllLink(slug);
-      if (slug === "all") {
-        manual = false;
+  document.querySelectorAll<HTMLElement>('.dest-option').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      const slug = opt.dataset.dest!
+      window.__destBarSelect?.(slug)
+      syncViewAllLink(slug)
+      if (slug === 'all') {
+        manual = false
       } else {
-        const d = dests.find((x) => x.slug === slug);
+        const d = dests.find((x) => x.slug === slug)
         if (d) {
-          manual = true;
-          setHero(d.index);
+          manual = true
+          setHero(d.index)
         }
       }
-      closeMenu();
-    });
-  });
+      closeMenu()
+    })
+  })
 
   // ── Auto-cycle the hero word/background until the user picks something ──
   if (dests.length) {
-    setHero(0);
+    setHero(0)
     setInterval(() => {
-      if (!manual && !menuOpen && dests.length > 1) setHero(current + 1);
-    }, 3800);
+      if (!manual && !menuOpen && dests.length > 1) setHero(current + 1)
+    }, 3800)
   }
 </script>

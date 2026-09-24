@@ -1,16 +1,16 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import PageHeader from "../../components/PageHeader.astro";
-import { getDestinations, urlFor } from "../../utils/sanity";
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import { getDestinations, urlFor } from '../../utils/sanity'
 
-const destinations = (await getDestinations()).filter((d) => (d.postCount ?? 0) > 0);
+const destinations = (await getDestinations()).filter((d) => (d.postCount ?? 0) > 0)
 
 const gradients = [
-  "from-sea-300 to-sea-600",
-  "from-sea-200 to-sea-500",
-  "from-sand-300 to-sea-600",
-  "from-sea-400 to-sea-800",
-];
+  'from-sea-300 to-sea-600',
+  'from-sea-200 to-sea-500',
+  'from-sand-300 to-sea-600',
+  'from-sea-400 to-sea-800',
+]
 ---
 
 <BaseLayout title="Destinations">
@@ -30,8 +30,8 @@ const gradients = [
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {destinations.map((d, i) => {
             const img = d.heroImage
-              ? urlFor(d.heroImage).width(800).height(600).fit("crop").auto("format").url()
-              : null;
+              ? urlFor(d.heroImage).width(800).height(600).fit('crop').auto('format').url()
+              : null
             return (
               <a
                 href={`/itineraries?dest=${d.slug?.current}`}
@@ -44,23 +44,30 @@ const gradients = [
                     class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div class={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]}`} />
+                  <div
+                    class={`absolute inset-0 bg-gradient-to-br ${gradients[i % gradients.length]}`}
+                  />
                 )}
-                <!-- Blur band: softens the bottom of the image for text legibility -->
-                <div class="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-[4px]" style="-webkit-mask-image:linear-gradient(to top,black 35%,transparent 70%);mask-image:linear-gradient(to top,black 35%,transparent 70%)"></div>
+                {/* Blur band: softens the bottom of the image for text legibility */}
+                <div
+                  class="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-[4px]"
+                  style="-webkit-mask-image:linear-gradient(to top,black 35%,transparent 70%);mask-image:linear-gradient(to top,black 35%,transparent 70%)"
+                />
                 <div class="absolute inset-0 bg-gradient-to-t from-sea-900/80 via-transparent to-transparent" />
                 <div class="absolute inset-x-0 bottom-0 p-5">
-                  <h2 class="font-display text-2xl font-bold uppercase tracking-wide text-white drop-shadow">
+                  <h2 class="font-display text-2xl font-bold tracking-wide text-white uppercase drop-shadow">
                     {d.city}
                   </h2>
                   <p class="text-sm text-white/85">
                     {d.country}
-                    <span class="ml-2 text-white/70">· {d.postCount ?? 0} {d.postCount === 1 ? "Itinerary" : "Itineraries"}</span>
+                    <span class="ml-2 text-white/70">
+                      · {d.postCount ?? 0} {d.postCount === 1 ? 'Itinerary' : 'Itineraries'}
+                    </span>
                   </p>
                   {d.blurb && <p class="mt-1 line-clamp-2 text-sm text-white/75">{d.blurb}</p>}
                 </div>
               </a>
-            );
+            )
           })}
         </div>
       )

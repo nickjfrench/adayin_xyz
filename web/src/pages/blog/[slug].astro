@@ -1,60 +1,44 @@
 ---
-import { PortableText } from "astro-portabletext";
-import PortableImage from "../../components/PortableImage.astro";
-import PortableLink from "../../components/PortableLink.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getArticle, getArticleSlugs, urlFor } from "../../utils/sanity";
+import { PortableText } from 'astro-portabletext'
+import PortableImage from '../../components/PortableImage.astro'
+import PortableLink from '../../components/PortableLink.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getArticle, getArticleSlugs, urlFor } from '../../utils/sanity'
 
 export async function getStaticPaths() {
-  return await getArticleSlugs();
+  return await getArticleSlugs()
 }
 
-const { slug } = Astro.params;
-const article = await getArticle(slug as string);
+const { slug } = Astro.params
+const article = await getArticle(slug as string)
 
 if (!article) {
-  return Astro.redirect("/articles");
+  return Astro.redirect('/articles')
 }
 
-const dest = article.destination;
-const post = article.post;
+const dest = article.destination
+const post = article.post
 const date = article._createdAt
-  ? new Date(article._createdAt).toLocaleDateString("en-AU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+  ? new Date(article._createdAt).toLocaleDateString('en-AU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     })
-  : null;
+  : null
 
 const hero = article.mainImage
-  ? urlFor(article.mainImage)
-      .width(1600)
-      .height(900)
-      .fit("crop")
-      .auto("format")
-      .url()
-  : null;
+  ? urlFor(article.mainImage).width(1600).height(900).fit('crop').auto('format').url()
+  : null
 ---
 
-<BaseLayout
-  title="article.title"
-  description={article.excerpt}
-  headerVariant="light"
->
+<BaseLayout title="article.title" description={article.excerpt} headerVariant="light">
   <article>
     <!-- Hero -->
-    <header
-      id="hero-section"
-      class="relative isolate flex min-h-[50vh] items-end overflow-hidden"
-    >
+    <header id="hero-section" class="relative isolate flex min-h-[50vh] items-end overflow-hidden">
       <div class="absolute inset-0 -z-10">
         {
           hero ? (
-            <img
-              src={hero}
-              alt={article.title ?? ""}
-              class="h-full w-full object-cover"
-            />
+            <img src={hero} alt={article.title ?? ''} class="h-full w-full object-cover" />
           ) : (
             <div class="h-full w-full bg-gradient-to-br from-sea-200 to-sea-400" />
           )
@@ -72,7 +56,7 @@ const hero = article.mainImage
               class="mb-3 inline-block rounded-full bg-foam/90 px-3 py-1 font-display text-xs font-semibold text-sea-700 backdrop-blur-sm"
             >
               {dest.city}
-              {dest.countryShort ? `, ${dest.countryShort}` : ""}
+              {dest.countryShort ? `, ${dest.countryShort}` : ''}
             </a>
           )
         }
@@ -87,7 +71,7 @@ const hero = article.mainImage
           )
         }
         <h1
-          class="font-display text-3xl font-bold leading-tight text-white drop-shadow sm:text-4xl"
+          class="font-display text-3xl leading-tight font-bold text-white drop-shadow sm:text-4xl"
         >
           {article.title}
         </h1>
@@ -107,9 +91,7 @@ const hero = article.mainImage
           </div>
         ) : (
           <div class="rounded-2xl border border-dashed border-sea-200 bg-sea-50/50 p-10 text-center">
-            <p class="text-sm text-deep/60">
-              This article has no body content yet.
-            </p>
+            <p class="text-sm text-deep/60">This article has no body content yet.</p>
           </div>
         )
       }

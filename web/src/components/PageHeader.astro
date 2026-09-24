@@ -1,16 +1,16 @@
 ---
 interface Props {
-  label: string;
-  title: string;
-  description?: string;
+  label: string
+  title: string
+  description?: string
 }
 
-const { label, title, description } = Astro.props;
+const { label, title, description } = Astro.props
 ---
 
 <div class="border-b border-sea-100 bg-foam">
   <div class="mx-auto max-w-6xl px-5 pt-36 pb-14 sm:px-8">
-    <p class="font-display text-sm font-semibold uppercase tracking-widest text-sand-500">
+    <p class="font-display text-sm font-semibold tracking-widest text-sand-500 uppercase">
       {label}
     </p>
     <h1 class="mt-2 font-display text-4xl font-semibold text-sea-800">{title}</h1>

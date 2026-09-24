@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {legacyAddressField, locationField} from './locationField'
+import { defineType, defineField } from 'sanity'
+import { legacyAddressField, locationField } from './locationField'
 
 export const travel = defineType({
   name: 'travel',
@@ -16,7 +16,7 @@ export const travel = defineType({
       name: 'travelType',
       title: 'Travel type',
       type: 'reference',
-      to: [{type: 'travelType'}],
+      to: [{ type: 'travelType' }],
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -29,14 +29,14 @@ export const travel = defineType({
       name: 'longDesc',
       title: 'Long description',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [{ type: 'block' }],
       description: 'To be displayed on popup modal.',
     }),
     defineField({
       name: 'image',
       title: 'Image',
       type: 'image',
-      options: {hotspot: true},
+      options: { hotspot: true },
     }),
     locationField,
     legacyAddressField,
@@ -50,12 +50,12 @@ export const travel = defineType({
       name: 'currency',
       title: 'Currency',
       type: 'reference',
-      to: [{type: 'currency'}],
+      to: [{ type: 'currency' }],
       description: 'Currency for this travel leg’s cost.',
     }),
   ],
   preview: {
-    select: {title: 'title', subtitle: 'travelType.label'},
-    prepare: ({title, subtitle}) => ({title: title ?? 'Travel', subtitle}),
+    select: { title: 'title', subtitle: 'travelType.label' },
+    prepare: ({ title, subtitle }) => ({ title: title ?? 'Travel', subtitle }),
   },
 })

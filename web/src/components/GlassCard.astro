@@ -1,29 +1,29 @@
 ---
-import { urlFor } from "../utils/sanity";
-import { priceText, priceTier, type Currency } from "../utils/cost";
-import { countStops } from "../utils/stops";
+import { urlFor } from '../utils/sanity'
+import { priceText, priceTier, type Currency } from '../utils/cost'
+import { countStops } from '../utils/stops'
 
 interface Props {
-  entry: any;
-  hrefBase?: string;
+  entry: any
+  hrefBase?: string
   /** Calculated trip total (sum of stop/travel costs). Omit for non-itinerary cards. */
-  totalCost?: number;
+  totalCost?: number
   /** Trip display currency (first priced stop's currency). */
-  tripCurrency?: Currency | null;
+  tripCurrency?: Currency | null
 }
-const { entry, hrefBase = "/itineraries", totalCost, tripCurrency = null } = Astro.props;
-const dest = entry.destination;
-const stopCount = countStops(entry.stopCosts);
-const destSlug = dest?.slug?.current ?? "unknown";
+const { entry, hrefBase = '/itineraries', totalCost, tripCurrency = null } = Astro.props
+const dest = entry.destination
+const stopCount = countStops(entry.stopCosts)
+const destSlug = dest?.slug?.current ?? 'unknown'
 
 const img = entry.mainImage
-  ? urlFor(entry.mainImage).width(800).height(560).fit("crop").auto("format").url()
-  : null;
+  ? urlFor(entry.mainImage).width(800).height(560).fit('crop').auto('format').url()
+  : null
 
-const tier = totalCost != null && totalCost > 0 ? priceTier(totalCost, tripCurrency) : null;
-const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
-
+const tier = totalCost != null && totalCost > 0 ? priceTier(totalCost, tripCurrency) : null
+const showTier = tier != null && Boolean(tripCurrency?.icon?.svg)
 ---
+
 <article
   class="glass-card group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-sm shadow-sea-900/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-sea-900/10"
   data-destination={destSlug}
@@ -33,14 +33,14 @@ const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
       img ? (
         <img
           src={img}
-          alt={entry.title ?? ""}
+          alt={entry.title ?? ''}
           loading="lazy"
           class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (
         <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sea-200 to-sea-400">
           <span class="font-display text-2xl font-semibold text-white/80">
-            {dest?.city ?? "A Day In"}
+            {dest?.city ?? 'A Day In'}
           </span>
         </div>
       )
@@ -56,35 +56,81 @@ const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
       }
       {
         entry.audiences && entry.audiences.length > 0 && (
-          <div data-scroll-chips class="pointer-events-auto ml-auto flex max-w-1/2 min-w-0 items-center gap-1">
-            <button type="button" data-sc-prev aria-label="Scroll audience left" class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam">
-              <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          <div
+            data-scroll-chips
+            class="pointer-events-auto ml-auto flex max-w-1/2 min-w-0 items-center gap-1"
+          >
+            <button
+              type="button"
+              data-sc-prev
+              aria-label="Scroll audience left"
+              class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam"
+            >
+              <svg
+                class="h-2.5 w-2.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
             </button>
-            <div data-sc-track class="flex min-w-0 gap-1.5 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div
+              data-sc-track
+              class="flex min-w-0 [scrollbar-width:none] gap-1.5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
               {entry.audiences.map((a: any) => (
                 <span
                   class="inline-flex shrink-0 items-center gap-1 rounded-full border border-sea-300 bg-sea-100/95 px-2 py-0.5 font-display text-[11px] font-semibold text-sea-700 backdrop-blur-sm"
                   title={a.longName ?? a.label}
                 >
                   {a.icon?.svg && (
-                    <span class="inline-block h-3 w-3 shrink-0 text-sea-600 [&>svg]:h-3 [&>svg]:w-3" set:html={a.icon.svg} />
+                    <span
+                      class="inline-block h-3 w-3 shrink-0 text-sea-600 [&>svg]:h-3 [&>svg]:w-3"
+                      set:html={a.icon.svg}
+                    />
                   )}
                   {a.label}
                 </span>
               ))}
             </div>
-            <button type="button" data-sc-next aria-label="Scroll audience right" class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam">
-              <svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+            <button
+              type="button"
+              data-sc-next
+              aria-label="Scroll audience right"
+              class="hidden shrink-0 rounded-full border border-sea-300 bg-foam/80 p-0.5 text-sea-700 backdrop-blur-sm transition hover:bg-foam"
+            >
+              <svg
+                class="h-2.5 w-2.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </button>
           </div>
         )
       }
     </div>
     <!-- Dark underlay — guarantees contrast on bright images -->
-    <div class="absolute w-full bottom-0 h-1/2 rounded-xl bg-gradient-to-t from-sea-900/55 to-transparent pointer-events-none"></div>
+    <div
+      class="pointer-events-none absolute bottom-0 h-1/2 w-full rounded-xl bg-gradient-to-t from-sea-900/55 to-transparent"
+    >
+    </div>
     <!-- Bordered glass panel for text — same aesthetic as the header pill -->
-    <div class="absolute inset-x-3 bottom-3 rounded-xl border border-white/25 bg-foam/60 backdrop-blur-md p-4">
-      <h3 class="font-display text-lg font-semibold leading-snug text-sea-800 group-hover:underline">
+    <div
+      class="absolute inset-x-3 bottom-3 rounded-xl border border-white/25 bg-foam/60 p-4 backdrop-blur-md"
+    >
+      <h3
+        class="font-display text-lg leading-snug font-semibold text-sea-800 group-hover:underline"
+      >
         {entry.title}
       </h3>
       {entry.excerpt && <p class="mt-1 line-clamp-2 text-sm text-sea-700/85">{entry.excerpt}</p>}
@@ -92,17 +138,29 @@ const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
         (entry.duration || stopCount > 0 || (totalCost != null && totalCost > 0)) && (
           <p class="mt-2 flex items-center gap-2 text-xs font-medium text-sea-600">
             {entry.duration && <span>{entry.duration}</span>}
-            {stopCount > 0 && <span>{entry.duration && "· "}{stopCount} stops</span>}
+            {stopCount > 0 && (
+              <span>
+                {entry.duration && '· '}
+                {stopCount} stops
+              </span>
+            )}
             {totalCost != null && totalCost > 0 && (
               <span class="inline-flex items-center">
                 {(entry.duration || stopCount > 0) && <span class="text-sea-400">·</span>}
-                {showTier && Array.from({length: tier ?? 0}).map(() => (
-                  <span class="inline-block h-3 w-3 [&>svg]:h-3 [&>svg]:w-3 text-sea-600" set:html={tripCurrency?.icon?.svg ?? ''} />
-                ))}
+                {showTier &&
+                  Array.from({ length: tier ?? 0 }).map(() => (
+                    <span
+                      class="inline-block h-3 w-3 text-sea-600 [&>svg]:h-3 [&>svg]:w-3"
+                      set:html={tripCurrency?.icon?.svg ?? ''}
+                    />
+                  ))}
                 {!showTier && (
                   <>
                     {tripCurrency?.icon?.svg && (
-                      <span class="inline-block h-3 w-3 [&>svg]:h-3 [&>svg]:w-3 text-sea-600" set:html={tripCurrency.icon.svg} />
+                      <span
+                        class="inline-block h-3 w-3 text-sea-600 [&>svg]:h-3 [&>svg]:w-3"
+                        set:html={tripCurrency.icon.svg}
+                      />
                     )}
                     {priceText(totalCost, tripCurrency)}
                   </>
@@ -117,6 +175,6 @@ const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
 </article>
 
 <script>
-  import { initAllScrollChips } from "../utils/scrollChips";
-  initAllScrollChips();
+  import { initAllScrollChips } from '../utils/scrollChips'
+  initAllScrollChips()
 </script>

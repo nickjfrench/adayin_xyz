@@ -1,53 +1,53 @@
 ---
-import { PortableText, toPlainText } from 'astro-portabletext';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getItinerary, getItinerarySlugs, urlFor } from '../../utils/sanity';
-import { priceText, sumCosts, tripCurrencyFrom, priceTier } from '../../utils/cost';
-import { countStops } from '../../utils/stops';
-import { isMapFocusable } from '../../utils/mapFocus';
-import StopCard from '../../components/StopCard.astro';
-import PortableLink from '../../components/PortableLink.astro';
-import ItineraryStopModal from '../../components/ItineraryStopModal.svelte';
-import ItineraryMap from '../../components/ItineraryMap.svelte';
+import { PortableText, toPlainText } from 'astro-portabletext'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getItinerary, getItinerarySlugs, urlFor } from '../../utils/sanity'
+import { priceText, sumCosts, tripCurrencyFrom, priceTier } from '../../utils/cost'
+import { countStops } from '../../utils/stops'
+import { isMapFocusable } from '../../utils/mapFocus'
+import StopCard from '../../components/StopCard.astro'
+import PortableLink from '../../components/PortableLink.astro'
+import ItineraryStopModal from '../../components/ItineraryStopModal.svelte'
+import ItineraryMap from '../../components/ItineraryMap.svelte'
 
 export async function getStaticPaths() {
   // Queries used inside getStaticPaths must live here — module-scope consts
   // are not visible in this hoisted context.
-  return await getItinerarySlugs();
+  return await getItinerarySlugs()
 }
 
-const { slug } = Astro.params;
-const post = await getItinerary(slug as string);
+const { slug } = Astro.params
+const post = await getItinerary(slug as string)
 
 if (!post) {
-  return Astro.redirect('/itineraries');
+  return Astro.redirect('/itineraries')
 }
 
-const dest = post.destination;
+const dest = post.destination
 const date = post._createdAt
   ? new Date(post._createdAt).toLocaleDateString('en-AU', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     })
-  : null;
+  : null
 
 const testedOn = post.testedOn
   ? new Date(post.testedOn).toLocaleDateString('en-AU', {
       month: 'long',
       year: 'numeric',
     })
-  : null;
+  : null
 
-const stops = post.stops ?? [];
-const stopCount = countStops(stops);
+const stops = post.stops ?? []
+const stopCount = countStops(stops)
 
-const tripTotal = sumCosts(stops);
-const tripCurrency = tripCurrencyFrom(stops);
-const tier = tripTotal > 0 ? priceTier(tripTotal, tripCurrency) : null;
-const showTier = tier != null && Boolean(tripCurrency?.icon?.svg);
+const tripTotal = sumCosts(stops)
+const tripCurrency = tripCurrencyFrom(stops)
+const tier = tripTotal > 0 ? priceTier(tripTotal, tripCurrency) : null
+const showTier = tier != null && Boolean(tripCurrency?.icon?.svg)
 
-const filtered = stops.filter(Boolean);
+const filtered = stops.filter(Boolean)
 
 // Prepare stop data with resolved image URLs for the modal (urlFor is build-time only).
 // structuredClone: astro-portabletext mutates Portable Text blocks in place during SSR
@@ -59,9 +59,12 @@ const modalStops = filtered.map((s) => ({
     ? urlFor(s.image).width(1200).height(514).fit('crop').auto('format').url()
     : undefined,
   // StopModal only renders feature labels — geometry is already serialized
-  // slim in mapStops, so vertices don't ship twice in island props.
-  mapFeatures: (s.mapFeatures ?? []).filter((f) => f.label).map((f) => ({ label: f.label })),
-}));
+  // slim in mapStops, so vertices don't ship twice in island props. `_key` stays
+  // because the modal renders the list keyed.
+  mapFeatures: (s.mapFeatures ?? [])
+    .filter((f) => f.label)
+    .map((f) => ({ _key: f._key, label: f.label })),
+}))
 
 // Slim items for the route map island — index-aligned with modalStops/StopCard
 // (all three derive from `filtered`, so indices match StopCard's data-stop-index).
@@ -78,29 +81,29 @@ const mapStops = filtered.map((s) => ({
     radius: f.radius ?? null,
     points: (f.points ?? []).map((p) => ({ lat: p.lat, lng: p.lng })),
   })),
-}));
-const hasMapPoints = mapStops.some((s) => s.location || s.features.length > 0);
+}))
+const hasMapPoints = mapStops.some((s) => s.location || s.features.length > 0)
 
 // Build-time feature flag: the route map renders unless this env var says
 // otherwise (PUBLIC_SHOW_ITINERARY_MAP=false | 0 | off). import.meta.env is inlined
 // by Vite at build, so with the flag off the map section — its client:only
 // island, JS chunk, and the "Show on Map" buttons — never reach the output.
-const showItineraryMap = !/^(false|0|off)$/i.test(import.meta.env.PUBLIC_SHOW_ITINERARY_MAP ?? '');
+const showItineraryMap = !/^(false|0|off)$/i.test(import.meta.env.PUBLIC_SHOW_ITINERARY_MAP ?? '')
 
 // Stops the map island can fly to — index-aligned with mapStops/filtered; gates
 // the "Show on Map" button on each card. With the map hidden, no buttons.
-const mapFocusTargets = showItineraryMap ? mapStops.map(isMapFocusable) : mapStops.map(() => false);
+const mapFocusTargets = showItineraryMap ? mapStops.map(isMapFocusable) : mapStops.map(() => false)
 
 const hero = post.mainImage
   ? urlFor(post.mainImage).width(1600).height(900).fit('crop').auto('format').url()
-  : null;
+  : null
 
 const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((item) => ({
   ...structuredClone(item),
   imageUrl: item.image
     ? urlFor(item.image).width(1200).height(514).fit('crop').auto('format').url()
     : undefined,
-}));
+}))
 ---
 
 <BaseLayout title={post.title} description={post.excerpt} headerVariant="light">
@@ -119,12 +122,12 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
         </div>
       </div>
 
-      <div class="mx-auto w-full max-w-4xl px-5 pb-16 pt-32 sm:px-8">
+      <div class="mx-auto w-full max-w-4xl px-5 pt-32 pb-16 sm:px-8">
         {
           dest && (
             <a
               href={`/itineraries?dest=${dest.slug?.current}`}
-              class="inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-3 py-1 font-display text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/20 transition hover:bg-sea-500"
+              class="inline-flex items-center gap-1.5 rounded-full bg-sea-500/95 px-3 py-1 font-display text-xs font-semibold tracking-wide text-white uppercase ring-1 ring-white/20 transition hover:bg-sea-500"
             >
               A day in {dest.city}
               {dest.countryShort && <span class="text-sea-100">· {dest.countryShort}</span>}
@@ -154,7 +157,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
               </button>
               <div
                 data-sc-track
-                class="flex gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                class="flex [scrollbar-width:none] gap-2 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               >
                 {post.audiences.map((a) => (
                   <span
@@ -193,7 +196,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
           )
         }
         <h1
-          class="mt-4 font-display text-3xl font-semibold leading-tight text-white drop-shadow-md sm:text-5xl"
+          class="mt-4 font-display text-3xl leading-tight font-semibold text-white drop-shadow-md sm:text-5xl"
         >
           {post.title}
         </h1>
@@ -233,13 +236,13 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
       {
         tripTotal > 0 ? (
           <span
-            class="inline-flex items-center whitespace-nowrap font-medium text-sea-700"
+            class="inline-flex items-center font-medium whitespace-nowrap text-sea-700"
             title="Per person total"
           >
             {showTier &&
               Array.from({ length: tier ?? 0 }).map(() => (
                 <span
-                  class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sea-600"
+                  class="inline-block h-3.5 w-3.5 text-sea-600 [&>svg]:h-full [&>svg]:w-full"
                   set:html={tripCurrency?.icon?.svg ?? ''}
                 />
               ))}
@@ -247,7 +250,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
               <>
                 {tripCurrency?.icon?.svg && (
                   <span
-                    class="inline-block h-3.5 w-3.5 [&>svg]:h-full [&>svg]:w-full text-sea-600"
+                    class="inline-block h-3.5 w-3.5 text-sea-600 [&>svg]:h-full [&>svg]:w-full"
                     set:html={tripCurrency.icon.svg}
                   />
                 )}
@@ -256,16 +259,16 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
             )}
           </span>
         ) : (
-          <span class="whitespace-nowrap font-medium text-sea-600">Free</span>
+          <span class="font-medium whitespace-nowrap text-sea-600">Free</span>
         )
       }
     </div>
 
     <!-- Body -->
-    <div class="mx-auto max-w-4xl flex flex-col gap-10 px-5 pt-8 pb-16 sm:px-8">
+    <div class="mx-auto flex max-w-4xl flex-col gap-10 px-5 pt-8 pb-16 sm:px-8">
       {
         post.excerpt && (
-          <p class="border-l-4 border-sand-300 pl-4 text-lg italic text-sea-700">{post.excerpt}</p>
+          <p class="border-l-4 border-sand-300 pl-4 text-lg text-sea-700 italic">{post.excerpt}</p>
         )
       }
 
@@ -285,7 +288,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
             <h2 class="mb-6 font-display text-2xl font-semibold text-sea-800">
               Our day, stop by stop
             </h2>
-            <p class="-mt-4 mb-6 italic text-xs text-sand-500">All prices are per person</p>
+            <p class="-mt-4 mb-6 text-xs text-sand-500 italic">All prices are per person</p>
             <ol class="flex flex-col">
               {filtered.map((stop, i) => (
                 <StopCard stop={stop} index={i} mapTarget={mapFocusTargets[i]} />
@@ -354,7 +357,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
                     <div class="absolute inset-0 bg-gradient-to-br from-sea-100 to-sea-200" />
                   )}
                   <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-sea-900/50 to-transparent p-3 pt-8">
-                    <h3 class="font-display text-sm font-semibold leading-snug text-white drop-shadow-sm group-hover:underline">
+                    <h3 class="font-display text-sm leading-snug font-semibold text-white drop-shadow-sm group-hover:underline">
                       {item.title}
                     </h3>
                     {item.description && (
@@ -376,8 +379,9 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
         <a
           href="/itineraries"
           class="font-display text-sm font-medium text-sea-600 hover:text-sea-500"
-          >← All itineraries</a
         >
+          ← All itineraries
+        </a>
         {
           dest && (
             <a
@@ -399,7 +403,7 @@ const modalRecommendations = (post.recommendations ?? []).filter(Boolean).map((i
   </article>
 
   <script>
-    import { initAllScrollChips } from '../../utils/scrollChips';
-    initAllScrollChips();
+    import { initAllScrollChips } from '../../utils/scrollChips'
+    initAllScrollChips()
   </script>
 </BaseLayout>

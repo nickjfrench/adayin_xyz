@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {SHAPE_NAMES} from '@adayin/map-core/core'
+import { defineType, defineField } from 'sanity'
+import { SHAPE_NAMES } from '@adayin/map-core/core'
 
 export const mapFeature = defineType({
   name: 'mapFeature',
@@ -18,7 +18,7 @@ export const mapFeature = defineType({
       type: 'string',
       // SHAPE_NAMES is the single source of truth (registry in
       // components/map/shapes.ts) — no duplicated shape list here.
-      options: {list: [...SHAPE_NAMES]},
+      options: { list: [...SHAPE_NAMES] },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -36,13 +36,13 @@ export const mapFeature = defineType({
       name: 'points',
       title: 'Points',
       type: 'array',
-      of: [{type: 'geopoint'}],
+      of: [{ type: 'geopoint' }],
       description: 'Vertices — used by polygon.',
     }),
   ],
   preview: {
-    select: {label: 'label', shape: 'shape'},
-    prepare: ({label, shape}: {label?: string; shape?: string}) => ({
+    select: { label: 'label', shape: 'shape' },
+    prepare: ({ label, shape }: { label?: string; shape?: string }) => ({
       title: label || 'Unnamed feature',
       subtitle: shape,
     }),
@@ -53,5 +53,5 @@ export const mapFeatures = defineType({
   name: 'mapFeatures',
   title: 'Map features',
   type: 'array',
-  of: [{type: 'mapFeature'}],
+  of: [{ type: 'mapFeature' }],
 })
