@@ -1,6 +1,6 @@
-import {definePlugin} from 'sanity'
-import type {InputProps, ObjectInputProps, SchemaType} from 'sanity'
-import {LocationFieldInput, StopMapDocumentInput} from './StopMapInput'
+import { definePlugin } from 'sanity'
+import type { InputProps, ObjectInputProps, SchemaType } from 'sanity'
+import { LocationFieldInput, StopMapDocumentInput } from './StopMapInput'
 
 export interface MapInputConfig {
   googlePlacesApiKey?: string

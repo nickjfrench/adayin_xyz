@@ -1,10 +1,10 @@
-import { featureIsDrawable, type MapFeature } from '@adayin/map-core/core';
+import { featureIsDrawable, type MapFeature } from '@adayin/map-core/core'
 
 /** The slice of a map item this predicate reads — [slug].astro's `mapStops`. */
 export interface MapFocusItem {
-  _type?: string;
-  location?: { lat?: number | null; lng?: number | null } | null;
-  features?: MapFeature[] | null;
+  _type?: string
+  location?: { lat?: number | null; lng?: number | null } | null
+  features?: MapFeature[] | null
 }
 
 /**
@@ -19,8 +19,8 @@ export interface MapFocusItem {
  * MapLibre), and importing either during SSR would crash the build.
  */
 export function isMapFocusable(item?: MapFocusItem | null): boolean {
-  if (!item || item._type === 'travel') return false;
-  const { lat, lng } = item.location ?? {};
-  if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) return true;
-  return (item.features ?? []).some(featureIsDrawable);
+  if (!item || item._type === 'travel') return false
+  const { lat, lng } = item.location ?? {}
+  if (lat != null && lng != null && Number.isFinite(lat) && Number.isFinite(lng)) return true
+  return (item.features ?? []).some(featureIsDrawable)
 }

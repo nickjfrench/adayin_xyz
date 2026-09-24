@@ -12,46 +12,56 @@
  * hidden when the track has no horizontal overflow. Idempotent.
  */
 export function initScrollChips(container: HTMLElement): () => void {
-  const trackEl = container.querySelector<HTMLElement>('[data-sc-track]');
-  const prevEl = container.querySelector<HTMLElement>('[data-sc-prev]');
-  const nextEl = container.querySelector<HTMLElement>('[data-sc-next]');
-  if (!trackEl || !prevEl || !nextEl) return () => {};
+  const trackEl = container.querySelector<HTMLElement>('[data-sc-track]')
+  const prevEl = container.querySelector<HTMLElement>('[data-sc-prev]')
+  const nextEl = container.querySelector<HTMLElement>('[data-sc-next]')
+  if (!trackEl || !prevEl || !nextEl) return () => {}
 
   // Bound after the guard: the closures below don't inherit its narrowing.
-  const track = trackEl;
-  const prev = prevEl;
-  const next = nextEl;
+  const track = trackEl
+  const prev = prevEl
+  const next = nextEl
 
-  const step = () => Math.max(track.clientWidth * 0.8, 80);
+  const step = () => Math.max(track.clientWidth * 0.8, 80)
 
   function update() {
-    const max = track.scrollWidth - track.clientWidth;
-    const canScroll = max > 1;
-    prev.classList.toggle('hidden', !(canScroll && track.scrollLeft > 0));
-    next.classList.toggle('hidden', !(canScroll && track.scrollLeft < max - 1));
+    const max = track.scrollWidth - track.clientWidth
+    const canScroll = max > 1
+    prev.classList.toggle('hidden', !(canScroll && track.scrollLeft > 0))
+    next.classList.toggle('hidden', !(canScroll && track.scrollLeft < max - 1))
   }
 
-  const onPrev = (e: Event) => { e.preventDefault(); e.stopPropagation(); track.scrollBy({ left: -step(), behavior: 'smooth' }); };
-  const onNext = (e: Event) => { e.preventDefault(); e.stopPropagation(); track.scrollBy({ left: step(), behavior: 'smooth' }); };
+  const onPrev = (e: Event) => {
+    e.preventDefault()
+    e.stopPropagation()
+    track.scrollBy({ left: -step(), behavior: 'smooth' })
+  }
+  const onNext = (e: Event) => {
+    e.preventDefault()
+    e.stopPropagation()
+    track.scrollBy({ left: step(), behavior: 'smooth' })
+  }
 
-  prev.addEventListener('click', onPrev);
-  next.addEventListener('click', onNext);
-  track.addEventListener('scroll', update, { passive: true });
-  const ro = new ResizeObserver(update);
-  ro.observe(track);
-  update();
+  prev.addEventListener('click', onPrev)
+  next.addEventListener('click', onNext)
+  track.addEventListener('scroll', update, { passive: true })
+  const ro = new ResizeObserver(update)
+  ro.observe(track)
+  update()
 
   return () => {
-    prev.removeEventListener('click', onPrev);
-    next.removeEventListener('click', onNext);
-    track.removeEventListener('scroll', update);
-    ro.disconnect();
-  };
+    prev.removeEventListener('click', onPrev)
+    next.removeEventListener('click', onNext)
+    track.removeEventListener('scroll', update)
+    ro.disconnect()
+  }
 }
 
 export function initAllScrollChips(): void {
-  document.querySelectorAll<HTMLElement>('[data-scroll-chips]:not([data-sc-initialized])').forEach((c) => {
-    c.setAttribute('data-sc-initialized', '');
-    initScrollChips(c);
-  });
+  document
+    .querySelectorAll<HTMLElement>('[data-scroll-chips]:not([data-sc-initialized])')
+    .forEach((c) => {
+      c.setAttribute('data-sc-initialized', '')
+      initScrollChips(c)
+    })
 }

@@ -1,4 +1,4 @@
-import {defineType, defineField, defineArrayMember} from 'sanity'
+import { defineType, defineField, defineArrayMember } from 'sanity'
 
 export const article = defineType({
   name: 'article',
@@ -15,7 +15,7 @@ export const article = defineType({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {source: 'title'},
+      options: { source: 'title' },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -29,20 +29,20 @@ export const article = defineType({
       name: 'mainImage',
       title: 'Cover image',
       type: 'image',
-      options: {hotspot: true},
+      options: { hotspot: true },
     }),
     defineField({
       name: 'destination',
       title: 'Destination',
       type: 'reference',
-      to: [{type: 'destination'}],
+      to: [{ type: 'destination' }],
       description: 'Optional — attach this article to a destination.',
     }),
     defineField({
       name: 'post',
       title: 'Itinerary',
       type: 'reference',
-      to: [{type: 'post'}],
+      to: [{ type: 'post' }],
       description: 'Optional — attach this article to a day itinerary.',
     }),
     defineField({
@@ -50,15 +50,20 @@ export const article = defineType({
       title: 'Body',
       type: 'array',
       of: [
-        defineArrayMember({type: 'block'}),
+        defineArrayMember({ type: 'block' }),
         defineArrayMember({
           type: 'image',
           name: 'bodyImage',
           title: 'Image',
-          options: {hotspot: true},
+          options: { hotspot: true },
           fields: [
-            defineField({name: 'alt', title: 'Alt text', type: 'string', description: 'Required for accessibility.'}),
-            defineField({name: 'caption', title: 'Caption', type: 'string'}),
+            defineField({
+              name: 'alt',
+              title: 'Alt text',
+              type: 'string',
+              description: 'Required for accessibility.',
+            }),
+            defineField({ name: 'caption', title: 'Caption', type: 'string' }),
           ],
         }),
       ],
@@ -66,6 +71,6 @@ export const article = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', subtitle: 'destination.city', media: 'mainImage'},
+    select: { title: 'title', subtitle: 'destination.city', media: 'mainImage' },
   },
 })

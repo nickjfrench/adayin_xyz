@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity'
 
 /**
  * Multipart location: pin coords + the address label and Maps URL the web
@@ -14,8 +14,8 @@ export const location = defineType({
   title: 'Location',
   type: 'object',
   fields: [
-    defineField({name: 'lat', title: 'Latitude', type: 'number'}),
-    defineField({name: 'lng', title: 'Longitude', type: 'number'}),
+    defineField({ name: 'lat', title: 'Latitude', type: 'number' }),
+    defineField({ name: 'lng', title: 'Longitude', type: 'number' }),
     defineField({
       name: 'formattedAddress',
       title: 'Formatted address',
@@ -26,12 +26,21 @@ export const location = defineType({
       name: 'mapsUri',
       title: 'Maps URL',
       type: 'url',
-      description: 'Where the Maps link points — place URL from search, or a lat,lng query URL for a manual pin.',
+      description:
+        'Where the Maps link points — place URL from search, or a lat,lng query URL for a manual pin.',
     }),
   ],
   preview: {
-    select: {formattedAddress: 'formattedAddress', lat: 'lat', lng: 'lng'},
-    prepare: ({formattedAddress, lat, lng}: {formattedAddress?: string; lat?: number; lng?: number}) => ({
+    select: { formattedAddress: 'formattedAddress', lat: 'lat', lng: 'lng' },
+    prepare: ({
+      formattedAddress,
+      lat,
+      lng,
+    }: {
+      formattedAddress?: string
+      lat?: number
+      lng?: number
+    }) => ({
       title: formattedAddress || (lat != null && lng != null ? `${lat}, ${lng}` : 'Not set'),
     }),
   },
@@ -57,8 +66,8 @@ export const legacyAddressField = defineField({
   title: 'Address (legacy)',
   type: 'string',
   description: 'Superseded by Location — kept until the location backfill has run.',
-  deprecated: {reason: 'Use the Location field; this string is migrated into it.'},
+  deprecated: { reason: 'Use the Location field; this string is migrated into it.' },
   readOnly: true,
-  hidden: ({value}) => value === undefined,
+  hidden: ({ value }) => value === undefined,
   initialValue: undefined,
 })

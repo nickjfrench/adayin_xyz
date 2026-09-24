@@ -1,0 +1,10 @@
+# Build output and generated files
+web/dist/
+web/.astro/
+studio/dist/
+studio/.sanity/
+studio/backups/
+
+# Lockfile and build metadata
+pnpm-lock.yaml
+*.tsbuildinfo

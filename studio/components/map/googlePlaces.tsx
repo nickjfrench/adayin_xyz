@@ -1,8 +1,8 @@
-import {useEffect, useRef, useState} from 'react'
-import {Map as MapLibreMap} from 'maplibre-gl'
-import {Button, Card, Flex, Stack, Text} from '@sanity/ui'
-import {CloseIcon} from '@sanity/icons/Close'
-import {distanceMeters} from '@adayin/map-core/geojson'
+import { useEffect, useRef, useState } from 'react'
+import { Map as MapLibreMap } from 'maplibre-gl'
+import { Button, Card, Flex, Stack, Text } from '@sanity/ui'
+import { CloseIcon } from '@sanity/icons/Close'
+import { distanceMeters } from '@adayin/map-core/geojson'
 
 let loader: Promise<void> | null = null
 
@@ -43,8 +43,8 @@ const MAX_BIAS_RADIUS_M = 50_000
  * and a way to keep overlay pointer events out of the map's own handlers.
  */
 export interface MapViewport {
-  getCenter(): {lat: number; lng: number}
-  getNorthEast(): {lat: number; lng: number}
+  getCenter(): { lat: number; lng: number }
+  getNorthEast(): { lat: number; lng: number }
   onMoveEnd(listener: () => void): () => void
   getContainer(): HTMLElement
   /** Stops an overlay's pointer, click and scroll events from reaching the map. */
@@ -83,11 +83,11 @@ export function mapViewport(map: MapLibreMap): MapViewport {
   return {
     getCenter: () => {
       const center = map.getCenter()
-      return {lat: center.lat, lng: center.lng}
+      return { lat: center.lat, lng: center.lng }
     },
     getNorthEast: () => {
       const northEast = map.getBounds().getNorthEast()
-      return {lat: northEast.lat, lng: northEast.lng}
+      return { lat: northEast.lat, lng: northEast.lng }
     },
     onMoveEnd: (listener) => {
       map.on('moveend', listener)
@@ -108,7 +108,7 @@ function viewportBias(viewport: MapViewport): google.maps.CircleLiteral {
   const center = viewport.getCenter()
   const radius = distanceMeters(center, viewport.getNorthEast())
   return {
-    center: {lat: center.lat, lng: center.lng},
+    center: { lat: center.lat, lng: center.lng },
     radius: Math.min(MAX_BIAS_RADIUS_M, Math.max(MIN_BIAS_RADIUS_M, radius)),
   }
 }
@@ -127,7 +127,7 @@ export function PlacesSearch({
   apiKey: string
   /** Map the search overlays: its live centre and scale anchor predictions. */
   viewport: MapViewport
-  actions: Array<{label: string; onPick: (place: SelectedPlace) => void}>
+  actions: Array<{ label: string; onPick: (place: SelectedPlace) => void }>
 }) {
   const [ready, setReady] = useState(false)
   // A selected place waiting for the user to pick a destination action.
@@ -244,7 +244,7 @@ export function PlacesSearch({
                 displayName: place.displayName ?? null,
                 mapsUri:
                   place.googleMapsURI ??
-                  (place as {googleMapsUri?: string | null}).googleMapsUri ??
+                  (place as { googleMapsUri?: string | null }).googleMapsUri ??
                   null,
               })
             } catch (err) {
@@ -276,7 +276,7 @@ search, zoom and draw toolbars stay usable. */
           >
             <Stack gap={3}>
               <Flex align="flex-start" gap={2}>
-                <Stack gap={2} style={{flex: 1, minWidth: 0}}>
+                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
                   <Text size={2} weight="semibold">
                     {placeName}
                   </Text>

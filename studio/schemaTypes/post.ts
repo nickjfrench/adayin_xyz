@@ -1,4 +1,4 @@
-import {defineType, defineField, defineArrayMember} from 'sanity'
+import { defineType, defineField, defineArrayMember } from 'sanity'
 
 export const post = defineType({
   name: 'post',
@@ -15,14 +15,14 @@ export const post = defineType({
     defineField({
       name: 'slug',
       type: 'slug',
-      options: {source: 'title'},
+      options: { source: 'title' },
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'destination',
       title: 'Destination',
       type: 'reference',
-      to: [{type: 'destination'}],
+      to: [{ type: 'destination' }],
       description: 'Which off-the-beaten-track place this day belongs to.',
       validation: (rule) => rule.required(),
     }),
@@ -43,7 +43,7 @@ export const post = defineType({
       name: 'mainImage',
       title: 'Cover image',
       type: 'image',
-      options: {hotspot: true},
+      options: { hotspot: true },
     }),
     defineField({
       name: 'duration',
@@ -72,10 +72,10 @@ export const post = defineType({
         defineArrayMember({
           type: 'reference',
           to: [
-            {type: 'stop'},
-            {type: 'travel'},
-            {type: 'startLocation'},
-            {type: 'endLocation'},
+            { type: 'stop' },
+            { type: 'travel' },
+            { type: 'startLocation' },
+            { type: 'endLocation' },
           ],
         }),
       ],
@@ -85,27 +85,29 @@ export const post = defineType({
       title: 'Closing notes',
       type: 'array',
       description: 'Optional extra notes — getting there, where to stay, what to skip.',
-      of: [{type: 'block'}],
+      of: [{ type: 'block' }],
     }),
     defineField({
       name: 'recommendations',
       title: 'Recommendations',
       type: 'array',
       description: 'Optional extra links for the reader to see more.',
-      of: [defineArrayMember({
-        type: 'reference',
-        to: [{type: 'stop'}],
-      })],
+      of: [
+        defineArrayMember({
+          type: 'reference',
+          to: [{ type: 'stop' }],
+        }),
+      ],
     }),
     defineField({
       name: 'audiences',
       title: 'Audiences',
       type: 'array',
       description: 'Who this day suits, e.g. DINK, families, mobility-assisted.',
-      of: [defineArrayMember({ type: 'reference', to: [{type: 'audience'}] })],
+      of: [defineArrayMember({ type: 'reference', to: [{ type: 'audience' }] })],
     }),
   ],
   preview: {
-    select: {title: 'title', subtitle: 'destination.city', media: 'mainImage'},
+    select: { title: 'title', subtitle: 'destination.city', media: 'mainImage' },
   },
 })

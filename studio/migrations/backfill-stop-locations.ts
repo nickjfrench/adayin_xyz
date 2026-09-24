@@ -1,5 +1,5 @@
-import {defineMigration, at, set, type NodePatch} from 'sanity/migrate'
-import {mapsQueryUrl} from '@adayin/map-core/core'
+import { defineMigration, at, set, type NodePatch } from 'sanity/migrate'
+import { mapsQueryUrl } from '@adayin/map-core/core'
 
 /**
  * Places (New) Text Search — the REST twin of the studio map search
@@ -26,7 +26,7 @@ interface PlaceMatch {
 interface PlacesResponse {
   places?: Array<{
     formattedAddress?: string
-    location?: {latitude?: number; longitude?: number}
+    location?: { latitude?: number; longitude?: number }
     googleMapsUri?: string
   }>
 }
@@ -63,7 +63,7 @@ function coordPart(
  * latitude; without them latitude comes first, swapped only when the first
  * number cannot be one (> 90°) — how a longitude-first string reads.
  */
-function coordPair(a: CoordPart | null, b: CoordPart | null): {lat: number; lng: number} | null {
+function coordPair(a: CoordPart | null, b: CoordPart | null): { lat: number; lng: number } | null {
   if (!a || !b || (a.axis != null && a.axis === b.axis)) return null
   const swapped =
     a.axis === 'lng' ||
@@ -72,7 +72,7 @@ function coordPair(a: CoordPart | null, b: CoordPart | null): {lat: number; lng:
   const lat = swapped ? b : a
   const lng = swapped ? a : b
   if (Math.abs(lat.value) > 90 || Math.abs(lng.value) > 180) return null
-  return {lat: lat.value, lng: lng.value}
+  return { lat: lat.value, lng: lng.value }
 }
 
 // One half of a degrees/minutes/seconds pair (what Google Maps copies).
@@ -95,7 +95,7 @@ const DMS_PAIR = new RegExp(`^${dmsUnit('a')}(?:\\s*[,;]\\s*|\\s+)${dmsUnit('b')
 const DECIMAL_PAIR = new RegExp(`^${decimalUnit('a')}\\s*[,;]\\s*${decimalUnit('b')}$`, 'i')
 
 /** A coordinate address → lat/lng; null when the string is not one, so a place name can never half-match. */
-function parseLatLng(address: string): {lat: number; lng: number} | null {
+function parseLatLng(address: string): { lat: number; lng: number } | null {
   // Typographic primes/quotes are what a paste from a word processor carries.
   const text = address.trim().replace(/[’′]/g, "'").replace(/[”″]/g, '"')
   for (const re of [DMS_PAIR, DECIMAL_PAIR]) {
@@ -132,7 +132,7 @@ function searchPlace(address: string): Promise<PlaceMatch | null> {
           // Same three fields the studio map search fetches and stores.
           'X-Goog-FieldMask': 'places.location,places.formattedAddress,places.googleMapsUri',
         },
-        body: JSON.stringify({textQuery: address}),
+        body: JSON.stringify({ textQuery: address }),
       })
       if (!res.ok) {
         const detail = (await res.text()).slice(0, 300)
@@ -205,10 +205,10 @@ export default defineMigration({
       // the match only fills the fields the location doesn't already carry.
       // Half-set coords (API/import writes only) are not a pin.
       const existing = raw.location as
-        {lat?: number; lng?: number; formattedAddress?: string; mapsUri?: string} | undefined
+        { lat?: number; lng?: number; formattedAddress?: string; mapsUri?: string } | undefined
       const pin =
         existing?.lat != null && existing?.lng != null
-          ? {lat: existing.lat, lng: existing.lng}
+          ? { lat: existing.lat, lng: existing.lng }
           : null
 
       // A coordinate address is its own lookup — no search can improve on the
@@ -216,7 +216,7 @@ export default defineMigration({
       // stored pin wins over the parsed numbers, so the URL below is built from
       // the coords actually written.
       const parsed = parseLatLng(address)
-      const coords = parsed && {lat: pin?.lat ?? parsed.lat, lng: pin?.lng ?? parsed.lng}
+      const coords = parsed && { lat: pin?.lat ?? parsed.lat, lng: pin?.lng ?? parsed.lng }
       const match: PlaceMatch | null = coords
         ? {
             lat: coords.lat,

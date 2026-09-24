@@ -1,27 +1,27 @@
 ---
-import { urlFor } from "../utils/sanity";
+import { urlFor } from '../utils/sanity'
 
 interface Props {
-  destinations: any[];
+  destinations: any[]
 }
-const { destinations: rawDestinations } = Astro.props;
-const destinations = rawDestinations.filter((d: any) => (d.postCount ?? 0) > 0);
+const { destinations: rawDestinations } = Astro.props
+const destinations = rawDestinations.filter((d: any) => (d.postCount ?? 0) > 0)
 
 // Ocean gradient fallbacks used when a destination has no hero image yet.
 const gradients = [
-  "linear-gradient(135deg, #84c0bb 0%, #2f6d6a 100%)",
-  "linear-gradient(135deg, #b3d9d5 0%, #3d8884 100%)",
-  "linear-gradient(135deg, #cda66a 0%, #2f6d6a 100%)",
-  "linear-gradient(135deg, #57a39e 0%, #234746 100%)",
-];
+  'linear-gradient(135deg, #84c0bb 0%, #2f6d6a 100%)',
+  'linear-gradient(135deg, #b3d9d5 0%, #3d8884 100%)',
+  'linear-gradient(135deg, #cda66a 0%, #2f6d6a 100%)',
+  'linear-gradient(135deg, #57a39e 0%, #234746 100%)',
+]
 
 const layers = destinations.map((d, i) => ({
   slug: d.slug?.current,
   image: d.heroImage
-    ? urlFor(d.heroImage).width(2000).height(1100).fit("crop").auto("format").url()
+    ? urlFor(d.heroImage).width(2000).height(1100).fit('crop').auto('format').url()
     : null,
   gradient: gradients[i % gradients.length],
-}));
+}))
 ---
 
 <section id="hero-section" class="relative isolate flex min-h-[88vh] flex-col justify-center">
@@ -30,7 +30,7 @@ const layers = destinations.map((d, i) => ({
     {
       layers.map((l, i) => (
         <div
-          class="hero-bg absolute inset-0 bg-cover bg-center blur-[2px] opacity-0 transition-opacity duration-1000 ease-out"
+          class="hero-bg absolute inset-0 bg-cover bg-center opacity-0 blur-[2px] transition-opacity duration-1000 ease-out"
           data-index={i}
           style={`background-image: ${l.image ? `url('${l.image}')` : l.gradient};`}
         />
@@ -44,11 +44,14 @@ const layers = destinations.map((d, i) => ({
     <!-- Wash: lightens images for softer contrast -->
     <div class="absolute inset-0 bg-slate-800/25"></div>
     <!-- Scrim for text legibility -->
-    <div class="absolute inset-0 bg-gradient-to-b from-sea-900/35 via-sea-900/15 to-sea-900/55"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-sea-900/35 via-sea-900/15 to-sea-900/55">
+    </div>
   </div>
 
   <div class="mx-auto w-full max-w-6xl px-5 pt-24 sm:px-8">
-    <p class="mb-2 font-display text-sm font-medium uppercase tracking-[0.3em] text-white/80 drop-shadow">
+    <p
+      class="mb-2 font-display text-sm font-medium tracking-[0.3em] text-white/80 uppercase drop-shadow"
+    >
       Tested itineraries · off the beaten track
     </p>
 
@@ -64,11 +67,20 @@ const layers = destinations.map((d, i) => ({
           type="button"
           aria-haspopup="listbox"
           aria-expanded="false"
-          class="group inline-flex items-center gap-2 rounded-xl bg-sea-500/95 px-4 py-2 font-display text-3xl font-bold uppercase tracking-wide text-white shadow-lg shadow-sea-900/20 ring-1 ring-white/20 backdrop-blur-sm transition-all hover:bg-sea-500 sm:text-5xl"
+          class="group inline-flex items-center gap-2 rounded-xl bg-sea-500/95 px-4 py-2 font-display text-3xl font-bold tracking-wide text-white uppercase shadow-lg ring-1 shadow-sea-900/20 ring-white/20 backdrop-blur-sm transition-all hover:bg-sea-500 sm:text-5xl"
         >
-          <span id="dest-label">{destinations[0]?.city ?? "Somewhere"}</span>
-          <svg class="h-6 w-6 transition-transform group-aria-expanded:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9" />
+          <span id="dest-label">{destinations[0]?.city ?? 'Somewhere'}</span>
+          <svg
+            class="h-6 w-6 transition-transform group-aria-expanded:rotate-180"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </button>
 
@@ -76,7 +88,7 @@ const layers = destinations.map((d, i) => ({
           id="dest-menu"
           role="listbox"
           hidden
-          class="absolute left-0 top-full z-20 mt-2 max-h-72 w-64 overflow-auto rounded-xl border border-sea-100 bg-foam/95 p-2 shadow-xl shadow-sea-900/25 backdrop-blur-md"
+          class="absolute top-full left-0 z-20 mt-2 max-h-72 w-64 overflow-auto rounded-xl border border-sea-100 bg-foam/95 p-2 shadow-xl shadow-sea-900/25 backdrop-blur-md"
         >
           <li>
             <button
@@ -113,8 +125,8 @@ const layers = destinations.map((d, i) => ({
     </div>
 
     <p class="mt-5 max-w-md text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">
-      Day itineraries for destinations worth the detour. Pick a spot above to
-      filter, or let it wander.
+      Day itineraries for destinations worth the detour. Pick a spot above to filter, or let it
+      wander.
     </p>
 
     <a
@@ -122,7 +134,17 @@ const layers = destinations.map((d, i) => ({
       class="mt-8 inline-flex items-center gap-2 rounded-full bg-foam/90 px-5 py-2.5 font-display text-sm font-semibold text-sea-700 shadow-md transition hover:bg-white"
     >
       See the itineraries
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
     </a>
   </div>
 </section>

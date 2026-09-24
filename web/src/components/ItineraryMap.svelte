@@ -1,38 +1,38 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount } from 'svelte'
 
   /**
    * Ordered slim itinerary items; array index === index in the modal island's
    * stops array (both derive from the same filtered array in [slug].astro).
    * @type {import('../utils/itineraryMap').MapStopItem[]}
    */
-  let { stops = [] } = $props();
+  let { stops = [] } = $props()
 
-  let container;
-  let backdrop;
+  let container
+  let backdrop
   /** @type {import('maplibre-gl').Map | null} */
-  let map = $state(null);
-  let enlarged = $state(false);
+  let map = $state(null)
+  let enlarged = $state(false)
 
   // MapLibre is a client-only bundle, and most page views never reach this
   // section — so the renderer loads when the placeholder gets close (see the
   // IntersectionObserver below). One promise serves every caller: the observer,
   // "Show on Map" clicks, and unmount cleanup all await the same build.
-  let loaded = null;
-  let destroyed = false;
-  let retryTimer = null;
-  let autoRetryUsed = false;
-  const RETRY_DELAY_MS = 3000;
+  let loaded = null
+  let destroyed = false
+  let retryTimer = null
+  let autoRetryUsed = false
+  const RETRY_DELAY_MS = 3000
   function loadMap() {
     loaded ??= import('../utils/itineraryMap')
       .then(({ createItineraryMap }) => {
-        if (destroyed) return null;
-        const built = createItineraryMap(container, stops);
-        if (!built) return null;
-        map = built.map;
+        if (destroyed) return null
+        const built = createItineraryMap(container, stops)
+        if (!built) return null
+        map = built.map
         // The page may already be enlarged by the time the bundle lands.
-        if (enlarged) map.scrollZoom.enable();
-        return built;
+        if (enlarged) map.scrollZoom.enable()
+        return built
       })
       .catch((error) => {
         // A failed chunk request must not poison the memo — one delayed retry
@@ -41,18 +41,18 @@
         // progressive enhancement; the page reads fine without it. One automatic
         // retry only: a chunk that is gone for good (stale deploy) must not
         // re-fetch every RETRY_DELAY_MS for as long as the page stays open.
-        loaded = null;
-        console.error('Itinerary map failed to load', error);
+        loaded = null
+        console.error('Itinerary map failed to load', error)
         if (!destroyed && retryTimer === null && !autoRetryUsed) {
-          autoRetryUsed = true;
+          autoRetryUsed = true
           retryTimer = setTimeout(() => {
-            retryTimer = null;
-            loadMap();
-          }, RETRY_DELAY_MS);
+            retryTimer = null
+            loadMap()
+          }, RETRY_DELAY_MS)
         }
-        return null;
-      });
-    return loaded;
+        return null
+      })
+    return loaded
   }
 
   onMount(() => {
@@ -60,42 +60,42 @@
     // the map. They are server-rendered and this island mounts after them, hence
     // the query rather than a prop. A click before the map has loaded waits on
     // the same build and then flies.
-    const buttons = document.querySelectorAll('[data-show-on-map]');
+    const buttons = document.querySelectorAll('[data-show-on-map]')
     const onShowOnMap = async (e) => {
-      const index = Number(e.currentTarget.dataset.showOnMap);
-      const built = await loadMap();
-      built?.focus(index);
-    };
-    buttons.forEach((el) => el.addEventListener('click', onShowOnMap));
+      const index = Number(e.currentTarget.dataset.showOnMap)
+      const built = await loadMap()
+      built?.focus(index)
+    }
+    buttons.forEach((el) => el.addEventListener('click', onShowOnMap))
 
     // One viewport of scroll ahead, so the map is built before it is looked at.
     // The placeholder wrapper already reserves the height, so a late build
     // cannot shift the page (no CLS).
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
+        if (!entries.some((entry) => entry.isIntersecting)) return
         // Keep observing until the build actually succeeded: a failed chunk load
         // resets the memo (see loadMap), so a later re-entry can rebuild.
         loadMap().then((built) => {
-          if (built || destroyed) observer.disconnect();
-        });
+          if (built || destroyed) observer.disconnect()
+        })
       },
       { rootMargin: '800px' },
-    );
-    observer.observe(container);
+    )
+    observer.observe(container)
 
     return () => {
-      destroyed = true;
-      clearTimeout(retryTimer);
-      retryTimer = null;
-      observer.disconnect();
-      buttons.forEach((el) => el.removeEventListener('click', onShowOnMap));
-      loaded?.then((built) => built?.destroy());
-    };
-  });
+      destroyed = true
+      clearTimeout(retryTimer)
+      retryTimer = null
+      observer.disconnect()
+      buttons.forEach((el) => el.removeEventListener('click', onShowOnMap))
+      loaded?.then((built) => built?.destroy())
+    }
+  })
 
   function toggleEnlarge() {
-    enlarged = !enlarged;
+    enlarged = !enlarged
   }
 
   // While enlarged (fixed overlay): lock page scroll behind it, close on
@@ -106,36 +106,36 @@
     // The overlay also closes on Escape / backdrop click, so sync in one
     // place, where every open and close path lands, rather than in the toggle
     // alone. A stale size would crop the view and land focus flights off screen.
-    map?.scrollZoom[enlarged ? 'enable' : 'disable']();
+    map?.scrollZoom[enlarged ? 'enable' : 'disable']()
     // The frame can outlive the island: a callback queued just before teardown
     // still runs, and MapLibre forbids any call on a removed map. `destroyed` is
     // set before destroy() runs, so it covers the whole teardown window.
     requestAnimationFrame(() => {
-      if (!destroyed) map?.resize();
-    });
-    if (!enlarged) return;
-    document.body.style.overflow = 'hidden';
+      if (!destroyed) map?.resize()
+    })
+    if (!enlarged) return
+    document.body.style.overflow = 'hidden'
     const onKey = (e) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== 'Escape') return
       // A stop modal is a native <dialog> on top; ESC belongs to it first —
       // its own close handler consumes that press. Only close the map once
       // no modal dialog is open.
-      if (document.querySelector('dialog[open]')) return;
-      enlarged = false;
-    };
+      if (document.querySelector('dialog[open]')) return
+      enlarged = false
+    }
     // Only a click on the backdrop itself closes; clicks on its children
     // (the map) must not, hence target identity rather than bubbling.
     const onClick = (e) => {
-      if (e.target === backdrop) enlarged = false;
-    };
-    window.addEventListener('keydown', onKey);
-    document.addEventListener('click', onClick);
+      if (e.target === backdrop) enlarged = false
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('click', onClick)
     return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', onKey);
-      document.removeEventListener('click', onClick);
-    };
-  });
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('click', onClick)
+    }
+  })
 </script>
 
 <!--
@@ -167,7 +167,7 @@
       type="button"
       onclick={toggleEnlarge}
       aria-label={enlarged ? 'Shrink map' : 'Enlarge map'}
-      class="absolute top-2 left-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/80 text-sea-600 shadow-sm backdrop-blur-sm transition hover:bg-white border-1 border-[oklch(0.2_0.03_185)]/30"
+      class="absolute top-2 left-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-1 border-[oklch(0.2_0.03_185)]/30 bg-white/80 text-sea-600 shadow-sm backdrop-blur-sm transition hover:bg-white"
     >
       {#if enlarged}
         <svg

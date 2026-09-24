@@ -3,8 +3,8 @@ import {
   mapFeatureToGeoJSON,
   type MapFeatureGeoJSON,
 } from '@adayin/map-core/geojson'
-import {serializeMapFeature, type MapFeatureItem, type ShapeName} from '@adayin/map-core/core'
-import type {FeatureData, Geoman} from '@geoman-io/maplibre-geoman-free'
+import { serializeMapFeature, type MapFeatureItem, type ShapeName } from '@adayin/map-core/core'
+import type { FeatureData, Geoman } from '@geoman-io/maplibre-geoman-free'
 
 /** Glyph shown beside a feature in the studio's list. */
 export const SHAPE_GLYPHS: Record<ShapeName, string> = {
@@ -23,7 +23,7 @@ export const SHAPE_GLYPHS: Record<ShapeName, string> = {
  * anything a future schema adds) survive untouched.
  */
 
-export type {MapFeatureItem}
+export type { MapFeatureItem }
 
 /** GeoJSON for one stored item, as Geoman's import wants it. */
 function featureGeoJson(item: MapFeatureItem) {
@@ -56,7 +56,7 @@ export function importFeatures(geoman: Geoman, items: MapFeatureItem[]): Promise
   // Geoman's d.ts narrows `shape` to its own name union; the conversion emits
   // exactly those names (marker, text_marker, polygon, circle). The stored
   // `_key` rides on each feature's top-level `id`, so no idPropertyName.
-  return geoman.features.importGeoJson(collection as unknown as GeomanImport, {overwrite: true})
+  return geoman.features.importGeoJson(collection as unknown as GeomanImport, { overwrite: true })
 }
 
 /** Stored shape name for a Geoman feature, or null for shapes we have no name for. */
@@ -85,7 +85,7 @@ export function itemFromFeature(feature: FeatureData, key: string): MapFeatureIt
   const nextPointKey = () => crypto.randomUUID()
   const geometry = mapFeaturePatchFromGeoJSON(
     geomanGeoJson(feature),
-    {_key: key, _type: 'mapFeature', shape},
+    { _key: key, _type: 'mapFeature', shape },
     nextPointKey,
   )
   return geometry ? serializeMapFeature(geometry, key, nextPointKey) : null
@@ -99,7 +99,7 @@ export function mergedItem(feature: FeatureData, existing: MapFeatureItem): MapF
   const geometry = mapFeaturePatchFromGeoJSON(geomanGeoJson(feature), existing, () =>
     crypto.randomUUID(),
   )
-  return geometry ? {...existing, ...geometry} : null
+  return geometry ? { ...existing, ...geometry } : null
 }
 
 /** Label for a feature's tooltip: the text marker's text wins over the stored label. */

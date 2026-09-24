@@ -20,10 +20,5 @@
     "maplibre-gl": "^6.10.0",
     "typescript": "^5.8",
     "vitest": "^3"
-  },
-  "prettier": {
-    "singleQuote": true,
-    "semi": true,
-    "printWidth": 100
   }
 }

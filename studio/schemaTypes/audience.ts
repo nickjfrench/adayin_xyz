@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {preview} from 'sanity-plugin-icon-picker'
+import { defineType, defineField } from 'sanity'
+import { preview } from 'sanity-plugin-icon-picker'
 
 export const audience = defineType({
   name: 'audience',
@@ -17,13 +17,14 @@ export const audience = defineType({
       name: 'longName',
       title: 'Long name',
       type: 'string',
-      description: 'Shown as the hover tooltip, e.g. "Suited for double-income, no-kids travellers".',
+      description:
+        'Shown as the hover tooltip, e.g. "Suited for double-income, no-kids travellers".',
     }),
     defineField({
       name: 'name',
       title: 'Identifier',
       type: 'slug',
-      options: {source: 'label'},
+      options: { source: 'label' },
       description: 'Auto-generated from the short label.',
       validation: (rule) => rule.required(),
     }),
@@ -31,13 +32,17 @@ export const audience = defineType({
       name: 'icon',
       title: 'Icon',
       type: 'iconPicker',
-      options: {storeSvg: true, providers: ['fi', 'fa', 'hi', 'mdi', 'sa']},
+      options: { storeSvg: true, providers: ['fi', 'fa', 'hi', 'mdi', 'sa'] },
     }),
   ],
   preview: {
-    select: {title: 'label', subtitle: 'longName', provider: 'icon.provider', name: 'icon.name'},
-    prepare({title, subtitle, provider, name: iconName}) {
-      return {title, subtitle, media: provider && iconName ? preview({provider, name: iconName}) : undefined}
+    select: { title: 'label', subtitle: 'longName', provider: 'icon.provider', name: 'icon.name' },
+    prepare({ title, subtitle, provider, name: iconName }) {
+      return {
+        title,
+        subtitle,
+        media: provider && iconName ? preview({ provider, name: iconName }) : undefined,
+      }
     },
   },
 })

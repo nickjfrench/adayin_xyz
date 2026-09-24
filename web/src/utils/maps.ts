@@ -1,6 +1,6 @@
-import { mapsQueryUrl, type LocationValue } from '@adayin/map-core/core';
+import { mapsQueryUrl, type LocationValue } from '@adayin/map-core/core'
 
-export type { LocationValue };
+export type { LocationValue }
 
 /**
  * Maps URL for a stop: the stored multipart mapsUri (Place URI from search,
@@ -11,11 +11,12 @@ export function mapsLinkFor(
   location: LocationValue | null | undefined,
   address?: string | null,
 ): string | null {
-  const { mapsUri, lat, lng } = location ?? {};
-  if (mapsUri) return mapsUri;
-  if (lat != null && lng != null) return mapsQueryUrl(lat, lng);
-  if (address) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-  return null;
+  const { mapsUri, lat, lng } = location ?? {}
+  if (mapsUri) return mapsUri
+  if (lat != null && lng != null) return mapsQueryUrl(lat, lng)
+  if (address)
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+  return null
 }
 
 /**
@@ -27,9 +28,9 @@ export function mapsLinkText(
   location: LocationValue | null | undefined,
   address?: string | null,
 ): string | null {
-  const formatted = location?.formattedAddress ?? address;
-  if (formatted) return formatted;
-  const { lat, lng } = location ?? {};
-  if (lat != null && lng != null) return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-  return null;
+  const formatted = location?.formattedAddress ?? address
+  if (formatted) return formatted
+  const { lat, lng } = location ?? {}
+  if (lat != null && lng != null) return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+  return null
 }

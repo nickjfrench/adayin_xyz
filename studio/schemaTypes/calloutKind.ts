@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {preview} from 'sanity-plugin-icon-picker'
+import { defineType, defineField } from 'sanity'
+import { preview } from 'sanity-plugin-icon-picker'
 
 export const calloutKind = defineType({
   name: 'calloutKind',
@@ -17,7 +17,7 @@ export const calloutKind = defineType({
       name: 'name',
       title: 'Identifier',
       type: 'slug',
-      options: {source: 'label'},
+      options: { source: 'label' },
       description: 'Auto-generated from the display label.',
       validation: (rule) => rule.required(),
     }),
@@ -44,13 +44,18 @@ export const calloutKind = defineType({
     }),
   ],
   preview: {
-    select: {title: 'label', subtitle: 'name.current', provider: 'icon.provider', name: 'icon.name'},
-    prepare({title, subtitle, provider, name: iconName}) {
+    select: {
+      title: 'label',
+      subtitle: 'name.current',
+      provider: 'icon.provider',
+      name: 'icon.name',
+    },
+    prepare({ title, subtitle, provider, name: iconName }) {
       return {
         title,
         subtitle,
-        media: provider && iconName ? preview({provider, name: iconName}) : undefined,
-      };
+        media: provider && iconName ? preview({ provider, name: iconName }) : undefined,
+      }
     },
   },
 })

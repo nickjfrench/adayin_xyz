@@ -30,19 +30,11 @@
   },
   "devDependencies": {
     "@sanity/client": "^7.26.0",
-    "@sanity/eslint-config-studio": "^6.0.0",
+    "@sanity/eslint-config-studio": "^7.0.0",
     "@sanity/migrate": "^8.0.2",
     "@types/google.maps": "^3.65",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19",
-    "eslint": "^9.28",
-    "prettier": "^3.5",
     "typescript": "^5.8"
-  },
-  "prettier": {
-    "bracketSpacing": false,
-    "printWidth": 100,
-    "semi": false,
-    "singleQuote": true
   }
 }

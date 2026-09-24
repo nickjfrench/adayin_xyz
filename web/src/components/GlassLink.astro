@@ -1,33 +1,33 @@
 ---
 /** Colour that adapts to the background. Layout belongs to the caller. */
 interface Props {
-  href: string;
-  label: string;
-  active?: boolean;
+  href: string
+  label: string
+  active?: boolean
   /** "light" for text over glass on dark hero backgrounds, "dark" for dark text on light pages. */
-  variant?: "light" | "dark";
+  variant?: 'light' | 'dark'
   /** Caller-provided layout classes (padding, rounding, font-size, display). */
-  class?: string;
+  class?: string
 }
 
-const { href, label, active = false, variant = "dark", class: callerClass } = Astro.props;
+const { href, label, active = false, variant = 'dark', class: callerClass } = Astro.props
 ---
 
 <a
   href={href}
-  aria-current={active ? "page" : undefined}
+  aria-current={active ? 'page' : undefined}
   class:list={[
-    "font-display font-medium transition-colors",
-    variant === "light" && [
+    'font-display font-medium transition-colors',
+    variant === 'light' && [
       /* White over glass on dark hero. */
-      active ? "text-white" : "text-white/75 hover:text-white",
+      active ? 'text-white' : 'text-white/75 hover:text-white',
       /* When header flips to dark (JS-toggled data-variant), switch to sea tones. */
-      "group-data-[variant=dark]:text-sea-800/80 group-data-[variant=dark]:hover:text-sea-500",
-      active && "group-data-[variant=dark]:text-sea-600",
+      'group-data-[variant=dark]:text-sea-800/80 group-data-[variant=dark]:hover:text-sea-500',
+      active && 'group-data-[variant=dark]:text-sea-600',
     ],
-    variant === "dark" && [
+    variant === 'dark' && [
       /* Sea tones for glass nav on light pages. */
-      active ? "text-sea-600" : "text-sea-800/80 hover:text-sea-500",
+      active ? 'text-sea-600' : 'text-sea-800/80 hover:text-sea-500',
     ],
     callerClass,
   ]}

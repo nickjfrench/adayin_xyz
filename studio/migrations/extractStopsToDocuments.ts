@@ -33,14 +33,12 @@ const documentHandler = (async (doc: SanityDocument, context: MigrationContext) 
   let stopTypeId: string | undefined
   async function getStopTypeId(): Promise<string> {
     if (stopTypeId) return stopTypeId
-    const id = await context.client.fetch(
-      '*[_type == "stopType" && name.current == "stop"][0]._id',
-    )
+    const id = await context.client.fetch('*[_type == "stopType" && name.current == "stop"][0]._id')
     stopTypeId = id as string
     return id as string
   }
 
-  const newRefs: Array<{_type: 'reference'; _ref: string; _key: string}> = []
+  const newRefs: Array<{ _type: 'reference'; _ref: string; _key: string }> = []
   const mutations: ReturnType<typeof createOrReplace>[] = []
 
   for (let i = 0; i < stops.length; i++) {
@@ -52,16 +50,16 @@ const documentHandler = (async (doc: SanityDocument, context: MigrationContext) 
     const docId = `${type}-${doc._id}-${key}` // deterministic + unique per (post, member)
 
     // Strip array-member scaffolding; keep the rest as the document body.
-    const {_type: _ignoredType, _key: _ignoredKey, ...rest} = item
-    const newDoc: Record<string, unknown> = {_id: docId, _type: type, ...rest}
+    const { _type: _ignoredType, _key: _ignoredKey, ...rest } = item
+    const newDoc: Record<string, unknown> = { _id: docId, _type: type, ...rest }
 
     if (type === 'stop') {
       const id = await getStopTypeId()
-      newDoc.stopType = {_type: 'reference', _ref: id}
+      newDoc.stopType = { _type: 'reference', _ref: id }
     }
 
     mutations.push(createOrReplace(newDoc as unknown as SanityDocument))
-    newRefs.push({_type: 'reference', _ref: docId, _key: key})
+    newRefs.push({ _type: 'reference', _ref: docId, _key: key })
   }
 
   // Clear recommendations (old recommendationsModal refs are invalid now);
@@ -70,7 +68,7 @@ const documentHandler = (async (doc: SanityDocument, context: MigrationContext) 
     ...mutations,
     patch(doc._id!, [at('stops', set(newRefs)), at('recommendations', set([]))]),
   ])
-}) as unknown as NodeMigration['document'];
+}) as unknown as NodeMigration['document']
 
 export default defineMigration({
   title: 'Extract inline stops into documents; drop recommendations',

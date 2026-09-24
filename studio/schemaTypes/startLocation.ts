@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {legacyAddressField, locationField} from './locationField'
+import { defineType, defineField } from 'sanity'
+import { legacyAddressField, locationField } from './locationField'
 
 export const startLocation = defineType({
   name: 'startLocation',
@@ -22,7 +22,7 @@ export const startLocation = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title'},
-    prepare: ({title}) => ({title, subtitle: 'Start'}),
+    select: { title: 'title' },
+    prepare: ({ title }) => ({ title, subtitle: 'Start' }),
   },
 })

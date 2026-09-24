@@ -1,20 +1,17 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import PageHeader from "../../components/PageHeader.astro";
-import DestBar from "../../components/DestBar.astro";
-import GlassCard from "../../components/GlassCard.astro";
-import { getDestinations, getItineraries } from "../../utils/sanity";
-import { sumCosts, tripCurrencyFrom } from "../../utils/cost"
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import DestBar from '../../components/DestBar.astro'
+import GlassCard from '../../components/GlassCard.astro'
+import { getDestinations, getItineraries } from '../../utils/sanity'
+import { sumCosts, tripCurrencyFrom } from '../../utils/cost'
 
-const destinations = await getDestinations();
-const posts = await getItineraries();
+const destinations = await getDestinations()
+const posts = await getItineraries()
 ---
 
 <BaseLayout title="Itineraries">
-  <PageHeader
-    label="Our Itineraries"
-    title="From Our Most Recent Adventures"
-  />
+  <PageHeader label="Our Itineraries" title="From Our Most Recent Adventures" />
 
   <DestBar destinations={destinations} class="-mt-10" />
 
@@ -28,7 +25,11 @@ const posts = await getItineraries();
         <>
           <div id="stories-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-              <GlassCard entry={post} totalCost={sumCosts(post.stopCosts)} tripCurrency={tripCurrencyFrom(post.stopCosts)} />
+              <GlassCard
+                entry={post}
+                totalCost={sumCosts(post.stopCosts)}
+                tripCurrency={tripCurrencyFrom(post.stopCosts)}
+              />
             ))}
           </div>
           <p
@@ -45,6 +46,6 @@ const posts = await getItineraries();
 </BaseLayout>
 
 <script>
-  import { initDestBar } from "../../utils/destBarClient";
-  initDestBar();
+  import { initDestBar } from '../../utils/destBarClient'
+  initDestBar()
 </script>

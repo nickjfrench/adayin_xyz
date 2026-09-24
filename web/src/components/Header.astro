@@ -1,23 +1,22 @@
 ---
-import Logo from "./Logo.astro";
-import GlassLink from "./GlassLink.astro";
+import Logo from './Logo.astro'
+import GlassLink from './GlassLink.astro'
 
 interface Props {
   /** "light" = glass nav with white text over a dark hero; "dark" = glass nav with dark text (default). */
-  variant?: "light" | "dark";
+  variant?: 'light' | 'dark'
 }
-const { variant = "dark" } = Astro.props;
-const path = Astro.url.pathname;
+const { variant = 'dark' } = Astro.props
+const path = Astro.url.pathname
 
 const links = [
-  { label: "Destinations", href: "/destinations" },
-  { label: "Itineraries", href: "/itineraries" },
-  { label: "Blog", href: "/blog" },
-  { label: "About Us", href: "/about" },
-];
+  { label: 'Destinations', href: '/destinations' },
+  { label: 'Itineraries', href: '/itineraries' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'About Us', href: '/about' },
+]
 
-const isActive = (href: string) =>
-  href === "/" ? path === "/" : path.startsWith(href);
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href))
 ---
 
 <header
@@ -33,23 +32,25 @@ const isActive = (href: string) =>
 
     <!-- Desktop links -->
     <ul class="hidden items-center gap-8 md:flex">
-      {links.map((link) => (
-        <li>
-          <GlassLink
-            href={link.href}
-            label={link.label}
-            active={isActive(link.href)}
-            variant={variant}
-            class=""
-          />
-        </li>
-      ))}
+      {
+        links.map((link) => (
+          <li>
+            <GlassLink
+              href={link.href}
+              label={link.label}
+              active={isActive(link.href)}
+              variant={variant}
+              class=""
+            />
+          </li>
+        ))
+      }
     </ul>
 
     <!-- Mobile menu toggle -->
     <details id="mobile-menu" class="flex items-center md:hidden">
       <summary
-        class="flex cursor-pointer list-none items-center rounded-lg p-2 transition-colors group-data-[variant=light]:text-white/90 group-data-[variant=light]:hover:bg-white/10 group-data-[variant=dark]:text-sea-700 group-data-[variant=dark]:hover:bg-sea-50"
+        class="flex cursor-pointer list-none items-center rounded-lg p-2 transition-colors group-data-[variant=dark]:text-sea-700 group-data-[variant=light]:text-white/90 group-data-[variant=dark]:hover:bg-sea-50 group-data-[variant=light]:hover:bg-white/10"
       >
         <svg
           class="h-6 w-6"
@@ -59,9 +60,9 @@ const isActive = (href: string) =>
           stroke-width="2"
           stroke-linecap="round"
         >
-          <line x1="4" y1="7" x2="20" y2="7" />
-          <line x1="4" y1="12" x2="20" y2="12" />
-          <line x1="4" y1="17" x2="20" y2="17" />
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
         </svg>
       </summary>
     </details>
@@ -72,28 +73,34 @@ const isActive = (href: string) =>
   <div id="mobile-menu-panel" class="md:hidden" data-open="false">
     <ul
       class:list={[
-        "absolute right-4 top-full mt-2 w-44 rounded-xl p-2 shadow-lg backdrop-blur-md sm:right-6",
-        variant === "light"
-          ? "border border-white/20 bg-sea-100/30 shadow-sea-900/20"
-          : "border border-white/10 bg-sea-100/20 shadow-sea-900/30",
+        'absolute top-full right-4 mt-2 w-44 rounded-xl p-2 shadow-lg backdrop-blur-md sm:right-6',
+        variant === 'light'
+          ? 'border border-white/20 bg-sea-100/30 shadow-sea-900/20'
+          : 'border border-white/10 bg-sea-100/20 shadow-sea-900/30',
       ]}
     >
-      {links.map((link) => (
-        <li>
-          <GlassLink
-            href={link.href}
-            label={link.label}
-            active={isActive(link.href)}
-            variant={variant}
-            class:list={[
-              "block rounded-lg px-3 py-2",
-              variant === "light"
-                ? (isActive(link.href) ? "bg-white/15" : "hover:bg-white/10")
-                : (isActive(link.href) ? "bg-sea-50" : "hover:bg-sea-50"),
-            ]}
-          />
-        </li>
-      ))}
+      {
+        links.map((link) => (
+          <li>
+            <GlassLink
+              href={link.href}
+              label={link.label}
+              active={isActive(link.href)}
+              variant={variant}
+              class:list={[
+                'block rounded-lg px-3 py-2',
+                variant === 'light'
+                  ? isActive(link.href)
+                    ? 'bg-white/15'
+                    : 'hover:bg-white/10'
+                  : isActive(link.href)
+                    ? 'bg-sea-50'
+                    : 'hover:bg-sea-50',
+              ]}
+            />
+          </li>
+        ))
+      }
     </ul>
   </div>
 </header>
@@ -145,11 +152,11 @@ const isActive = (href: string) =>
   }
 
   /* ── Variant: light/dark driven by data-variant attribute ── */
-  #site-header[data-variant="light"] {
+  #site-header[data-variant='light'] {
     color: white;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
-  #site-header[data-variant="dark"] {
+  #site-header[data-variant='dark'] {
     color: var(--color-sea-800);
     text-shadow: none;
   }
@@ -160,46 +167,46 @@ const isActive = (href: string) =>
   // band between 6 and 12px) prevents flutter at the threshold; the header is
   // position:fixed so its resize never feeds back into scrollY.
   // Also flips data-variant light → dark when the hero scrolls away.
-  let header = document.getElementById("site-header");
-  let scrolled = false;
+  let header = document.getElementById('site-header')
+  let scrolled = false
   const update = () => {
     if (!header || !document.body.contains(header)) {
-      header = document.getElementById("site-header");
+      header = document.getElementById('site-header')
     }
-    if (!header) return;
+    if (!header) return
 
-    const y = window.scrollY;
-    if (!scrolled && y > 12) scrolled = true;
-    else if (scrolled && y < 6) scrolled = false;
-    header.classList.toggle("scrolled", scrolled);
+    const y = window.scrollY
+    if (!scrolled && y > 12) scrolled = true
+    else if (scrolled && y < 6) scrolled = false
+    header.classList.toggle('scrolled', scrolled)
 
-    const heroEl = document.getElementById("hero-section");
+    const heroEl = document.getElementById('hero-section')
     if (heroEl) {
       header.dataset.variant =
-        heroEl.getBoundingClientRect().bottom <= header.offsetHeight ? "dark" : "light";
+        heroEl.getBoundingClientRect().bottom <= header.offsetHeight ? 'dark' : 'light'
     }
-  };
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("astro:page-load", update);
-  update();
+  }
+  window.addEventListener('scroll', update, { passive: true })
+  window.addEventListener('astro:page-load', update)
+  update()
 
   // ── Mobile dropdown ──
   // The toggle (#mobile-menu) is a <details> in the nav; the panel
   // (#mobile-menu-panel) is a sibling <div> outside the nav's backdrop-filter
   // stacking context so its own blur works. Mirror open state and hide the
   // panel via [hidden] when closed.
-  const mobileMenu = document.getElementById("mobile-menu");
-  const mobilePanel = document.getElementById("mobile-menu-panel");
+  const mobileMenu = document.getElementById('mobile-menu')
+  const mobilePanel = document.getElementById('mobile-menu-panel')
   if (mobileMenu && mobilePanel) {
     const syncPanel = () => {
-      mobilePanel.hidden = !mobileMenu.open;
-      mobilePanel.dataset.open = String(mobileMenu.open);
-    };
-    mobileMenu.addEventListener("toggle", syncPanel);
-    syncPanel();
-    document.addEventListener("astro:page-load", () => {
-      mobileMenu.open = false;
-      syncPanel();
-    });
+      mobilePanel.hidden = !mobileMenu.open
+      mobilePanel.dataset.open = String(mobileMenu.open)
+    }
+    mobileMenu.addEventListener('toggle', syncPanel)
+    syncPanel()
+    document.addEventListener('astro:page-load', () => {
+      mobileMenu.open = false
+      syncPanel()
+    })
   }
 </script>

@@ -1,10 +1,10 @@
-import {defineMigration, at, set, type NodePatch} from '@sanity/migrate'
+import { defineMigration, at, set, type NodePatch } from '@sanity/migrate'
 
 // Parens/brackets/quotes excluded so a URL wrapped like "(https://…/)" doesn't swallow the ")".
 const URL_RE = /\bhttps?:\/\/[^\s<>()\[\]{}"']+/g
 const TRAILING_PUNCT = /[.,;:!?'"*]+$/
 
-type Link = {start: number; end: number; url: string}
+type Link = { start: number; end: number; url: string }
 
 export function findLinks(text: string): Link[] {
   const links: Link[] = []
@@ -13,7 +13,7 @@ export function findLinks(text: string): Link[] {
   while ((m = URL_RE.exec(text)) !== null) {
     const url = m[0].replace(TRAILING_PUNCT, '') // don't link a sentence's trailing comma/period
     if (url.length <= 'https://'.length) continue // degenerate match → plain text
-    links.push({start: m.index, end: m.index + url.length, url})
+    links.push({ start: m.index, end: m.index + url.length, url })
   }
   return links
 }
@@ -32,18 +32,18 @@ export function textToBlocks(text: string, seed: string): Array<Record<string, u
     let cursor = 0
     for (const link of findLinks(para)) {
       if (link.start > cursor) {
-        children.push({_type: 'span', _key: k(), text: para.slice(cursor, link.start), marks: []})
+        children.push({ _type: 'span', _key: k(), text: para.slice(cursor, link.start), marks: [] })
       }
       const linkKey = k()
-      markDefs.push({_type: 'link', _key: linkKey, href: link.url})
-      children.push({_type: 'span', _key: k(), text: link.url, marks: [linkKey]})
+      markDefs.push({ _type: 'link', _key: linkKey, href: link.url })
+      children.push({ _type: 'span', _key: k(), text: link.url, marks: [linkKey] })
       cursor = link.end
     }
     if (cursor < para.length) {
-      children.push({_type: 'span', _key: k(), text: para.slice(cursor), marks: []})
+      children.push({ _type: 'span', _key: k(), text: para.slice(cursor), marks: [] })
     }
-    if (children.length === 0) children.push({_type: 'span', _key: k(), text: '', marks: []})
-    return {_type: 'block', _key: k(), style: 'normal', markDefs, children}
+    if (children.length === 0) children.push({ _type: 'span', _key: k(), text: '', marks: [] })
+    return { _type: 'block', _key: k(), style: 'normal', markDefs, children }
   })
 }
 
@@ -66,7 +66,7 @@ export default defineMigration({
           const body = (member as Record<string, unknown>)?.body
           if (typeof body === 'string' && body.trim()) {
             changed = true
-            return {...member, body: textToBlocks(body, `c${i}-`)}
+            return { ...member, body: textToBlocks(body, `c${i}-`) }
           }
           return member
         })

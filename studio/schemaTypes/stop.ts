@@ -1,6 +1,6 @@
-import {defineType, defineField, defineArrayMember} from 'sanity'
-import {CalloutPreview} from '../components/CalloutPreview'
-import {legacyAddressField, locationField} from './locationField'
+import { defineType, defineField, defineArrayMember } from 'sanity'
+import { CalloutPreview } from '../components/CalloutPreview'
+import { legacyAddressField, locationField } from './locationField'
 
 export const stop = defineType({
   name: 'stop',
@@ -11,7 +11,7 @@ export const stop = defineType({
       name: 'stopType',
       title: 'Stop type',
       type: 'reference',
-      to: [{type: 'stopType'}],
+      to: [{ type: 'stopType' }],
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -30,21 +30,21 @@ export const stop = defineType({
       name: 'description',
       title: 'Description',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [{ type: 'block' }],
       description: 'Showed only on the itinerary list.',
     }),
     defineField({
       name: 'longDesc',
       title: 'Long description',
       type: 'array',
-      of: [{type: 'block'}],
+      of: [{ type: 'block' }],
       description: 'To be displayed on popup modal.',
     }),
     defineField({
       name: 'image',
       title: 'Image',
       type: 'image',
-      options: {hotspot: true},
+      options: { hotspot: true },
     }),
     defineField({
       name: 'cost',
@@ -56,7 +56,7 @@ export const stop = defineType({
       name: 'currency',
       title: 'Currency',
       type: 'reference',
-      to: [{type: 'currency'}],
+      to: [{ type: 'currency' }],
       description: 'Currency for this stop’s cost.',
     }),
     {
@@ -72,7 +72,8 @@ export const stop = defineType({
       type: 'mapFeatures',
       // Hidden — regions are drawn on the location field's combined map.
       hidden: true,
-      description: 'Optional clickable regions — drawn on the stop map. Label a region to list it as an option.',
+      description:
+        'Optional clickable regions — drawn on the stop map. Label a region to list it as an option.',
     }),
     defineField({
       name: 'callouts',
@@ -89,23 +90,23 @@ export const stop = defineType({
               name: 'kind',
               title: 'Kind',
               type: 'reference',
-              to: [{type: 'calloutKind'}],
+              to: [{ type: 'calloutKind' }],
               validation: (rule) => rule.required(),
             }),
             defineField({
               name: 'body',
               title: 'Body',
               type: 'array',
-              of: [{type: 'block'}],
+              of: [{ type: 'block' }],
               validation: (rule) => rule.required(),
             }),
           ],
           preview: {
-            select: {kind: 'kind', body: 'body'},
+            select: { kind: 'kind', body: 'body' },
             prepare: (selected: Record<string, unknown>) => selected,
           },
           components: {
-            preview: CalloutPreview as any,
+            preview: CalloutPreview,
           },
         }),
       ],
@@ -118,6 +119,6 @@ export const stop = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', subtitle: 'stopType.label'},
+    select: { title: 'title', subtitle: 'stopType.label' },
   },
 })

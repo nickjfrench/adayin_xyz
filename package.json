@@ -2,6 +2,9 @@
   "name": "adayin-xyz",
   "private": true,
   "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": "^22.22.1 || >=24"
+  },
   "scripts": {
     "dev:web": "pnpm --filter adayin-xyz-web dev",
     "dev:studio": "pnpm --filter adayin-xyz-studio dev",
@@ -9,6 +12,25 @@
     "build:studio": "pnpm --filter adayin-xyz-studio build",
     "deploy:studio": "pnpm --filter adayin-xyz-studio deploy",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r --no-bail exec tsc --noEmit"
+    "typecheck": "pnpm -r --no-bail exec tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-svelte": "^4.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "svelte": "^5.56.4",
+    "typescript-eslint": "^8.70.1"
   }
 }
