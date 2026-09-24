@@ -2,6 +2,9 @@
   "name": "adayin-xyz",
   "private": true,
   "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": "^22.22.1 || >=24"
+  },
   "scripts": {
     "dev:web": "pnpm --filter adayin-xyz-web dev",
     "dev:studio": "pnpm --filter adayin-xyz-studio dev",

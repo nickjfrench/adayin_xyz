@@ -1,7 +1,7 @@
 <script>
   import { fly, fade } from 'svelte/transition'
 
-  let { open = $bindable(false), children, onclose } = $props()
+  let { open = false, children, onclose } = $props()
 
   /** @type {HTMLDialogElement} */
   let dialog
