@@ -1,0 +1,24 @@
+---
+import {
+  EXTERNAL_ICON_SVG,
+  externalLinkAttrs,
+  isExternalUrl,
+  type LinkProps,
+} from '../utils/external'
+
+/**
+ * Anchor for content links, with the destination auto-detected: an outbound
+ * `href` gets `target="_blank"`, the ↗ icon and an Umami outbound event; an
+ * on-site one renders a plain anchor with just the caller's classes. Portable
+ * Text links reach this through `PortableLink.astro`; the Svelte twin is
+ * `Link.svelte`, over the same `utils/external` policy.
+ */
+type Props = LinkProps
+
+const { href, event, showIcon = true, class: callerClass } = Astro.props
+const external = isExternalUrl(href)
+---
+
+<a href={href} class={callerClass} {...external ? externalLinkAttrs(href, event) : {}}>
+  <slot />{external && showIcon && <Fragment set:html={EXTERNAL_ICON_SVG} />}
+</a>

@@ -1,6 +1,9 @@
 ---
-// Portable Text link mark override — renders links that open in a new tab.
+// Portable Text link mark override. `node` is the span carrying the link mark,
+// so the href lives on its `markDef` — the shape astro-portabletext's own
+// `link` renderer uses. Link settles tab target, icon and Umami event.
 import type { Mark } from 'astro-portabletext/types'
+import Link from './Link.astro'
 
 export type Props = Mark<{ href?: string }>
 
@@ -10,9 +13,9 @@ const href = node?.markDef?.href
 
 {
   typeof href === 'string' ? (
-    <a {href} target="_blank" rel="noopener noreferrer">
+    <Link href={href}>
       <slot />
-    </a>
+    </Link>
   ) : (
     <slot />
   )

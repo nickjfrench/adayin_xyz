@@ -1,7 +1,11 @@
 <script lang="ts">
-  // Portable Text link mark override — renders links that open in a new tab.
+  // Portable Text link mark override. @portabletext/svelte hands the mark
+  // definition itself in `portableText.value`, so the href may sit under any of
+  // the keys the Studio's link annotation has used. Link settles tab target,
+  // icon and Umami event.
   import type { MarkComponentProps } from '@portabletext/svelte'
   import type { Snippet } from 'svelte'
+  import Link from './Link.svelte'
 
   let { portableText, children }: { portableText: MarkComponentProps; children?: Snippet } =
     $props()
@@ -13,7 +17,7 @@
 </script>
 
 {#if typeof href === 'string'}
-  <a {href} target="_blank" rel="noopener noreferrer">{@render children?.()}</a>
+  <Link {href}>{@render children?.()}</Link>
 {:else}
   {@render children?.()}
 {/if}

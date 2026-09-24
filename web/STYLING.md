@@ -49,3 +49,12 @@ Defined in `src/styles/global.css` via Tailwind v4's `@theme` block with OKLCH v
 - **`Logo`** and **`GlassLink`** accept a `variant` prop (`"light" | "dark"`, default `"dark"`).
 - Both use `group-data-[variant=dark]:…` for runtime color/shadow flips driven by the header's `data-variant`.
 - Build-time ternaries handle the initial variant; `group-data-*` handles the scroll-driven flip.
+
+## Outbound Links
+
+Anchors go through `Link.astro`, or `Link.svelte` inside islands. Both wrap the same policy in `src/utils/external.ts` and auto-detect the href:
+
+- **External** — absolute `http(s)://` or protocol-relative `//host`: `target="_blank"`, `rel="noopener noreferrer"`, the ↗ icon, and the Umami pair `data-umami-event="outbound-link-click"` + `data-umami-event-url` that the script in `BaseLayout.astro` records as an outbound event.
+- **On-site, `mailto:`, `tel:`** — plain anchor with the caller's classes only.
+
+Options: `showIcon={false}` drops the ↗ where another icon already signals the destination (`MapLink` does this), `event={null}` renders the link untracked, `class` is the caller's layout. Put new behaviour in `utils/external.ts`, not in the two templates — islands can't render Astro components, so the anchor itself is duplicated and only the shared module stays in sync.

@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro'
 import GlassLink from './GlassLink.astro'
+import Link from './Link.astro'
 
 interface Props {
   /** "light" = white text on dark glass (default); "dark" = dark text on light glass. */
@@ -62,7 +63,7 @@ const links = [
     >
       <p class="">© {year} A Day In</p>
       <p class="ml-auto">
-        Built by <a href="https://nickfrench.dev">nickfrench.dev</a>
+        Built by <Link href="https://nickfrench.dev">nickfrench.dev</Link>
       </p>
     </div>
   </div>

@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
+import Link from '../components/Link.astro'
 
-const lastUpdatedDate = '2026-08-11'
+const lastUpdatedDate = '2026-09-24'
 const contactEmail = 'privacy@adayin.xyz'
 const contactEmailLink = 'mailto:' + contactEmail
 ---
@@ -49,20 +50,20 @@ const contactEmailLink = 'mailto:' + contactEmail
       </p>
       <p>
         More on Cloudflare's own data practices:{' '}
-        <a href="https://www.cloudflare.com/privacypolicy/">
+        <Link href="https://www.cloudflare.com/privacypolicy/">
           https://www.cloudflare.com/privacypolicy/
-        </a>
+        </Link>
       </p>
       <h3 id="analytics">Analytics</h3>
       <p>
-        We use <strong>Cloudflare Web Analytics</strong> to understand which pages are popular and how
-        visitors generally use the site. This tool is cookieless and does not track you across other websites
-        or build a personal profile of you. It reports aggregated, anonymized traffic patterns only.
+        We use <strong>Cloudflare Web Analytics</strong> and <strong>Umami Cloud</strong> to see which
+        pages are popular. Both report aggregated, anonymized traffic patterns without cookies or cross-site
+        tracking. See <Link href="https://umami.is/privacy">Umami&#39;s privacy policy</Link>.
       </p>
       <p>
-        We do not currently use Google Analytics, Google AdSense, or any other third-party
-        advertising or tracking tool. If that changes in the future, we will update this policy in
-        advance and, where required by law, request your consent before any such tool is activated.
+        We do not use Google Analytics, Google AdSense, or tools for advertising or cross-site
+        tracking. If that changes, we will update this policy and request your consent where
+        required by law.
       </p>
       <h3 id="information-you-provide-directly">Information you provide directly</h3>
       <p>
@@ -90,10 +91,10 @@ const contactEmailLink = 'mailto:' + contactEmail
       <h2 id="4-will-your-information-be-shared-with-anyone-">
         4. Will Your Information Be Shared With Anyone?
       </h2>
-      <h3 id="hosting-provider">Hosting provider</h3>
+      <h3 id="hosting-and-analytics-providers">Hosting and analytics providers</h3>
       <p>
-        Cloudflare, our hosting provider, processes server log data as described above in the course
-        of delivering and securing the site.
+        Cloudflare processes server logs to deliver and secure the site. Umami Cloud processes our
+        anonymized website analytics.
       </p>
       <h3 id="affiliate-programs-and-sponsors">Affiliate programs and sponsors</h3>
       <p>
@@ -125,29 +126,24 @@ const contactEmailLink = 'mailto:' + contactEmail
         5. Do We Use Cookies and Other Tracking Technologies?
       </h2>
       <p>
-        This site does not currently set non-essential cookies. Cloudflare Web Analytics does not
-        use cookies. If we introduce tools that do (such as analytics, advertising, or affiliate
-        tracking), we will update this policy and add a cookie consent mechanism before those tools
-        are activated, where required by law.
+        This site does not currently set non-essential cookies. Cloudflare Web Analytics and Umami
+        do not use cookies. If we introduce tools that do, we will update this policy and add a
+        cookie consent mechanism where required by law.
       </p>
       <hr />
       <h2 id="6-do-we-transfer-your-information-internationally-">
         6. Do We Transfer Your Information Internationally?
       </h2>
       <p>
-        This site can be accessed from anywhere in the world. Because our hosting infrastructure
-        (Cloudflare) operates across multiple regions, your information may be processed in a
-        country other than your own, including the United States. We rely on our hosting
-        provider&#39;s own compliance mechanisms for any such transfers.
+        Cloudflare may process information in multiple regions, including the United States. Umami
+        Cloud stores our analytics data in its US data center. We rely on each provider&#39;s own
+        compliance mechanisms for international transfers.
       </p>
       <hr />
       <h2 id="7-how-long-do-we-keep-your-information-">7. How Long Do We Keep Your Information?</h2>
       <p>
-        We retain data only for as long as necessary for the purposes described in this policy.
-        Server logs collected by Cloudflare are kept according to Cloudflare&#39;s own retention
-        practices, which you can review in their privacy policy linked above. We don&#39;t
-        independently store or archive personal data beyond what&#39;s needed to operate and secure
-        the site.
+        Cloudflare keeps server logs according to its own retention practices. Umami Cloud retains
+        our analytics data for six months.
       </p>
       <hr />
       <h2 id="8-how-do-we-keep-your-information-safe-">8. How Do We Keep Your Information Safe?</h2>
@@ -164,15 +160,13 @@ const contactEmailLink = 'mailto:' + contactEmail
         right to:
       </p>
       <ul>
-        <li>Ask what information we (or our hosting provider) hold about you</li>
+        <li>Ask what information we or our service providers hold about you</li>
         <li>Ask us to correct or delete that information</li>
         <li>Object to certain types of processing</li>
       </ul>
       <p>
-        Because we collect very limited personal data directly (we do not run accounts, logins, or
-        personal profiles), most of these requests will relate to server-level data held by
-        Cloudflare rather than data we hold ourselves. You can reach out to us at the contact email
-        above, and we&#39;ll help direct your request appropriately.
+        We do not run accounts or personal profiles. Requests may relate to Cloudflare server logs
+        or anonymized analytics held by Umami. Contact us and we&#39;ll direct your request.
       </p>
       <p>
         If you are in the EU/EEA or UK, you also have the right to lodge a complaint with your local
