@@ -22,6 +22,11 @@ let pageTitle = title
 if (pageTitle !== defaultTitle) {
   pageTitle = `${title} | A Day In.xyz`
 }
+
+// Analytics comes from web/.env (PUBLIC_UMAMI_*): local dev points at the Umami
+// that `devenv up` runs, production at cloud.umami.is.
+const umamiScriptUrl = import.meta.env.PUBLIC_UMAMI_SCRIPT_URL
+const umamiWebsiteId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID
 ---
 
 <!doctype html>
@@ -38,10 +43,11 @@ if (pageTitle !== defaultTitle) {
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script
-      defer
-      src="https://cloud.umami.is/script.js"
-      data-website-id="20aa1b93-f0cd-4507-8cba-159e6a6d01a4"></script>
+    {
+      umamiScriptUrl && umamiWebsiteId && (
+        <script defer is:inline src={umamiScriptUrl} data-website-id={umamiWebsiteId} />
+      )
+    }
     <title>{pageTitle}</title>
   </head>
   <body class="flex min-h-screen flex-col bg-foam font-sans text-deep antialiased">

@@ -6,6 +6,10 @@ import globals from 'globals'
 // `eslint.base.mjs`). ESLint resolves the nearest config per file, so `studio/`, `web/`
 // and `packages/map-core/` use their own `eslint.config.mjs` instead of this one.
 export default [
+  // Local devenv state (`devenv up` clones and builds Umami under here) — the same
+  // tree `.gitignore` already keeps out of the repo.
+  { ignores: ['.devenv/**'] },
+
   { files: ['**/*.{js,mjs,cjs}'], languageOptions: { globals: { ...globals.node } } },
 
   js.configs.recommended,
