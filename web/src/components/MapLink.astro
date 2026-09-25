@@ -1,4 +1,11 @@
 ---
+import Link from './Link.astro'
+
+/**
+ * Google Maps link for a stop. Always outbound, so Link adds the new tab and
+ * the outbound event; the pin already signals the destination, so the ↗ icon
+ * stays off.
+ */
 interface Props {
   href: string
   text: string
@@ -8,10 +15,9 @@ interface Props {
 const { href, text, class: className = '' } = Astro.props
 ---
 
-<a
+<Link
   href={href}
-  target="_blank"
-  rel="noopener noreferrer"
+  showIcon={false}
   class={`inline-flex items-center gap-1 text-xs transition-colors ${className}`}
 >
   <svg
@@ -27,4 +33,4 @@ const { href, text, class: className = '' } = Astro.props
     <circle cx="12" cy="10" r="3"></circle>
   </svg>
   {text}
-</a>
+</Link>

@@ -3,6 +3,7 @@
   import { priceText } from '../utils/cost'
   import { mapsLinkFor, mapsLinkText } from '../utils/maps'
   import { PortableText } from '@portabletext/svelte'
+  import Link from './Link.svelte'
   import PortableLink from './PortableLink.svelte'
   import SanityIcon from './SanityIcon.svelte'
 
@@ -94,23 +95,20 @@
 
   {#if stop.link}
     <div class="mt-4">
-      <a
+      <Link
         href={stop.link}
-        target="_blank"
-        rel="noopener noreferrer"
         class="inline-block font-display text-sm font-medium text-sea-600 hover:text-sea-500"
       >
         Visit link →
-      </a>
+      </Link>
     </div>
   {/if}
 
   {#if mapsLink}
     <div class="mt-4">
-      <a
+      <Link
         href={mapsLink}
-        target="_blank"
-        rel="noopener noreferrer"
+        showIcon={false}
         class="inline-flex items-center gap-1.5 text-xs text-sea-500 transition-colors hover:text-sea-700"
       >
         <svg
@@ -128,7 +126,7 @@
           /></svg
         >
         {mapsText}
-      </a>
+      </Link>
     </div>
   {/if}
 {/snippet}

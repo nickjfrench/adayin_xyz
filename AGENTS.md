@@ -9,6 +9,23 @@ Sanity schema's and custom components are found in `studio` and Astro code is fo
 
 Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 
+## Local development (devenv)
+
+`devenv up` runs the whole local stack — PostgreSQL, the Umami instance that
+stands in for production analytics, the Astro site (4321) and the Studio (3333).
+`devenv up web studio` starts just the two dev servers, and they remain plain
+`pnpm dev:web` / `pnpm dev:studio` commands, so a checkout without devenv works
+unchanged and production keeps building with the `pnpm build:*` scripts.
+
+- Postgres data lives in `.devenv/state/postgres`; the Umami source checkout and
+  its build live in `.devenv/state/umami`, cloned and built on the first
+  `devenv up` (a few minutes, once). Both are inside the project and git-ignored;
+  `rm -rf .devenv/state` resets them.
+- Umami serves http://localhost:3000 (admin / umami) from the `umami` database,
+  and the dev stack seeds it with the website id in `web/.env`.
+- `web/.env` drives the analytics script tag via `PUBLIC_UMAMI_*`: local dev
+  points at the local Umami, production at cloud.umami.is.
+
 ## Development Process
 
 1. Clarify and ask questions.
@@ -20,7 +37,7 @@ Sanity Studio and the Astro site are delivered via Cloudflare Pages.
 
 - Don't commit, stash, or push anything unless explicitly asked.
 - Use pnpm always, never use NPM. The repo is a pnpm workspace: `studio`, `web`, and `packages/map-core` — the shared map kit (MapLibre rendering + renderer-free stored-contract logic) consumed by both apps. `pnpm --filter` selects by package name (`adayin-xyz-studio`, `adayin-xyz-web`, `@adayin/map-core`), not by directory.
-- Don't try to run the server, check if the ports are running (4321 for web) and (3333 for sanity) and connect via that.
+- Don't try to start the servers; check whether the ports are running (4321 for web, 3333 for sanity, 3000 for umami — `devenv up` brings all of them up) and connect via those.
 - Don't try to connect to Sanity via the browser, it requires auth. Ask the user to troubleshoot.
 
 ## Lint, format & commits
